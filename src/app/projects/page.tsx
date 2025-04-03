@@ -11,17 +11,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { IProject, ProjectStatus, UserRole } from '@/core/interfaces/models';
+import { IProject, ITask, ProjectStatus, UserRole } from '@/core/interfaces/models';
 import ProjectList from '@/components/projects/ProjectList';
 import Link from 'next/link';
 import { PlusCircle, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
-// Importamos los servicios mock para desarrollo
+// Importamos los servicios reales de API
 import { 
-  MockProjectService,
-  MockTaskService
-} from '@/services/mock';
+  ProjectService,
+  TaskService,
+  ProjectMemberService
+} from '@/services/api';
 
 // Tipo para proyectos con metadatos
 type ProjectWithMetadata = IProject & {
@@ -38,7 +39,7 @@ export default function ProjectsPage() {
 
   // El usuario por defecto para esta demo
   const demoUser = {
-    username: 'john.doe',
+    username: 'djeison',
     userRole: UserRole.MANAGER
   };
 
@@ -47,23 +48,47 @@ export default function ProjectsPage() {
       setIsLoading(true);
       try {
         // Obtener todos los proyectos
-        const allProjects = await MockProjectService.getProjects();
+        const allProjects = await ProjectService.getProjects();
         
-        // Para cada proyecto, obtener sus tareas para contar
-        const projectsWithMetadata = await Promise.all(
+        // Para cada proyecto, cargar los datos adicionales
+        const projectsWithData = await Promise.all(
           allProjects.map(async (project) => {
-            const tasks = await MockTaskService.getTasks({ project_id: project.id });
+            let taskCount = 0;
+            let memberCount = 0;
+            
+            try {
+              // Si el proyecto tiene sprints con tareas, contar esas tareas
+              if (project.sprints && project.sprints.length > 0) {
+                taskCount = project.sprints.reduce((count, sprint) => {
+                  return count + (sprint.tasks ? sprint.tasks.length : 0);
+                }, 0);
+              } else {
+                // Intentar obtener tareas por proyecto_id
+                const tasks = await TaskService.getTasks({ project_id: project.id });
+                taskCount = tasks.length;
+              }
+              
+              // Obtener miembros del proyecto
+              if (project.id) {
+                const members = await ProjectMemberService.getProjectMembersByProject(project.id);
+                memberCount = members.length;
+              }
+            } catch (error) {
+              console.error(`Error fetching details for project ${project.id}:`, error);
+            }
             
             return {
               ...project,
-              taskCount: tasks.length,
-              memberCount: 3, // Mock: número de miembros fijo para simplificar
+              taskCount,
+              memberCount
             };
           })
         );
         
-        setProjects(projectsWithMetadata);
-        setFilteredProjects(projectsWithMetadata);
+        setProjects(projectsWithData);
+        setFilteredProjects(projectsWithData);
+      } catch (error) {
+        console.error('Error fetching projects:', error);
       } finally {
         setIsLoading(false);
       }
@@ -87,13 +112,20 @@ export default function ProjectsPage() {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
-        project => project.name.toLowerCase().includes(query) ||
-                  project.description.toLowerCase().includes(query)
+        project => 
+          project.name.toLowerCase().includes(query) ||
+          (project.description && project.description.toLowerCase().includes(query))
       );
     }
     
     setFilteredProjects(filtered);
   }, [statusFilter, searchQuery, projects]);
+
+  // Función para manejar la creación de un nuevo proyecto
+  const handleCreateProject = () => {
+    // Redirigir a la página de creación de proyectos
+    console.log('Crear nuevo proyecto');
+  };
 
   return (
     <MainLayout username={demoUser.username} userRole={demoUser.userRole}>

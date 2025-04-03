@@ -17,8 +17,8 @@ import Link from 'next/link';
 import { PlusCircle, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
-// Importamos los servicios mock para desarrollo
-import { MockTaskService } from '@/services/mock';
+// Importamos los servicios reales de API
+import { TaskService } from '@/services/api';
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState<ITask[]>([]);
@@ -30,7 +30,7 @@ export default function TasksPage() {
 
   // El usuario por defecto para esta demo
   const demoUser = {
-    username: 'john.doe',
+    username: 'djeison',
     userRole: UserRole.MANAGER
   };
 
@@ -38,9 +38,26 @@ export default function TasksPage() {
     const fetchTasks = async () => {
       setIsLoading(true);
       try {
-        const allTasks = await MockTaskService.getTasks();
-        setTasks(allTasks);
-        setFilteredTasks(allTasks);
+        const allTasks = await TaskService.getTasks();
+        
+        // Asegurarnos de que cada tarea tenga un valor para due_date
+        const tasksWithDefaults = allTasks.map(task => {
+          if (!task.due_date) {
+            // Si no tiene fecha de vencimiento, asignar una fecha futura (1 semana)
+            const oneWeekLater = new Date();
+            oneWeekLater.setDate(oneWeekLater.getDate() + 7);
+            return {
+              ...task,
+              due_date: oneWeekLater.toISOString()
+            };
+          }
+          return task;
+        });
+        
+        setTasks(tasksWithDefaults);
+        setFilteredTasks(tasksWithDefaults);
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
       } finally {
         setIsLoading(false);
       }
@@ -71,8 +88,9 @@ export default function TasksPage() {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
-        task => task.title.toLowerCase().includes(query) ||
-                task.description.toLowerCase().includes(query)
+        task => 
+          task.title.toLowerCase().includes(query) ||
+          (task.description && task.description.toLowerCase().includes(query))
       );
     }
     
@@ -83,11 +101,21 @@ export default function TasksPage() {
   const handleTaskStatusChange = async (taskId: number | undefined, status: TaskStatus) => {
     if (!taskId) return;
     
-    await MockTaskService.updateTask(taskId, { status });
-    
-    // Actualizar la lista de tareas
-    const allTasks = await MockTaskService.getTasks();
-    setTasks(allTasks);
+    try {
+      await TaskService.updateTask(taskId, { status });
+      
+      // Actualizar la lista de tareas
+      const updatedTasks = tasks.map(task => {
+        if (task.id === taskId) {
+          return { ...task, status };
+        }
+        return task;
+      });
+      
+      setTasks(updatedTasks);
+    } catch (error) {
+      console.error(`Error updating task ${taskId}:`, error);
+    }
   };
 
   return (
@@ -156,3 +184,4 @@ export default function TasksPage() {
     </MainLayout>
   );
 }
+

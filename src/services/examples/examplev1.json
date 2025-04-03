@@ -1,0 +1,770 @@
+get
+http://localhost:8081/tasklist/ [
+    {
+        "title": "Frontend Prototype",
+        "description": "Initial frontend layout for chatbot interaction.",
+        "created_at": "2025-04-02T23:44:48.15625-06:00",
+        "updated_at": "2025-04-02T23:44:48.15625-06:00",
+        "due_date": null,
+        "priority": 1,
+        "status": 3,
+        "estimated_hours": 10,
+        "subtasks": [],
+        "comments": [],
+        "sprint_id": 0,
+        "id": 6
+    },
+get
+http://localhost:8081/tasklist/6
+{
+    "title": "Frontend Prototype",
+    "description": "Initial frontend layout for chatbot interaction.",
+    "created_at": "2025-04-02T23:44:48.15625-06:00",
+    "updated_at": "2025-04-02T23:44:48.15625-06:00",
+    "due_date": null,
+    "priority": 1,
+    "status": 3,
+    "estimated_hours": 10,
+    "subtasks": [],
+    "comments": [],
+    "sprint_id": 0,
+    "id": 6
+}
+get
+http://localhost:8081/sprintlist?project_id=2
+[
+    {
+        "name": "Sprint 1: Project Setup, Frontend",
+        "description": null,
+        "start_date": "2025-02-09T18:00:00-06:00",
+        "end_date": "2025-02-23T18:00:00-06:00",
+        "status": 1,
+        "created_at": "2025-04-02T23:44:48.105948-06:00",
+        "updated_at": "2025-04-02T23:44:48.105948-06:00",
+        "project_id": 2,
+        "tasks": [
+            {
+                "title": "Frontend Prototype",
+                "description": "Initial frontend layout for chatbot interaction.",
+                "created_at": "2025-04-02T23:44:48.15625-06:00",
+                "updated_at": "2025-04-02T23:44:48.15625-06:00",
+                "due_date": null,
+                "priority": 1,
+                "status": 3,
+                "estimated_hours": 10,
+                "subtasks": [],
+                "comments": [],
+                "sprint_id": 0,
+                "id": 6
+            }
+        ],
+        "id": 4
+    },
+    {
+        "name": "Sprint 2: Backend + DB Integration",
+        "description": null,
+        "start_date": "2025-02-24T18:00:00-06:00",
+        "end_date": "2025-03-09T18:00:00-06:00",
+        "status": 1,
+        "created_at": "2025-04-02T23:44:48.122721-06:00",
+        "updated_at": "2025-04-02T23:44:48.122721-06:00",
+        "project_id": 2,
+        "tasks": [
+            {
+                "title": "Database Schema",
+                "description": "Design and implement ER model and migrate to JPA.",
+                "created_at": "2025-04-02T23:44:48.171416-06:00",
+                "updated_at": "2025-04-02T23:44:48.171416-06:00",
+                "due_date": null,
+                "priority": 2,
+                "status": 3,
+                "estimated_hours": 12,
+                "subtasks": [],
+                "comments": [],
+                "sprint_id": 0,
+                "id": 7
+            },
+            {
+                "title": "Java Integration",
+                "description": "Connect backend with database using Hibernate/JPA.",
+                "created_at": "2025-04-02T23:44:48.18663-06:00",
+                "updated_at": "2025-04-02T23:44:48.18663-06:00",
+                "due_date": null,
+                "priority": 2,
+                "status": 1,
+                "estimated_hours": 15,
+                "subtasks": [],
+                "comments": [],
+                "sprint_id": 0,
+                "id": 8
+            }
+        ],
+        "id": 5
+    },
+    {
+        "name": "Sprint 3: Documentation, Diagrams",
+        "description": null,
+        "start_date": "2025-03-10T18:00:00-06:00",
+        "end_date": "2025-03-24T18:00:00-06:00",
+        "status": 1,
+        "created_at": "2025-04-02T23:44:48.137796-06:00",
+        "updated_at": "2025-04-02T23:44:48.137796-06:00",
+        "project_id": 2,
+        "tasks": [
+            {
+                "title": "ER Mapping Diagram",
+                "description": "Generate UML diagrams and DB mappings.",
+                "created_at": "2025-04-02T23:44:48.20136-06:00",
+                "updated_at": "2025-04-02T23:44:48.20136-06:00",
+                "due_date": null,
+                "priority": 1,
+                "status": 3,
+                "estimated_hours": 6,
+                "subtasks": [],
+                "comments": [],
+                "sprint_id": 0,
+                "id": 9
+            },
+            {
+                "title": "Documentation Setup",
+                "description": "Prepare README, architecture and API flow.",
+                "created_at": "2025-04-02T23:44:48.21613-06:00",
+                "updated_at": "2025-04-02T23:44:48.21613-06:00",
+                "due_date": null,
+                "priority": 0,
+                "status": 1,
+                "estimated_hours": 8,
+                "subtasks": [],
+                "comments": [],
+                "sprint_id": 0,
+                "id": 10
+            }
+        ],
+        "id": 6
+    }
+]
+
+get
+//http://localhost:8081/sprintlist
+[
+    {
+        "name": "Sprint 1: Project Setup, Frontend",
+        "description": null,
+        "start_date": "2025-02-09T18:00:00-06:00",
+        "end_date": "2025-02-23T18:00:00-06:00",
+        "status": 1,
+        "created_at": "2025-04-02T23:44:48.105948-06:00",
+        "updated_at": "2025-04-02T23:44:48.105948-06:00",
+        "project_id": 2,
+        "tasks": [
+            {
+                "title": "Frontend Prototype",
+                "description": "Initial frontend layout for chatbot interaction.",
+                "created_at": "2025-04-02T23:44:48.15625-06:00",
+                "updated_at": "2025-04-02T23:44:48.15625-06:00",
+                "due_date": null,
+                "priority": 1,
+                "status": 3,
+                "estimated_hours": 10,
+                "subtasks": [],
+                "comments": [],
+                "sprint_id": 0,
+                "id": 6
+            }
+        ],
+        "id": 4
+    },
+    {
+        "name": "Sprint 2: Backend + DB Integration",
+        "description": null,
+        "start_date": "2025-02-24T18:00:00-06:00",
+        "end_date": "2025-03-09T18:00:00-06:00",
+        "status": 1,
+        "created_at": "2025-04-02T23:44:48.122721-06:00",
+        "updated_at": "2025-04-02T23:44:48.122721-06:00",
+        "project_id": 2,
+        "tasks": [
+            {
+                "title": "Database Schema",
+                "description": "Design and implement ER model and migrate to JPA.",
+                "created_at": "2025-04-02T23:44:48.171416-06:00",
+                "updated_at": "2025-04-02T23:44:48.171416-06:00",
+                "due_date": null,
+                "priority": 2,
+                "status": 3,
+                "estimated_hours": 12,
+                "subtasks": [],
+                "comments": [],
+                "sprint_id": 0,
+                "id": 7
+            },
+            {
+                "title": "Java Integration",
+                "description": "Connect backend with database using Hibernate/JPA.",
+                "created_at": "2025-04-02T23:44:48.18663-06:00",
+                "updated_at": "2025-04-02T23:44:48.18663-06:00",
+                "due_date": null,
+                "priority": 2,
+                "status": 1,
+                "estimated_hours": 15,
+                "subtasks": [],
+                "comments": [],
+                "sprint_id": 0,
+                "id": 8
+            }
+        ],
+        "id": 5
+    },
+    {
+        "name": "Sprint 3: Documentation, Diagrams",
+        "description": null,
+        "start_date": "2025-03-10T18:00:00-06:00",
+        "end_date": "2025-03-24T18:00:00-06:00",
+        "status": 1,
+        "created_at": "2025-04-02T23:44:48.137796-06:00",
+        "updated_at": "2025-04-02T23:44:48.137796-06:00",
+        "project_id": 2,
+        "tasks": [
+            {
+                "title": "ER Mapping Diagram",
+                "description": "Generate UML diagrams and DB mappings.",
+                "created_at": "2025-04-02T23:44:48.20136-06:00",
+                "updated_at": "2025-04-02T23:44:48.20136-06:00",
+                "due_date": null,
+                "priority": 1,
+                "status": 3,
+                "estimated_hours": 6,
+                "subtasks": [],
+                "comments": [],
+                "sprint_id": 0,
+                "id": 9
+            },
+            {
+                "title": "Documentation Setup",
+                "description": "Prepare README, architecture and API flow.",
+                "created_at": "2025-04-02T23:44:48.21613-06:00",
+                "updated_at": "2025-04-02T23:44:48.21613-06:00",
+                "due_date": null,
+                "priority": 0,
+                "status": 1,
+                "estimated_hours": 8,
+                "subtasks": [],
+                "comments": [],
+                "sprint_id": 0,
+                "id": 10
+            }
+        ],
+        "id": 6
+    }
+]
+
+
+get
+http://localhost:8081/projectlist/23
+{
+    "name": "Do Homework",
+    "description": "You know it, maths sucks",
+    "start_date": "2024-03-11T06:00:00-06:00",
+    "end_date": "2024-03-14T09:00:00-06:00",
+    "status": 1,
+    "created_at": "2025-04-03T15:13:04.415989-06:00",
+    "updated_at": "2025-04-03T15:13:04.415989-06:00",
+    "sprints": [],
+    "id": 23
+}
+post
+http://localhost:8081/projectlist/
+{
+    "name": "Do Homework",
+    "description": "You know it, maths sucks",
+    "start_date": "2024-03-11T12:00:00Z",
+    "end_date": "2024-03-14T15:00:00Z",
+    "status": 1
+  }
+post
+http://localhost:8081/projectlist/
+{
+    "name": "Do 23",
+    "description": "You know it, 23 sucks",
+    "start_date": "2024-03-11T12:00:00Z",
+    "end_date": "2024-03-14T15:00:00Z",
+    "status": 1
+  }
+  
+
+get
+//http://localhost:8081/projectlist
+[
+    {
+        "name": "LLM aided Task Chatbot",
+        "description": "A task-oriented chatbot powered by LLMs with collaborative task management.",
+        "start_date": "2025-02-09T18:00:00-06:00",
+        "end_date": "2025-06-19T18:00:00-06:00",
+        "status": 0,
+        "created_at": "2025-04-02T23:44:48.086541-06:00",
+        "updated_at": "2025-04-02T23:44:48.086541-06:00",
+        "sprints": [
+            {
+                "name": "Sprint 1: Project Setup, Frontend",
+                "description": null,
+                "start_date": "2025-02-09T18:00:00-06:00",
+                "end_date": "2025-02-23T18:00:00-06:00",
+                "status": 1,
+                "created_at": "2025-04-02T23:44:48.105948-06:00",
+                "updated_at": "2025-04-02T23:44:48.105948-06:00",
+                "project_id": 0,
+                "tasks": [
+                    {
+                        "title": "Frontend Prototype",
+                        "description": "Initial frontend layout for chatbot interaction.",
+                        "created_at": "2025-04-02T23:44:48.15625-06:00",
+                        "updated_at": "2025-04-02T23:44:48.15625-06:00",
+                        "due_date": null,
+                        "priority": 1,
+                        "status": 3,
+                        "estimated_hours": 10,
+                        "subtasks": [],
+                        "comments": [],
+                        "sprint_id": 0,
+                        "id": 6
+                    }
+                ],
+                "id": 4
+            },
+            {
+                "name": "Sprint 2: Backend + DB Integration",
+                "description": null,
+                "start_date": "2025-02-24T18:00:00-06:00",
+                "end_date": "2025-03-09T18:00:00-06:00",
+                "status": 1,
+                "created_at": "2025-04-02T23:44:48.122721-06:00",
+                "updated_at": "2025-04-02T23:44:48.122721-06:00",
+                "project_id": 0,
+                "tasks": [
+                    {
+                        "title": "Database Schema",
+                        "description": "Design and implement ER model and migrate to JPA.",
+                        "created_at": "2025-04-02T23:44:48.171416-06:00",
+                        "updated_at": "2025-04-02T23:44:48.171416-06:00",
+                        "due_date": null,
+                        "priority": 2,
+                        "status": 3,
+                        "estimated_hours": 12,
+                        "subtasks": [],
+                        "comments": [],
+                        "sprint_id": 0,
+                        "id": 7
+                    },
+                    {
+                        "title": "Java Integration",
+                        "description": "Connect backend with database using Hibernate/JPA.",
+                        "created_at": "2025-04-02T23:44:48.18663-06:00",
+                        "updated_at": "2025-04-02T23:44:48.18663-06:00",
+                        "due_date": null,
+                        "priority": 2,
+                        "status": 1,
+                        "estimated_hours": 15,
+                        "subtasks": [],
+                        "comments": [],
+                        "sprint_id": 0,
+                        "id": 8
+                    }
+                ],
+                "id": 5
+            },
+            {
+                "name": "Sprint 3: Documentation, Diagrams",
+                "description": null,
+                "start_date": "2025-03-10T18:00:00-06:00",
+                "end_date": "2025-03-24T18:00:00-06:00",
+                "status": 1,
+                "created_at": "2025-04-02T23:44:48.137796-06:00",
+                "updated_at": "2025-04-02T23:44:48.137796-06:00",
+                "project_id": 0,
+                "tasks": [
+                    {
+                        "title": "ER Mapping Diagram",
+                        "description": "Generate UML diagrams and DB mappings.",
+                        "created_at": "2025-04-02T23:44:48.20136-06:00",
+                        "updated_at": "2025-04-02T23:44:48.20136-06:00",
+                        "due_date": null,
+                        "priority": 1,
+                        "status": 3,
+                        "estimated_hours": 6,
+                        "subtasks": [],
+                        "comments": [],
+                        "sprint_id": 0,
+                        "id": 9
+                    },
+                    {
+                        "title": "Documentation Setup",
+                        "description": "Prepare README, architecture and API flow.",
+                        "created_at": "2025-04-02T23:44:48.21613-06:00",
+                        "updated_at": "2025-04-02T23:44:48.21613-06:00",
+                        "due_date": null,
+                        "priority": 0,
+                        "status": 1,
+                        "estimated_hours": 8,
+                        "subtasks": [],
+                        "comments": [],
+                        "sprint_id": 0,
+                        "id": 10
+                    }
+                ],
+                "id": 6
+            }
+        ],
+        "id": 2
+    },
+    {
+        "name": "Do Homework",
+        "description": "You know it, maths sucks",
+        "start_date": "2024-03-11T06:00:00-06:00",
+        "end_date": "2024-03-14T09:00:00-06:00",
+        "status": 1,
+        "created_at": "2025-04-03T15:13:04.415989-06:00",
+        "updated_at": "2025-04-03T15:13:04.415989-06:00",
+        "sprints": [],
+        "id": 23
+    },
+    {
+        "name": "Do Homework",
+        "description": "You know it, maths sucks",
+        "start_date": "2024-03-11T06:00:00-06:00",
+        "end_date": "2024-03-14T09:00:00-06:00",
+        "status": 1,
+        "created_at": "2025-04-03T15:09:52.510035-06:00",
+        "updated_at": "2025-04-03T15:09:52.510035-06:00",
+        "sprints": [],
+        "id": 21
+    },
+    {
+        "name": "Do Homework",
+        "description": "You know it, maths sucks",
+        "start_date": "2024-03-11T06:00:00-06:00",
+        "end_date": "2024-03-14T09:00:00-06:00",
+        "status": 1,
+        "created_at": "2025-04-03T15:10:53.900086-06:00",
+        "updated_at": "2025-04-03T15:10:53.900086-06:00",
+        "sprints": [],
+        "id": 22
+    },
+    {
+        "name": "Do Homework",
+        "description": "You know it, maths sucks",
+        "start_date": "2024-03-11T06:00:00-06:00",
+        "end_date": "2024-03-14T09:00:00-06:00",
+        "status": 1,
+        "created_at": "2025-04-03T16:30:49.528009-06:00",
+        "updated_at": "2025-04-03T16:30:49.528009-06:00",
+        "sprints": [],
+        "id": 24
+    }
+]
+
+post
+http://localhost:8081/subtasklist
+{
+    "title": "Create Documentation",
+    "description": "Export docuemntation to md",
+    "created_at": "2024-03-11T12:20:00Z",
+    "updated_at": "2024-03-11T12:20:00Z",
+    "status": 0,
+    "task_id": 9
+  }
+
+
+get
+  http://localhost:8081/tasklist/9
+  {
+    "title": "ER Mapping Diagram",
+    "description": "Generate UML diagrams and DB mappings.",
+    "created_at": "2025-04-02T23:44:48.20136-06:00",
+    "updated_at": "2025-04-02T23:44:48.20136-06:00",
+    "due_date": null,
+    "priority": 1,
+    "status": 3,
+    "estimated_hours": 6,
+    "subtasks": [
+        {
+            "title": "Create Documentation",
+            "description": "Export docuemntation to md",
+            "created_at": "2025-04-03T16:59:48.369538-06:00",
+            "updated_at": "2025-04-03T16:59:48.369538-06:00",
+            "status": 0,
+            "task_id": 9,
+            "id": 1
+        }
+    ],
+    "comments": [],
+    "sprint_id": 0,
+    "id": 9
+}
+get
+http://localhost:8081/userlist
+[
+    {
+        "username": "fercaves",
+        "email": "fer.caves@example.com",
+        "full_name": "Fer Caves",
+        "work_mode": "REMOTE",
+        "created_at": "2025-04-03T05:44:48.070186-06:00",
+        "updated_at": "2025-04-03T05:44:48.070186-06:00",
+        "last_login": null,
+        "active": true,
+        "selectedProject": null,
+        "selectedProject_id": null,
+        "id": 7
+    },
+    {
+        "username": "aaronh",
+        "email": "aaron.hernandez@example.com",
+        "full_name": "Aaron Hernandez",
+        "work_mode": "REMOTE",
+        "created_at": "2025-04-03T05:44:48.072817-06:00",
+        "updated_at": "2025-04-03T05:44:48.072817-06:00",
+        "last_login": null,
+        "active": true,
+        "selectedProject": null,
+        "selectedProject_id": null,
+        "id": 8
+    },
+    {
+        "username": "aramb",
+        "email": "aram.barsegyan@example.com",
+        "full_name": "Aram Barsegyan",
+        "work_mode": "REMOTE",
+        "created_at": "2025-04-03T05:44:48.076386-06:00",
+        "updated_at": "2025-04-03T05:44:48.076386-06:00",
+        "last_login": null,
+        "active": true,
+        "selectedProject": null,
+        "selectedProject_id": null,
+        "id": 9
+    },
+    {
+        "username": "carltell",
+        "email": "carlos.tellez@example.com",
+        "full_name": "Carlos Tellez",
+        "work_mode": "REMOTE",
+        "created_at": "2025-04-03T05:44:48.078934-06:00",
+        "updated_at": "2025-04-03T05:44:48.078934-06:00",
+        "last_login": null,
+        "active": true,
+        "selectedProject": null,
+        "selectedProject_id": null,
+        "id": 10
+    },
+    {
+        "username": "jesusb",
+        "email": "jesus.banales@example.com",
+        "full_name": "Jesus Banales",
+        "work_mode": "REMOTE",
+        "created_at": "2025-04-03T05:44:48.081521-06:00",
+        "updated_at": "2025-04-03T05:44:48.081521-06:00",
+        "last_login": null,
+        "active": true,
+        "selectedProject": null,
+        "selectedProject_id": null,
+        "id": 11
+    },
+    {
+        "username": "djeison",
+        "email": "diegovt.arbt@gmail.com",
+        "full_name": "Diego Villanueva",
+        "work_mode": "REMOTE",
+        "created_at": "2025-04-03T05:44:48.084033-06:00",
+        "updated_at": "2025-04-03T05:44:48.084033-06:00",
+        "last_login": null,
+        "active": true,
+        "selectedProject": null,
+        "selectedProject_id": null,
+        "id": 12
+    }
+]
+
+get
+http://localhost:8081/userlist/12
+{
+    "username": "djeison",
+    "email": "diegovt.arbt@gmail.com",
+    "full_name": "Diego Villanueva",
+    "work_mode": "REMOTE",
+    "created_at": "2025-04-03T05:44:48.084033-06:00",
+    "updated_at": "2025-04-03T05:44:48.084033-06:00",
+    "last_login": null,
+    "active": true,
+    "selectedProject": null,
+    "selectedProject_id": null,
+    "id": 12
+}
+
+post 
+http://localhost:8081/userlist
+{
+    "username": "DJeison-DVT2",
+    "email": "diegovt.arbt@gmail2.com",
+    "full_name": "Diego Villanueva2 Terrazas",
+    "password_hash": "Hello1223",
+    "role": "DEVELOPER",
+    "work_mode": "REMOTE"
+}
+
+get
+http://localhost:8081/projectmember
+[
+    {
+        "id": {
+            "projectId": 2,
+            "userId": 7
+        },
+        "joined_date": "2025-04-03T05:44:48-06:00",
+        "role": "Frontend Developer",
+        "user_id": 7,
+        "project_id": 2
+    },
+    {
+        "id": {
+            "projectId": 2,
+            "userId": 8
+        },
+        "joined_date": "2025-04-03T05:44:48-06:00",
+        "role": "Fullstack Developer",
+        "user_id": 8,
+        "project_id": 2
+    },
+    {
+        "id": {
+            "projectId": 2,
+            "userId": 9
+        },
+        "joined_date": "2025-04-03T05:44:48-06:00",
+        "role": "Database Architect",
+        "user_id": 9,
+        "project_id": 2
+    },
+    {
+        "id": {
+            "projectId": 2,
+            "userId": 10
+        },
+        "joined_date": "2025-04-03T05:44:48-06:00",
+        "role": "Backend Developer",
+        "user_id": 10,
+        "project_id": 2
+    },
+    {
+        "id": {
+            "projectId": 2,
+            "userId": 11
+        },
+        "joined_date": "2025-04-03T05:44:48-06:00",
+        "role": "Technical Writer",
+        "user_id": 11,
+        "project_id": 2
+    },
+    {
+        "id": {
+            "projectId": 2,
+            "userId": 12
+        },
+        "joined_date": "2025-04-03T05:44:48-06:00",
+        "role": "Manager",
+        "user_id": 12,
+        "project_id": 2
+    }
+]
+post
+http://localhost:8081/projectmember
+{
+    "id": {
+        "projectId": 21,
+        "userId": 1
+    },
+    "project_id": 21,
+    "user_id": 1
+}
+
+get
+http://localhost:8081/projectmember/project/2
+[
+    {
+        "id": {
+            "projectId": 2,
+            "userId": 7
+        },
+        "joined_date": "2025-04-03T05:44:48-06:00",
+        "role": "Frontend Developer",
+        "user_id": 7,
+        "project_id": 2
+    },
+    {
+        "id": {
+            "projectId": 2,
+            "userId": 8
+        },
+        "joined_date": "2025-04-03T05:44:48-06:00",
+        "role": "Fullstack Developer",
+        "user_id": 8,
+        "project_id": 2
+    },
+    {
+        "id": {
+            "projectId": 2,
+            "userId": 9
+        },
+        "joined_date": "2025-04-03T05:44:48-06:00",
+        "role": "Database Architect",
+        "user_id": 9,
+        "project_id": 2
+    },
+    {
+        "id": {
+            "projectId": 2,
+            "userId": 10
+        },
+        "joined_date": "2025-04-03T05:44:48-06:00",
+        "role": "Backend Developer",
+        "user_id": 10,
+        "project_id": 2
+    },
+    {
+        "id": {
+            "projectId": 2,
+            "userId": 11
+        },
+        "joined_date": "2025-04-03T05:44:48-06:00",
+        "role": "Technical Writer",
+        "user_id": 11,
+        "project_id": 2
+    },
+    {
+        "id": {
+            "projectId": 2,
+            "userId": 12
+        },
+        "joined_date": "2025-04-03T05:44:48-06:00",
+        "role": "Manager",
+        "user_id": 12,
+        "project_id": 2
+    }
+]
+get
+http://localhost:8081/projectmember/user/12
+[
+    {
+        "id": {
+            "projectId": 2,
+            "userId": 12
+        },
+        "joined_date": "2025-04-03T05:44:48-06:00",
+        "role": "Manager",
+        "user_id": 12,
+        "project_id": 2
+    }
+]
+
+
+//Doesnt workActually, just keep this in mind
+//get
+//http://localhost:8081/commentlist/1

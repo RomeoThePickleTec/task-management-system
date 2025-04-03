@@ -16,121 +16,76 @@ import {
   ArrowRight
 } from "lucide-react";
 
-// Importamos los servicios reales de API
+// Importamos los servicios mock para desarrollo
 import { 
-  TaskService, 
-  ProjectService,
-  SprintService,
-  UserService
-} from '@/services/api';
+  initializeMockData,
+  MockTaskService, 
+  MockProjectService,
+  MockSprintService
+} from '@/services/mock';
+
+// Inicializar datos mock
+initializeMockData();
 
 export default function HomePage() {
   const [recentTasks, setRecentTasks] = useState<ITask[]>([]);
   const [activeProjects, setActiveProjects] = useState<IProject[]>([]);
   const [activeSprints, setActiveSprints] = useState<ISprint[]>([]);
-  const [currentUser, setCurrentUser] = useState<UserRole>(UserRole.DEVELOPER);
   const [isLoading, setIsLoading] = useState({
     tasks: true,
     projects: true,
-    sprints: true,
-    user: true
+    sprints: true
   });
 
   useEffect(() => {
     // Cargar tareas recientes
     const fetchTasks = async () => {
-      try {
-        const tasks = await TaskService.getTasks();
-        // Ordenar por fecha de creación (más recientes primero) y tomar las 6 primeras
-        const sortedTasks = tasks
-          .filter(task => task.created_at) // Asegurémonos de que tienen fecha de creación
-          .sort((a, b) => {
-            const dateA = new Date(a.created_at || '').getTime();
-            const dateB = new Date(b.created_at || '').getTime();
-            return dateB - dateA;
-          })
-          .slice(0, 3);
-        setRecentTasks(sortedTasks);
-      } catch (error) {
-        console.error("Error fetching tasks:", error);
-      } finally {
-        setIsLoading(prev => ({ ...prev, tasks: false }));
-      }
+      const tasks = await MockTaskService.getTasks();
+      // Ordenar por fecha de creación (más recientes primero) y tomar las 6 primeras
+      const sortedTasks = tasks
+        .sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime())
+        .slice(0, 3);
+      setRecentTasks(sortedTasks);
+      setIsLoading(prev => ({ ...prev, tasks: false }));
     };
 
     // Cargar proyectos activos
     const fetchProjects = async () => {
-      try {
-        const projects = await ProjectService.getProjects({ status: ProjectStatus.ACTIVE });
-        setActiveProjects(projects.slice(0, 3)); // Mostrar solo los primeros 3
-      } catch (error) {
-        console.error("Error fetching projects:", error);
-      } finally {
-        setIsLoading(prev => ({ ...prev, projects: false }));
-      }
+      const projects = await MockProjectService.getProjects({ status: ProjectStatus.ACTIVE });
+      setActiveProjects(projects);
+      setIsLoading(prev => ({ ...prev, projects: false }));
     };
 
     // Cargar sprints activos
     const fetchSprints = async () => {
-      try {
-        // Obtener sprints con estado ACTIVE (1)
-        const sprints = await SprintService.getSprints({ status: 1 });
-        setActiveSprints(sprints.slice(0, 3)); // Mostrar solo los primeros 3
-      } catch (error) {
-        console.error("Error fetching sprints:", error);
-      } finally {
-        setIsLoading(prev => ({ ...prev, sprints: false }));
-      }
-    };
-
-    // Intentar cargar un usuario (para demo, usar el primero que encontremos)
-    const fetchUser = async () => {
-      try {
-        const users = await UserService.getUsers();
-        if (users.length > 0) {
-          // Asumimos que el primer usuario es el actual para esta demo
-          setCurrentUser(UserRole.MANAGER); // Por defecto lo ponemos como MANAGER
-        }
-      } catch (error) {
-        console.error("Error fetching user:", error);
-      } finally {
-        setIsLoading(prev => ({ ...prev, user: false }));
-      }
+      const sprints = await MockSprintService.getSprints({ status: 1 }); // Activo
+      setActiveSprints(sprints);
+      setIsLoading(prev => ({ ...prev, sprints: false }));
     };
 
     fetchTasks();
     fetchProjects();
     fetchSprints();
-    fetchUser();
   }, []);
 
   // Cambiar el estado de una tarea
   const handleTaskStatusChange = async (taskId: number | undefined, status: TaskStatus) => {
     if (!taskId) return;
     
-    try {
-      await TaskService.updateTask(taskId, { status });
-      
-      // Actualizar la lista de tareas recientes
-      const tasks = await TaskService.getTasks();
-      const sortedTasks = tasks
-        .filter(task => task.created_at)
-        .sort((a, b) => {
-          const dateA = new Date(a.created_at || '').getTime();
-          const dateB = new Date(b.created_at || '').getTime();
-          return dateB - dateA;
-        })
-        .slice(0, 3);
-      setRecentTasks(sortedTasks);
-    } catch (error) {
-      console.error(`Error updating task ${taskId}:`, error);
-    }
+    await MockTaskService.updateTask(taskId, { status });
+    
+    // Actualizar la lista de tareas recientes
+    const tasks = await MockTaskService.getTasks();
+    const sortedTasks = tasks
+      .sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime())
+      .slice(0, 3);
+    setRecentTasks(sortedTasks);
   };
 
   // El usuario por defecto para esta demo
   const demoUser = {
-    username: 'djeison',
-    userRole: currentUser
+    username: 'john.doe',
+    userRole: UserRole.MANAGER
   };
 
   return (
@@ -163,7 +118,7 @@ export default function HomePage() {
                 </div>
               ) : activeProjects.length > 0 ? (
                 <div className="space-y-3">
-                  {activeProjects.map(project => (
+                  {activeProjects.slice(0, 3).map(project => (
                     <div key={project.id} className="flex justify-between items-center border-b pb-2 last:border-0">
                       <div>
                         <p className="font-medium">{project.name}</p>
@@ -205,11 +160,11 @@ export default function HomePage() {
             <CardContent>
               {isLoading.sprints ? (
                 <div className="h-24 flex justify-center items-center">
-<div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500"></div>
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500"></div>
                 </div>
               ) : activeSprints.length > 0 ? (
                 <div className="space-y-3">
-                  {activeSprints.map(sprint => (
+                  {activeSprints.slice(0, 3).map(sprint => (
                     <div key={sprint.id} className="flex justify-between items-center border-b pb-2 last:border-0">
                       <div>
                         <p className="font-medium">{sprint.name}</p>
@@ -260,7 +215,7 @@ export default function HomePage() {
                       <div>
                         <p className="font-medium">{task.title}</p>
                         <p className="text-sm text-gray-500">
-                          {task.due_date ? `Vence: ${new Date(task.due_date).toLocaleDateString()}` : 'Sin fecha'}
+                          Vence: {new Date(task.due_date).toLocaleDateString()}
                         </p>
                       </div>
                       <Link href={`/tasks/${task.id}`} passHref>
@@ -308,4 +263,4 @@ export default function HomePage() {
       </div>
     </MainLayout>
   );
-}
+};
