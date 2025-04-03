@@ -1,103 +1,266 @@
-import Image from "next/image";
+// src/app/page.tsx
+"use client";
 
-export default function Home() {
+import React, { useEffect, useState } from 'react';
+import MainLayout from '@/components/layout/MainLayout';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ITask, IProject, ISprint, TaskStatus, ProjectStatus, UserRole } from '@/core/interfaces/models';
+import TaskList from '@/components/tasks/TaskList';
+import Link from 'next/link';
+import { 
+  Layers, 
+  CheckSquare, 
+  Calendar, 
+  PlusCircle,
+  ArrowRight
+} from "lucide-react";
+
+// Importamos los servicios mock para desarrollo
+import { 
+  initializeMockData,
+  MockTaskService, 
+  MockProjectService,
+  MockSprintService
+} from '@/services/mock';
+
+// Inicializar datos mock
+initializeMockData();
+
+export default function HomePage() {
+  const [recentTasks, setRecentTasks] = useState<ITask[]>([]);
+  const [activeProjects, setActiveProjects] = useState<IProject[]>([]);
+  const [activeSprints, setActiveSprints] = useState<ISprint[]>([]);
+  const [isLoading, setIsLoading] = useState({
+    tasks: true,
+    projects: true,
+    sprints: true
+  });
+
+  useEffect(() => {
+    // Cargar tareas recientes
+    const fetchTasks = async () => {
+      const tasks = await MockTaskService.getTasks();
+      // Ordenar por fecha de creación (más recientes primero) y tomar las 6 primeras
+      const sortedTasks = tasks
+        .sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime())
+        .slice(0, 3);
+      setRecentTasks(sortedTasks);
+      setIsLoading(prev => ({ ...prev, tasks: false }));
+    };
+
+    // Cargar proyectos activos
+    const fetchProjects = async () => {
+      const projects = await MockProjectService.getProjects({ status: ProjectStatus.ACTIVE });
+      setActiveProjects(projects);
+      setIsLoading(prev => ({ ...prev, projects: false }));
+    };
+
+    // Cargar sprints activos
+    const fetchSprints = async () => {
+      const sprints = await MockSprintService.getSprints({ status: 1 }); // Activo
+      setActiveSprints(sprints);
+      setIsLoading(prev => ({ ...prev, sprints: false }));
+    };
+
+    fetchTasks();
+    fetchProjects();
+    fetchSprints();
+  }, []);
+
+  // Cambiar el estado de una tarea
+  const handleTaskStatusChange = async (taskId: number | undefined, status: TaskStatus) => {
+    if (!taskId) return;
+    
+    await MockTaskService.updateTask(taskId, { status });
+    
+    // Actualizar la lista de tareas recientes
+    const tasks = await MockTaskService.getTasks();
+    const sortedTasks = tasks
+      .sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime())
+      .slice(0, 3);
+    setRecentTasks(sortedTasks);
+  };
+
+  // El usuario por defecto para esta demo
+  const demoUser = {
+    username: 'john.doe',
+    userRole: UserRole.MANAGER
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Panel de Control</h1>
+          <div className="flex space-x-2">
+            <Link href="/tasks/new" passHref>
+              <Button>
+                <PlusCircle className="h-4 w-4 mr-2" /> Nueva tarea
+              </Button>
+            </Link>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Proyectos activos */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium flex items-center">
+                <Layers className="h-5 w-5 mr-2 text-blue-500" />
+                Proyectos activos
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoading.projects ? (
+                <div className="h-24 flex justify-center items-center">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                </div>
+              ) : activeProjects.length > 0 ? (
+                <div className="space-y-3">
+                  {activeProjects.slice(0, 3).map(project => (
+                    <div key={project.id} className="flex justify-between items-center border-b pb-2 last:border-0">
+                      <div>
+                        <p className="font-medium">{project.name}</p>
+                        <p className="text-sm text-gray-500">
+                          {new Date(project.end_date).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <Link href={`/projects/${project.id}`} passHref>
+                        <Button variant="ghost" size="sm">
+                          <ArrowRight className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="h-24 flex justify-center items-center text-gray-500">
+                  No hay proyectos activos
+                </div>
+              )}
+              <div className="mt-4">
+                <Link href="/projects" passHref>
+                  <Button variant="outline" size="sm" className="w-full">
+                    Ver todos los proyectos
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Sprints activos */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium flex items-center">
+                <Calendar className="h-5 w-5 mr-2 text-green-500" />
+                Sprints activos
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoading.sprints ? (
+                <div className="h-24 flex justify-center items-center">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500"></div>
+                </div>
+              ) : activeSprints.length > 0 ? (
+                <div className="space-y-3">
+                  {activeSprints.slice(0, 3).map(sprint => (
+                    <div key={sprint.id} className="flex justify-between items-center border-b pb-2 last:border-0">
+                      <div>
+                        <p className="font-medium">{sprint.name}</p>
+                        <p className="text-sm text-gray-500">
+                          Termina: {new Date(sprint.end_date).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <Link href={`/sprints/${sprint.id}`} passHref>
+                        <Button variant="ghost" size="sm">
+                          <ArrowRight className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="h-24 flex justify-center items-center text-gray-500">
+                  No hay sprints activos
+                </div>
+              )}
+              <div className="mt-4">
+                <Link href="/sprints" passHref>
+                  <Button variant="outline" size="sm" className="w-full">
+                    Ver todos los sprints
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Tareas pendientes */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium flex items-center">
+                <CheckSquare className="h-5 w-5 mr-2 text-amber-500" />
+                Mis tareas recientes
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoading.tasks ? (
+                <div className="h-24 flex justify-center items-center">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-500"></div>
+                </div>
+              ) : recentTasks.length > 0 ? (
+                <div className="space-y-3">
+                  {recentTasks.map(task => (
+                    <div key={task.id} className="flex justify-between items-center border-b pb-2 last:border-0">
+                      <div>
+                        <p className="font-medium">{task.title}</p>
+                        <p className="text-sm text-gray-500">
+                          Vence: {new Date(task.due_date).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <Link href={`/tasks/${task.id}`} passHref>
+                        <Button variant="ghost" size="sm">
+                          <ArrowRight className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="h-24 flex justify-center items-center text-gray-500">
+                  No hay tareas recientes
+                </div>
+              )}
+              <div className="mt-4">
+                <Link href="/tasks" passHref>
+                  <Button variant="outline" size="sm" className="w-full">
+                    Ver todas las tareas
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Tareas recientes */}
+        <div>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Tareas recientes</h2>
+            <Link href="/tasks" passHref>
+              <Button variant="outline" size="sm">
+                Ver todas
+              </Button>
+            </Link>
+          </div>
+          <TaskList 
+            tasks={recentTasks} 
+            onTaskClick={(id) => console.log(`Ver tarea ${id}`)}
+            onStatusChange={handleTaskStatusChange}
+            isLoading={isLoading.tasks}
+            emptyMessage="No hay tareas recientes para mostrar"
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        </div>
+      </div>
+    </MainLayout>
   );
-}
+};

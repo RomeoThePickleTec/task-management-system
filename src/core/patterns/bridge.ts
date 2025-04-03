@@ -1,43 +1,69 @@
 // src/core/patterns/bridge.ts
-// Bridge Pattern: Separator de tareas y métodos de notificación
+// Bridge Pattern: Separar la implementación de notificaciones de su uso
+
+// Abstracción para notificaciones
 export interface NotificationSender {
-    send(message: string, recipient: string): void;
+  send(message: string, recipient: string): Promise<boolean>;
+}
+
+// Implementaciones concretas
+export class EmailNotification implements NotificationSender {
+  async send(message: string, recipient: string): Promise<boolean> {
+    console.log(`Sending email to ${recipient}: ${message}`);
+    // Simular envío exitoso
+    return true;
   }
-  
-  export class EmailNotification implements NotificationSender {
-    send(message: string, recipient: string): void {
-      console.log(`Sending email to ${recipient}: ${message}`);
-      // Aquí iría la lógica real de envío de correos
-    }
+}
+
+export class SlackNotification implements NotificationSender {
+  async send(message: string, recipient: string): Promise<boolean> {
+    console.log(`Sending Slack message to ${recipient}: ${message}`);
+    // Simular envío exitoso
+    return true;
   }
-  
-  export class SlackNotification implements NotificationSender {
-    send(message: string, recipient: string): void {
-      console.log(`Sending Slack message to ${recipient}: ${message}`);
-      // Aquí iría la lógica real de envío de mensajes a Slack
-    }
+}
+
+export class PushNotification implements NotificationSender {
+  async send(message: string, recipient: string): Promise<boolean> {
+    console.log(`Sending push notification to ${recipient}: ${message}`);
+    // Simular envío exitoso
+    return true;
   }
-  
-  export class TaskNotifier {
-    private sender: NotificationSender;
-  
-    constructor(sender: NotificationSender) {
-      this.sender = sender;
-    }
-  
-    notifyTaskCreated(task: ITask, user: IUser): void {
-      const message = `New task created: ${task.title}`;
-      this.sender.send(message, user.email);
-    }
-  
-    notifyTaskUpdated(task: ITask, user: IUser): void {
-      const message = `Task updated: ${task.title}`;
-      this.sender.send(message, user.email);
-    }
-  
-    notifyTaskCompleted(task: ITask, user: IUser): void {
-      const message = `Task completed: ${task.title}`;
-      this.sender.send(message, user.email);
-    }
+}
+
+// Abstracción refinada
+export class NotificationManager {
+  private sender: NotificationSender;
+
+  constructor(sender: NotificationSender) {
+    this.sender = sender;
   }
-  
+
+  changeSender(sender: NotificationSender): void {
+    this.sender = sender;
+  }
+
+  async notifyTaskCreated(task: { title: string }, recipient: string): Promise<boolean> {
+    return await this.sender.send(`New task created: ${task.title}`, recipient);
+  }
+
+  async notifyTaskUpdated(task: { title: string }, recipient: string): Promise<boolean> {
+    return await this.sender.send(`Task updated: ${task.title}`, recipient);
+  }
+
+  async notifyTaskCompleted(task: { title: string }, recipient: string): Promise<boolean> {
+    return await this.sender.send(`Task completed: ${task.title}`, recipient);
+  }
+
+  async notifySprintStarted(sprint: { name: string }, recipient: string): Promise<boolean> {
+    return await this.sender.send(`Sprint started: ${sprint.name}`, recipient);
+  }
+
+  async notifySprintEnded(sprint: { name: string }, recipient: string): Promise<boolean> {
+    return await this.sender.send(`Sprint ended: ${sprint.name}`, recipient);
+  }
+
+  async notifyCommentAdded(task: { title: string }, recipient: string): Promise<boolean> {
+    return await this.sender.send(`New comment on task: ${task.title}`, recipient);
+  }
+}
