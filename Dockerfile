@@ -9,7 +9,7 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 
 # Install dependencies with verbose output for debugging
-RUN npm install --verbose
+RUN npm install --legacy-peer-deps
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -18,7 +18,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Install dependencies again with verbose output
-RUN npm install --verbose
+RUN npm install --legacy-peer-deps
 
 # Build the application
 RUN npm run build
