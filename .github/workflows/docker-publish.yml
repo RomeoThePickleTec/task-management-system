@@ -29,6 +29,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
+      # Debug secrets
+      - name: Debug Secrets
+        run: |
+          echo "Checking secrets..."
+          echo "DOCKERHUB_USERNAME is set: ${{ secrets.DOCKERHUB_USERNAME != '' }}"
+          echo "DOCKERHUB_TOKEN is set: ${{ secrets.DOCKERHUB_TOKEN != '' }}"
+
       # Login to Docker Hub
       - name: Log into registry ${{ env.REGISTRY }}
         uses: docker/login-action@v2
@@ -36,6 +43,13 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Debug Docker login
+      - name: Verify Docker login
+        run: |
+          echo "Checking Docker login status..."
+          docker info
+          docker login --help
 
       # Extract metadata (tags, labels) for Docker
       - name: Extract Docker metadata
@@ -62,3 +76,15 @@ jobs:
             PORT=3000
             HOSTNAME=0.0.0.0
           extra-args: --push
+          # Add buildkit debug
+          buildkit: true
+
+      # Debug Docker push
+      - name: Debug Docker push
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
+          echo "Debugging Docker push..."
+          echo "Image name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
+          echo "Tags: ${{ steps.meta.outputs.tags }}"
+          docker images
+          docker inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}

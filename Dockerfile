@@ -8,8 +8,10 @@ WORKDIR /app
 # Copy package files
 COPY package.json package-lock.json* ./
 
-# Install dependencies with verbose output for debugging
-RUN npm install --legacy-peer-deps
+# Install dependencies with legacy peer deps
+RUN echo "Installing dependencies..." && \
+    npm install --legacy-peer-deps && \
+    echo "Dependencies installed successfully"
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -17,11 +19,15 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Install dependencies again with verbose output
-RUN npm install --legacy-peer-deps
+# Install dependencies again with legacy peer deps
+RUN echo "Installing dependencies in builder stage..." && \
+    npm install --legacy-peer-deps && \
+    echo "Builder dependencies installed successfully"
 
 # Build the application
-RUN npm run build
+RUN echo "Building application..." && \
+    npm run build && \
+    echo "Build completed successfully"
 
 # Production image, copy all the files and run next
 FROM base AS runner
@@ -30,8 +36,10 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # Create a non-root user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN echo "Creating non-root user..." && \
+    addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs && \
+    echo "Non-root user created successfully"
 
 # Copy necessary files
 COPY --from=builder /app/public ./public
@@ -39,7 +47,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # Set the correct permission for prerender cache
-RUN mkdir -p .next/cache && chown -R nextjs:nodejs .next
+RUN echo "Setting permissions..." && \
+    mkdir -p .next/cache && \
+    chown -R nextjs:nodejs .next && \
+    echo "Permissions set successfully"
 
 # Switch to non-root user
 USER nextjs
@@ -52,4 +63,4 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 # Start the application
-CMD ["node", "server.js"]
+CMD ["echo", "Starting application...", "&&", "node", "server.js"]
