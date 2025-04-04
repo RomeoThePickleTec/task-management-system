@@ -3,7 +3,7 @@
 
 // const API_BASE_URL = 'http://backend-service:8081';
 // const API_BASE_URL = 'http://localhost:8081';
-const API_BASE_URL = 'http://backend-service';
+const API_BASE_URL = 'http://backend:8081';
 
 
 // Opciones por defecto para fetch
