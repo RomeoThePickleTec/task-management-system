@@ -6,12 +6,13 @@ on:
   pull_request:
     branches: [ "master", "main" ]
   workflow_dispatch:
-    
 
 env:
   # Use docker.io for Docker Hub
   REGISTRY: docker.io
-  # Use just the repository name
+  # Your Docker Hub username
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  # Repository name
   IMAGE_NAME: task-management-system
 
 jobs:
@@ -51,40 +52,40 @@ jobs:
           docker info
           docker login --help
 
-      # Extract metadata (tags, labels) for Docker
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: ${{ env.REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'master') || github.ref == format('refs/heads/{0}', 'main') }}
-            type=sha,format=short
+      # Build and tag the Docker image
+      - name: Build Docker image
+        run: |
+          echo "Building Docker image..."
+          docker build \
+            --build-arg NODE_ENV=production \
+            --build-arg PORT=3000 \
+            --build-arg HOSTNAME=0.0.0.0 \
+            -t ${{ env.REGISTRY }}/${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest \
+            -t ${{ env.REGISTRY }}/${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            .
 
-      # Build and push Docker image
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: |
-            NODE_ENV=production
-            PORT=3000
-            HOSTNAME=0.0.0.0
-          extra-args: --push
-          # Add buildkit debug
-          buildkit: true
+      # List built images
+      - name: List Docker images
+        run: |
+          echo "Listing Docker images..."
+          docker images
+
+      # Push Docker image
+      - name: Push Docker image
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
+          echo "Pushing Docker image..."
+          docker push ${{ env.REGISTRY }}/${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+          docker push ${{ env.REGISTRY }}/${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
       # Debug Docker push
       - name: Debug Docker push
         if: ${{ github.event_name != 'pull_request' }}
         run: |
           echo "Debugging Docker push..."
-          echo "Image name: ${{ env.REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}"
-          echo "Tags: ${{ steps.meta.outputs.tags }}"
+          echo "Image name: ${{ env.REGISTRY }}/${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}"
+          echo "Tags:"
+          echo "- latest"
+          echo "- ${{ github.sha }}"
           docker images
-          docker inspect ${{ env.REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
+          docker inspect ${{ env.REGISTRY }}/${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
