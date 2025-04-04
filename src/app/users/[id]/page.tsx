@@ -18,7 +18,8 @@ import {
   Calendar, 
   Edit, 
   Trash,
-  CheckCircle2
+  CheckCircle2,
+  PlusCircle 
 } from "lucide-react";
 
 // Importamos los servicios reales de API

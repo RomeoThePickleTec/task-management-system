@@ -185,7 +185,7 @@ export default function HomePage() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-lg font-medium flex items-center">
-                <Layers className="h-5 w-5 mr-2 text-blue-500" />
+                <Layers className="h-5 w-5 mr-2 text-red-500" />
                 Proyectos activos
               </CardTitle>
             </CardHeader>
