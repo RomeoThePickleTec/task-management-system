@@ -1,6 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   reactStrictMode: true,
+  swcMinify: true,
+  experimental: {
+    // Enable server components
+    serverComponents: true,
+  },
   // Deshabilitar ESLint durante la compilación
   eslint: {
     ignoreDuringBuilds: true,
