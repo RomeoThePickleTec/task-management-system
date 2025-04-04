@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ITask, TaskStatus } from '@/core/interfaces/models';
 import { CalendarIcon, Clock, CheckCircle2, AlertCircle, BarChart2 } from "lucide-react";
+import { useRouter } from 'next/navigation';
 
 interface TaskCardProps {
   task: ITask;
@@ -13,6 +14,8 @@ interface TaskCardProps {
 }
 
 const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, onStatusChange }) => {
+  const router = useRouter();
+
   // Helper para obtener badge según el estado
   const getStatusBadge = (status: TaskStatus) => {
     switch (status) {
@@ -44,13 +47,16 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, onStatusChange }) =>
   };
 
   // Formatear fecha
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'Sin fecha';
     const date = new Date(dateString);
     return date.toLocaleDateString();
   };
 
   // Calcular si la fecha de vencimiento está próxima o ya pasó
   const getDueDateClass = () => {
+    if (!task.due_date) return "text-gray-600";
+    
     const dueDate = new Date(task.due_date);
     const today = new Date();
     const threeDaysLater = new Date();
@@ -62,6 +68,25 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, onStatusChange }) =>
       return "text-amber-600";
     }
     return "text-gray-600";
+  };
+
+  // Manejar click en completar tarea
+  const handleCompleteTask = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Evitar que el click se propague a la tarjeta
+    if (onStatusChange) {
+      onStatusChange(task.id, TaskStatus.COMPLETED);
+    }
+  };
+
+  // Manejar click en ver detalles
+  const handleViewDetails = () => {
+    // Si hay un manejador onClick personalizado, usarlo
+    if (onClick) {
+      onClick();
+    } else {
+      // De lo contrario, navegar a la página de detalles de la tarea
+      router.push(`/tasks/${task.id}`);
+    }
   };
 
   return (
@@ -98,10 +123,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, onStatusChange }) =>
             <Button 
               variant="outline" 
               size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onStatusChange && onStatusChange(task.id, TaskStatus.COMPLETED);
-              }}
+              onClick={handleCompleteTask}
             >
               <CheckCircle2 className="h-4 w-4 mr-1" /> Completar
             </Button>
@@ -109,7 +131,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, onStatusChange }) =>
           <Button 
             variant="default" 
             size="sm"
-            onClick={onClick}
+            onClick={handleViewDetails}
           >
             Ver detalles
           </Button>

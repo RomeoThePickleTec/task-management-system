@@ -2,6 +2,7 @@
 import React from 'react';
 import { ITask, TaskStatus } from '@/core/interfaces/models';
 import TaskCard from './TaskCard';
+import { useRouter } from 'next/navigation';
 
 interface TaskListProps {
   tasks: ITask[];
@@ -18,6 +19,19 @@ const TaskList: React.FC<TaskListProps> = ({
   isLoading = false,
   emptyMessage = 'No hay tareas disponibles',
 }) => {
+  const router = useRouter();
+
+  const handleTaskClick = (taskId: number | undefined) => {
+    if (onTaskClick) {
+      onTaskClick(taskId);
+    } else {
+      // Si no se proporciona una función de click personalizada, navegar a la página de detalles
+      if (taskId) {
+        router.push(`/tasks/${taskId}`);
+      }
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-40">
@@ -43,7 +57,7 @@ const TaskList: React.FC<TaskListProps> = ({
         <TaskCard
           key={task.id}
           task={task}
-          onClick={() => onTaskClick && onTaskClick(task.id)}
+          onClick={() => handleTaskClick(task.id)}
           onStatusChange={onStatusChange}
         />
       ))}

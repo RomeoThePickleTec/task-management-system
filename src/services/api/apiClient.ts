@@ -44,18 +44,36 @@ export class ApiClient {
   }
 
   // Método POST
-  async post<T>(path: string, data: any): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      ...defaultOptions,
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-    
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status} ${response.statusText}`);
+  async post<T>(path: string, data: any): Promise<T | null> {
+    try {
+      const response = await fetch(`${this.baseUrl}${path}`, {
+        ...defaultOptions,
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status} ${response.statusText}`);
+      }
+      
+      // Verificar si hay contenido en la respuesta
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        try {
+          return await response.json();
+        } catch (e) {
+          console.warn("Empty JSON response body", e);
+          return null;
+        }
+      }
+      
+      // Para respuestas vacías o non-JSON, simplemente devolver null
+      console.log("No JSON content in response or empty response");
+      return null;
+    } catch (error) {
+      console.error(`Error in POST request to ${path}:`, error);
+      throw error;
     }
-    
-    return await response.json();
   }
 
   // Método PUT

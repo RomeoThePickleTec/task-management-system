@@ -5,16 +5,19 @@ import React, { useEffect, useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ITask, IProject, ISprint, TaskStatus, ProjectStatus, UserRole } from '@/core/interfaces/models';
-import TaskList from '@/components/tasks/TaskList';
-import Link from 'next/link';
+import { Badge } from "@/components/ui/badge";
 import { 
   Layers, 
   CheckSquare, 
-  Calendar, 
   PlusCircle,
-  ArrowRight
+  ArrowRight,
+  CalendarIcon,
+  CheckCircle2,
+  Calendar
 } from "lucide-react";
+import { ITask, IProject, ISprint, TaskStatus, ProjectStatus, UserRole } from '@/core/interfaces/models';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 // Importamos los servicios reales de API
 import { 
@@ -35,6 +38,9 @@ export default function HomePage() {
     sprints: true,
     user: true
   });
+  const [loadingTaskId, setLoadingTaskId] = useState<number | null>(null);
+
+  const router = useRouter();
 
   useEffect(() => {
     // Cargar tareas recientes
@@ -109,21 +115,48 @@ export default function HomePage() {
     if (!taskId) return;
     
     try {
-      await TaskService.updateTask(taskId, { status });
+      setLoadingTaskId(taskId);
       
-      // Actualizar la lista de tareas recientes
-      const tasks = await TaskService.getTasks();
-      const sortedTasks = tasks
-        .filter(task => task.created_at)
-        .sort((a, b) => {
-          const dateA = new Date(a.created_at || '').getTime();
-          const dateB = new Date(b.created_at || '').getTime();
-          return dateB - dateA;
-        })
-        .slice(0, 3);
-      setRecentTasks(sortedTasks);
+      const currentTask = await TaskService.getTaskById(taskId);
+      
+      if (!currentTask) {
+        console.error(`Task with ID ${taskId} not found`);
+        return;
+      }
+      
+      const updatedTaskData = {
+        title: currentTask.title,
+        description: currentTask.description,
+        created_at: currentTask.created_at,
+        updated_at: new Date().toISOString(),
+        due_date: currentTask.due_date,
+        priority: currentTask.priority,
+        status: status,
+        estimated_hours: currentTask.estimated_hours
+      };
+      
+      const updatedTask = await TaskService.updateTask(taskId, updatedTaskData);
+      
+      if (updatedTask) {
+        // Actualizar la lista de tareas
+        const allTasks = await TaskService.getTasks();
+        const sortedTasks = allTasks
+          .filter(task => task.created_at)
+          .sort((a, b) => {
+            const dateA = new Date(a.created_at || '').getTime();
+            const dateB = new Date(b.created_at || '').getTime();
+            return dateB - dateA;
+          });
+        
+        // Actualizar las tareas recientes
+        setRecentTasks(sortedTasks.slice(0, 3));
+        
+        console.log(`Tarea ${taskId} actualizada a estado ${status}`);
+      }
     } catch (error) {
       console.error(`Error updating task ${taskId}:`, error);
+    } finally {
+      setLoadingTaskId(null);
     }
   };
 
@@ -205,7 +238,7 @@ export default function HomePage() {
             <CardContent>
               {isLoading.sprints ? (
                 <div className="h-24 flex justify-center items-center">
-<div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500"></div>
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500"></div>
                 </div>
               ) : activeSprints.length > 0 ? (
                 <div className="space-y-3">
@@ -297,13 +330,68 @@ export default function HomePage() {
               </Button>
             </Link>
           </div>
-          <TaskList 
-            tasks={recentTasks} 
-            onTaskClick={(id) => console.log(`Ver tarea ${id}`)}
-            onStatusChange={handleTaskStatusChange}
-            isLoading={isLoading.tasks}
-            emptyMessage="No hay tareas recientes para mostrar"
-          />
+          <Card className="w-full">
+            <CardContent className="pt-6">
+              {isLoading.tasks ? (
+                <div className="flex justify-center items-center h-40">
+                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
+                </div>
+              ) : recentTasks.length > 0 ? (
+                <div className="space-y-4">
+                  {recentTasks.map(task => (
+                    <Card 
+                      key={task.id} 
+                      className="cursor-pointer hover:shadow-md transition-shadow"
+                      onClick={() => router.push(`/tasks/${task.id}`)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-medium">{task.title}</h3>
+                            <p className="text-sm text-gray-500 line-clamp-1 mt-1">{task.description}</p>
+                          </div>
+                          <div>
+                            {task.status === TaskStatus.TODO && (
+                              <Badge variant="outline" className="bg-gray-100">Por hacer</Badge>
+                            )}
+                            {task.status === TaskStatus.IN_PROGRESS && (
+                              <Badge variant="default" className="bg-blue-500">En progreso</Badge>
+                            )}
+                            {task.status === TaskStatus.COMPLETED && (
+                              <Badge variant="default" className="bg-green-500">Completado</Badge>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-center mt-3 text-xs text-gray-500">
+                          <div className="flex items-center">
+                            <CalendarIcon className="h-3 w-3 mr-1" />
+                            {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'Sin fecha'}
+                          </div>
+                          {task.status !== TaskStatus.COMPLETED && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-7 text-xs"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleTaskStatusChange(task.id, TaskStatus.COMPLETED);
+                              }}
+                            >
+                              <CheckCircle2 className="h-3 w-3 mr-1" /> Completar
+                            </Button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex justify-center items-center h-40 border border-dashed border-gray-300 rounded-lg">
+                  <p className="text-gray-500">No hay tareas recientes para mostrar</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </MainLayout>

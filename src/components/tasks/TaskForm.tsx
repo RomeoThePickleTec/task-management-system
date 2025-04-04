@@ -64,7 +64,21 @@ const TaskForm: React.FC<TaskFormProps> = ({
 
   // Manejador para selects
   const handleSelectChange = (name: string, value: string) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
+    if (name === 'project_id' || name === 'sprint_id') {
+      // Convertir a número si no está vacío
+      const numValue = value ? parseInt(value, 10) : undefined;
+      setFormData(prev => ({ ...prev, [name]: numValue }));
+      
+      // Si cambiamos el proyecto, resetear el sprint_id
+      if (name === 'project_id') {
+        setFormData(prev => ({ ...prev, sprint_id: undefined }));
+      }
+    } else if (name === 'status' || name === 'priority') {
+      // Convertir a número para los enums
+      setFormData(prev => ({ ...prev, [name]: parseInt(value, 10) }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   // Manejador para fecha
@@ -87,6 +101,19 @@ const TaskForm: React.FC<TaskFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validaciones antes de enviar
+    if (!formData.title.trim()) {
+      alert('El título es obligatorio');
+      return;
+    }
+    
+    if (!formData.description.trim()) {
+      alert('La descripción es obligatoria');
+      return;
+    }
+
+    console.log('Enviando datos de formulario:', formData);
     onSubmit(formData);
   };
 
