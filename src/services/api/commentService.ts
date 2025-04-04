@@ -2,7 +2,9 @@
 // Cliente API para realizar solicitudes a la API real
 
 //const API_BASE_URL = 'http://backend-service:8081';
- const API_BASE_URL = 'http://localhost:8081';
+ //const API_BASE_URL = 'http://localhost:8081';
+ const API_BASE_URL = 'http://10.96.146.38:8081';
+
 
 // Opciones por defecto para fetch
 const defaultOptions: RequestInit = {
