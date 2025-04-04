@@ -11,8 +11,8 @@ on:
 env:
   # Use docker.io for Docker Hub
   REGISTRY: docker.io
-  # github.repository as <account>/<repo>
-  IMAGE_NAME: ${{ github.repository }}
+  # Use just the repository name
+  IMAGE_NAME: task-management-system
 
 jobs:
   build:
@@ -56,7 +56,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'master') || github.ref == format('refs/heads/{0}', 'main') }}
             type=sha,format=short
@@ -84,7 +84,7 @@ jobs:
         if: ${{ github.event_name != 'pull_request' }}
         run: |
           echo "Debugging Docker push..."
-          echo "Image name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
+          echo "Image name: ${{ env.REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}"
           echo "Tags: ${{ steps.meta.outputs.tags }}"
           docker images
-          docker inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          docker inspect ${{ env.REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
