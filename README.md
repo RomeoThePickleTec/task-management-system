@@ -4,6 +4,29 @@ Un sistema completo de gestión de tareas inspirado en Jira, desarrollado con Ne
 
 ![Estado del Proyecto: En Desarrollo](https://img.shields.io/badge/Estado-En%20Desarrollo-yellow)
 
+## Vista Previa
+
+### Página de Inicio
+![JAI-VIER Página de Inicio](./JaivierInicio.png)
+
+### Gestión de Proyectos
+![JAI-VIER Proyectos](./JavierProyects.png)
+
+### Gestión de Sprints
+![JAI-VIER Sprints](./JaivierSprints.png)
+
+### Gestión de Tareas
+![JAI-VIER Tareas](./JaivierTareas.png)
+
+### Detalles de Tareas
+![JAI-VIER Detalles de Tareas](./JaivierTareasDetail.png)
+
+### Informes y Análisis
+![JAI-VIER Informes](./InformesJaivier.png)
+
+### Nuestro Equipo
+![Equipo JAI-VIER](./EquipoJaivier.png)
+
 ## Características
 
 - **Gestión de Proyectos**: Crear, editar y monitorear proyectos
