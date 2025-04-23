@@ -1,19 +1,28 @@
-# .github/workflows/ansible-lint.yml
 name: ansible-lint
+
 on:
   pull_request:
-    branches: ["main", "master"]
+    branches: ["main", "stable", "release/v*"]
+
 jobs:
-  build:
-    name: Ansible Lint # Naming the build is important to use it as a status check
+  lint:
+    name: Ansible Lint
     runs-on: ubuntu-24.04
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Run ansible-lint
-        uses: ansible/ansible-lint@main
-        # optional (see below):
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          args: ""
-          setup_python: "true"
-          working_directory: ""
-          requirements_file: ""
+          python-version: "3.x"
+
+      - name: Install Ansible and ansible-lint
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible ansible-lint
+
+      - name: Run Ansible Lint
+        run: |
+          ansible-lint
