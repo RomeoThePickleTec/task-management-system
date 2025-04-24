@@ -9,9 +9,10 @@ import React, {
 } from 'react';
 import { User } from 'firebase/auth';
 import FirebaseAuthService from '@/services/auth/firebaseAuth';
-import UserSyncService from '@/services/auth/userSyncService';
 import { apiClient } from '@/services/api/apiClient';
 import { UserRole, IUser } from '@/core/interfaces/models';
+import { toast } from '@/components/ui/use-toast';
+import { UserService } from '@/services/api/userService';
 
 interface AuthContextType {
   currentUser: User | null;
@@ -19,10 +20,12 @@ interface AuthContextType {
   backendUser: IUser | null;
   loading: boolean;
   error: string | null;
+  isBackendAvailable: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, fullName: string) => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (data: { fullName?: string, workMode?: string, role?: UserRole }) => Promise<boolean>;
+  retryBackendConnection: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -45,14 +48,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [userRole, setUserRole] = useState<UserRole>(UserRole.DEVELOPER); // Default role
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isBackendAvailable, setIsBackendAvailable] = useState<boolean>(true);
 
   // Update API client headers with auth token
   const updateApiAuthToken = async (user: User | null) => {
     if (user) {
-      const token = await FirebaseAuthService.getAuthToken();
-      // Update default headers for API requests
-      if (token) {
-        apiClient.setAuthToken(token);
+      try {
+        const token = await FirebaseAuthService.getAuthToken();
+        // Update default headers for API requests
+        if (token) {
+          apiClient.setAuthToken(token);
+        }
+      } catch (error) {
+        console.error("Failed to get auth token:", error);
       }
     } else {
       // Clear auth token when user is signed out
@@ -60,20 +68,124 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // Sync user with backend and fetch user details
-  const syncUserWithBackend = async (user: User) => {
+  // Check if backend is available
+  const checkBackendConnection = async (): Promise<boolean> => {
     try {
-      // Sync user with backend and get the backend user
-      const syncedUser = await UserSyncService.syncUserWithBackend(user);
+      // Try to make a simple request to the backend
+      // If this succeeds, we know the backend is available
+      const isAvailable = await apiClient.healthCheck();
+      setIsBackendAvailable(isAvailable);
+      return isAvailable;
+    } catch (error) {
+      console.error("Backend connection failed:", error);
+      setIsBackendAvailable(false);
+      return false;
+    }
+  };
+
+  // Retry backend connection
+  const retryBackendConnection = async (): Promise<boolean> => {
+    setLoading(true);
+    const isAvailable = await checkBackendConnection();
+    
+    if (isAvailable && currentUser) {
+      // If backend is available and user is logged in, try to sync
+      await syncUserWithBackend(currentUser);
+    }
+    
+    setLoading(false);
+    return isAvailable;
+  };
+
+// Sync user with backend and fetch user details
+const syncUserWithBackend = async (user: User) => {
+    try {
+      // First check if the user exists in the backend
+      let backendUser = null;
+      if (user.email) {
+        try {
+          backendUser = await UserService.getUserByEmail(user.email);
+        } catch (error) {
+          console.error(`Error finding user by email ${user.email}:`, error);
+          // Continue to create a new user
+        }
+      }
       
-      if (syncedUser) {
-        setBackendUser(syncedUser);
-        setUserRole(syncedUser.role as UserRole || UserRole.DEVELOPER);
+      // If user exists in Firebase but not in backend, create it in backend
+      if (!backendUser && user.email) {
+        // Create a new user in the backend based on Firebase data
+        const newUser = {
+          username: user.email.split('@')[0] || user.uid.substring(0, 8),
+          email: user.email,
+          full_name: user.displayName || user.email.split('@')[0],
+          role: UserRole.DEVELOPER, // Default role
+          work_mode: 'REMOTE', // Default work mode
+          active: true,
+          last_login: new Date().toISOString()
+        };
+        
+        try {
+          backendUser = await UserService.createUser(newUser);
+          console.log('Created user in backend from Firebase auth:', backendUser);
+          
+          // Show success toast
+          toast({
+            title: "Usuario sincronizado",
+            description: "Se ha creado tu perfil en el sistema. ¡Bienvenido!",
+            variant: "default",
+          });
+        } catch (error) {
+          console.error("Failed to create user in backend:", error);
+          // Continue with fallback user
+        }
+      }
+      
+      // If we found or created a backend user, use it
+      if (backendUser) {
+        setBackendUser(backendUser);
+        setUserRole(backendUser.role as UserRole || UserRole.DEVELOPER);
+        setIsBackendAvailable(true);
+      } else {
+        // Use fallback data from Firebase
+        const fallbackUser = {
+          id: null,
+          username: user.email?.split('@')[0] || '',
+          email: user.email || '',
+          full_name: user.displayName || '',
+          role: UserRole.DEVELOPER,
+          work_mode: 'REMOTE',
+          active: true
+        };
+        
+        setBackendUser(fallbackUser);
+        setUserRole(UserRole.DEVELOPER);
       }
     } catch (error) {
       console.error("Failed to sync user with backend:", error);
-      // Default to DEVELOPER role if we can't determine the actual role
+      // If we get here, there was an error communicating with the backend
+      setIsBackendAvailable(false);
+      
+      // Use fallback data from Firebase
+      const fallbackUser = {
+        id: null,
+        username: user.email?.split('@')[0] || '',
+        email: user.email || '',
+        full_name: user.displayName || '',
+        role: UserRole.DEVELOPER,
+        work_mode: 'REMOTE',
+        active: true
+      };
+      
+      setBackendUser(fallbackUser);
       setUserRole(UserRole.DEVELOPER);
+      
+      // Show warning toast
+      toast({
+        title: "Error de conexión",
+        description: "No se pudo conectar con el servidor. Algunas funciones pueden no estar disponibles.",
+        variant: "destructive",
+        duration: 5000,
+      });
     }
   };
 
@@ -84,7 +196,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       if (user) {
         await updateApiAuthToken(user);
-        await syncUserWithBackend(user);
+        
+        // Check backend connection before attempting to sync
+        const isConnected = await checkBackendConnection();
+        
+        if (isConnected) {
+          await syncUserWithBackend(user);
+        } else {
+          // Use fallback data from Firebase if backend is unavailable
+          const fallbackUser = {
+            id: null,
+            username: user.email?.split('@')[0] || '',
+            email: user.email || '',
+            full_name: user.displayName || '',
+            role: UserRole.DEVELOPER,
+            work_mode: 'REMOTE',
+            active: true
+          };
+          
+          setBackendUser(fallbackUser);
+          setUserRole(UserRole.DEVELOPER);
+          
+          // Show warning toast
+          toast({
+            title: "Error de conexión",
+            description: "No se pudo conectar con el servidor. Algunas funciones pueden no estar disponibles.",
+            variant: "destructive",
+            duration: 5000,
+          });
+        }
       } else {
         setBackendUser(null);
         setUserRole(UserRole.DEVELOPER);
@@ -102,11 +242,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setError(null);
       setLoading(true);
       await FirebaseAuthService.login(email, password);
+      
+      // Auth state change will handle the rest
     } catch (err: any) {
       setError(err.message || "Failed to log in");
-      throw err;
-    } finally {
       setLoading(false);
+      throw err;
     }
   };
 
@@ -127,13 +268,42 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Force refresh the user to get the updated profile
         setCurrentUser({ ...userCredential.user });
         
-        // User will be synced with backend via the authStateChanged handler
+        // Check if backend is available before attempting to sync
+        const isConnected = await checkBackendConnection();
+        
+        if (isConnected) {
+          // Try to create user in backend
+          await syncUserWithBackend(userCredential.user);
+        } else {
+          // Use fallback data
+          const fallbackUser = {
+            id: null,
+            username: email.split('@')[0] || '',
+            email: email,
+            full_name: fullName,
+            role: UserRole.DEVELOPER,
+            work_mode: 'REMOTE',
+            active: true
+          };
+          
+          setBackendUser(fallbackUser);
+          setUserRole(UserRole.DEVELOPER);
+          
+          // Show warning toast
+          toast({
+            title: "Error de conexión",
+            description: "No se pudo conectar con el servidor. Algunas funciones pueden no estar disponibles.",
+            variant: "destructive",
+            duration: 5000,
+          });
+        }
       }
+      
+      setLoading(false);
     } catch (err: any) {
       setError(err.message || "Failed to register");
-      throw err;
-    } finally {
       setLoading(false);
+      throw err;
     }
   };
 
@@ -141,27 +311,128 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setError(null);
       
-      if (!currentUser || !backendUser || !backendUser.id) {
-        throw new Error("User not authenticated or backend user not found");
+      if (!currentUser) {
+        throw new Error("User not authenticated");
       }
       
-      const updatedUser = await UserSyncService.updateUserProfile(
-        backendUser.id, 
-        currentUser,
-        data
-      );
-      
-      if (updatedUser) {
-        setBackendUser(updatedUser);
-        if (data.role) {
-          setUserRole(data.role);
+      // Update Firebase profile if fullName is provided
+      if (data.fullName) {
+        try {
+          await currentUser.updateProfile({
+            displayName: data.fullName
+          });
+        } catch (firebaseError) {
+          console.error("Failed to update Firebase profile:", firebaseError);
+          // Continue with backend update even if Firebase update fails
+          toast({
+            title: "Advertencia",
+            description: "No se pudo actualizar el perfil en Firebase, pero se intentará actualizar en el backend.",
+            variant: "default",
+          });
         }
-        return true;
       }
       
-      return false;
+      // Update backend user if available
+      if (backendUser && isBackendAvailable) {
+        try {
+          const updatedData: Partial<IUser> = {
+            full_name: data.fullName || backendUser.full_name,
+            work_mode: data.workMode || backendUser.work_mode,
+            role: data.role || backendUser.role,
+            updated_at: new Date().toISOString()
+          };
+          
+          // If backendUser has an ID, update the existing user
+          if (backendUser.id) {
+            const updatedUser = await UserService.updateUser(backendUser.id, updatedData);
+            
+            if (updatedUser) {
+              setBackendUser(updatedUser);
+              if (data.role) {
+                setUserRole(data.role);
+              }
+            }
+          } else {
+            // If no ID, this is probably a local/offline user
+            // Create a new user in the backend
+            const newUserData = {
+              username: backendUser.username || currentUser.email?.split('@')[0] || '',
+              email: currentUser.email || '',
+              full_name: data.fullName || backendUser.full_name,
+              work_mode: data.workMode || backendUser.work_mode,
+              role: data.role || backendUser.role,
+              active: true
+            };
+            
+            const newUser = await UserService.createUser(newUserData);
+            if (newUser) {
+              setBackendUser(newUser);
+              if (data.role) {
+                setUserRole(data.role);
+              }
+              
+              toast({
+                title: "Usuario creado",
+                description: "Se ha creado tu perfil en el backend con la información actualizada.",
+                variant: "default",
+              });
+            }
+          }
+        } catch (error) {
+          console.error("Failed to update backend user:", error);
+          
+          // Update local state even if backend update fails
+          if (backendUser) {
+            const updatedUser = {
+              ...backendUser,
+              full_name: data.fullName || backendUser.full_name,
+              work_mode: data.workMode || backendUser.work_mode,
+              role: data.role || backendUser.role
+            };
+            
+            setBackendUser(updatedUser);
+            if (data.role) {
+              setUserRole(data.role);
+            }
+            
+            toast({
+              title: "Actualización parcial",
+              description: "Se actualizó tu perfil localmente, pero hubo un problema al sincronizar con el servidor.",
+              variant: "destructive",
+            });
+          }
+        }
+      } else {
+        // Backend not available, just update local state
+        if (backendUser) {
+          const updatedUser = {
+            ...backendUser,
+            full_name: data.fullName || backendUser.full_name,
+            work_mode: data.workMode || backendUser.work_mode,
+            role: data.role || backendUser.role
+          };
+          
+          setBackendUser(updatedUser);
+          if (data.role) {
+            setUserRole(data.role);
+          }
+          
+          toast({
+            title: "Actualización local",
+            description: "Se actualizó tu perfil localmente. Los cambios se sincronizarán cuando el servidor esté disponible.",
+            variant: "default",
+          });
+        }
+      }
+      
+      return true;
     } catch (err: any) {
       setError(err.message || "Failed to update profile");
+      toast({
+        title: "Error",
+        description: err.message || "No se pudo actualizar el perfil.",
+        variant: "destructive",
+      });
       return false;
     }
   };
@@ -183,10 +454,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     userRole,
     loading,
     error,
+    isBackendAvailable,
     login,
     register,
     logout,
-    updateProfile
+    updateProfile,
+    retryBackendConnection
   };
 
   return (

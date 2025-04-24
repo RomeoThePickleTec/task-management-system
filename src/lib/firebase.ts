@@ -2,6 +2,7 @@
 import { initializeApp, getApps } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getAnalytics, isSupported } from 'firebase/analytics';
+import { setupFirebaseAuthMiddleware } from '@/middleware/firebaseAuth';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -29,6 +30,9 @@ if (!getApps().length) {
         analytics = getAnalytics(firebaseApp);
       }
     });
+    
+    // Setup auth middleware for API requests
+    setupFirebaseAuthMiddleware();
   }
 } else {
   firebaseApp = getApps()[0];

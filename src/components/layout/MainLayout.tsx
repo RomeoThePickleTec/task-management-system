@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import Sidebar from './Sidebar';
 import AppHeader from './AppHeader';
+import { BackendStatus } from '@/components/ui/BackendStatus';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -12,10 +13,10 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { currentUser, userRole, logout } = useAuth();
+  const { currentUser, userRole, backendUser, logout } = useAuth();
   
-  // Derive username from user email
-  const username = currentUser?.email?.split('@')[0] || 'User';
+  // Derive username from user data
+  const username = backendUser?.username || currentUser?.email?.split('@')[0] || 'User';
 
   const handleLogout = async () => {
     try {
@@ -60,6 +61,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
           </main>
         </div>
       </div>
+      
+      {/* Backend status notification */}
+      <BackendStatus />
     </div>
   );
 }

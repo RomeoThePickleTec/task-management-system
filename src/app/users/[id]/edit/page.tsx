@@ -21,8 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getAuth, getUser, updateProfile } from 'firebase/auth';
-import UserSyncService from '@/services/auth/userSyncService';
+import { toast } from '@/components/ui/use-toast';
 
 export default function UserEditPage() {
   return (
@@ -45,19 +44,25 @@ function UserEditContent() {
   const [username, setUsername] = useState('');
   const [role, setRole] = useState<UserRole>(UserRole.DEVELOPER);
   const [workMode, setWorkMode] = useState<WorkMode>(WorkMode.REMOTE);
+  const [active, setActive] = useState(true);
   
   // UI state
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
   
   // Load user data
   useEffect(() => {
     const fetchUserData = async () => {
       setIsLoading(true);
+      setIsCreating(false);
+      setError(null);
+      
       try {
         const user = await UserService.getUserById(userId);
+        
         if (user) {
           setUserData(user);
           setFullName(user.full_name || '');
@@ -65,13 +70,24 @@ function UserEditContent() {
           setUsername(user.username || '');
           setRole(user.role as UserRole || UserRole.DEVELOPER);
           setWorkMode(user.work_mode as WorkMode || WorkMode.REMOTE);
+          setActive(user.active !== false); // Default to true if not specified
         } else {
-          setError('Usuario no encontrado');
-          router.push('/users');
+          // User not found, but we'll prepare for create mode
+          setIsCreating(true);
+          setError('Usuario no encontrado. Puedes crear uno nuevo.');
+          
+          // Default values for new user
+          setFullName('');
+          setEmail('');
+          setUsername(`user_${userId}`);
+          setRole(UserRole.DEVELOPER);
+          setWorkMode(WorkMode.REMOTE);
+          setActive(true);
         }
       } catch (error) {
         console.error('Error fetching user:', error);
-        setError('Error al cargar los datos del usuario');
+        setError('Error al cargar los datos del usuario. Puedes intentar crear uno nuevo.');
+        setIsCreating(true);
       } finally {
         setIsLoading(false);
       }
@@ -90,45 +106,60 @@ function UserEditContent() {
     setSuccess(null);
     
     try {
-      if (!userData || !userData.id) {
-        throw new Error('No se encontró el usuario para actualizar');
-      }
-      
-      // Update user in backend
-      const updatedUser = await UserService.updateUser(userData.id, {
+      const userData: Partial<IUser> = {
         full_name: fullName,
         email,
         username,
         role,
         work_mode: workMode,
+        active,
         updated_at: new Date().toISOString()
-      });
+      };
       
-      if (updatedUser) {
-        // Try to find and update Firebase user
-        try {
-          const auth = getAuth();
-          const users = await auth.fetchSignInMethodsForEmail(email);
-          
-          // If the user exists in Firebase
-          if (users && users.length > 0) {
-            // We can't directly update other users from the client side in Firebase
-            // This would typically be handled by a Firebase Admin SDK in a backend function
-            console.log('User exists in Firebase - would update via server-side function');
-          }
-        } catch (firebaseError) {
-          console.error('Firebase operation failed:', firebaseError);
-          // Continue anyway as we've updated the backend
-        }
+      let result: IUser | null;
+      
+      if (isCreating) {
+        // Create new user
+        result = await UserService.createUser(userData as Omit<IUser, 'id' | 'created_at' | 'updated_at'>);
         
-        setSuccess('Usuario actualizado correctamente');
-        setTimeout(() => {
-          router.push(`/users/${userData.id}`);
-        }, 1500);
+        if (result) {
+          toast({
+            title: "Usuario creado",
+            description: "El usuario ha sido creado correctamente.",
+            variant: "default",
+          });
+          
+          setSuccess('Usuario creado correctamente');
+          setTimeout(() => {
+            router.push(`/users/${result?.id || ''}`);
+          }, 1500);
+        }
+      } else {
+        // Update existing user
+        result = await UserService.updateUser(userId, userData);
+        
+        if (result) {
+          toast({
+            title: "Usuario actualizado",
+            description: "El usuario ha sido actualizado correctamente.",
+            variant: "default",
+          });
+          
+          setSuccess('Usuario actualizado correctamente');
+          setTimeout(() => {
+            router.push(`/users/${userId}`);
+          }, 1500);
+        }
       }
     } catch (error) {
-      console.error('Error updating user:', error);
-      setError('Error al actualizar el usuario');
+      console.error('Error saving user:', error);
+      setError('Error al guardar los datos del usuario');
+      
+      toast({
+        title: "Error",
+        description: "Ocurrió un error al guardar los datos del usuario.",
+        variant: "destructive",
+      });
     } finally {
       setIsSaving(false);
     }
@@ -148,17 +179,25 @@ function UserEditContent() {
     <MainLayout>
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center mb-6">
-          <Link href={`/users/${userId}`} passHref>
+          <Link href={isCreating ? "/users" : `/users/${userId}`} passHref>
             <Button variant="outline" size="sm" className="mr-4">
               <ChevronLeft className="h-4 w-4 mr-1" /> Volver
             </Button>
           </Link>
-          <h1 className="text-2xl font-bold">Editar Usuario</h1>
+          <h1 className="text-2xl font-bold">{isCreating ? 'Crear Usuario' : 'Editar Usuario'}</h1>
         </div>
         
         <Card>
           <CardHeader>
-            <CardTitle>Información del usuario</CardTitle>
+            <CardTitle>{isCreating ? 'Información del nuevo usuario' : 'Información del usuario'}</CardTitle>
+            {isCreating && (
+              <Alert variant="warning" className="mt-2 bg-amber-50 border-amber-200">
+                <AlertCircle className="h-4 w-4 text-amber-500" />
+                <AlertDescription className="text-amber-800">
+                  Se está creando un nuevo usuario porque el solicitado no existe.
+                </AlertDescription>
+              </Alert>
+            )}
           </CardHeader>
           <CardContent>
             {error && (
@@ -219,6 +258,7 @@ function UserEditContent() {
                       <SelectItem value={UserRole.ADMIN}>Administrador</SelectItem>
                       <SelectItem value={UserRole.MANAGER}>Manager</SelectItem>
                       <SelectItem value={UserRole.DEVELOPER}>Desarrollador</SelectItem>
+                      <SelectItem value={UserRole.TESTER}>Tester</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -238,11 +278,24 @@ function UserEditContent() {
                 </Select>
               </div>
               
+              <div className="flex items-center space-x-2 pt-2">
+                <input
+                  type="checkbox"
+                  id="active"
+                  checked={active}
+                  onChange={(e) => setActive(e.target.checked)}
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <Label htmlFor="active" className="text-sm font-medium text-gray-700">
+                  Usuario activo
+                </Label>
+              </div>
+              
               <div className="flex justify-end space-x-2 pt-4">
                 <Button 
                   type="button" 
                   variant="outline" 
-                  onClick={() => router.push(`/users/${userId}`)}
+                  onClick={() => router.push(isCreating ? "/users" : `/users/${userId}`)}
                 >
                   Cancelar
                 </Button>
@@ -250,10 +303,10 @@ function UserEditContent() {
                   {isSaving ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Guardando...
+                      {isCreating ? 'Creando...' : 'Guardando...'}
                     </>
                   ) : (
-                    'Guardar cambios'
+                    isCreating ? 'Crear usuario' : 'Guardar cambios'
                   )}
                 </Button>
               </div>

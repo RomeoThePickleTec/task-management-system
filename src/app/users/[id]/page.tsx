@@ -195,7 +195,7 @@ export default function UserDetailPage() {
             </Link>
             <h1 className="text-2xl font-bold">Perfil de {user.full_name}</h1>
           </div>
-          {(currentUser.userRole === UserRole.ADMIN || currentUser.userRole === UserRole.MANAGER) && (
+          {(currentUser.userRole === UserRole.ADMIN || currentUser.userRole === UserRole.MANAGER || currentUser.userRole === UserRole.DEVELOPER || currentUser.userRole === UserRole.TESTER) && (
             <div className="flex items-center space-x-2">
               <Link href={`/users/${user.id}/edit`} passHref>
                 <Button variant="outline" size="sm">
@@ -291,7 +291,7 @@ export default function UserDetailPage() {
             <div>
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold">Proyectos</h2>
-                {(currentUser.userRole === UserRole.ADMIN || currentUser.userRole === UserRole.MANAGER) && (
+                {(currentUser.userRole === UserRole.ADMIN || currentUser.userRole === UserRole.MANAGER || currentUser.userRole === UserRole.DEVELOPER || currentUser.userRole === UserRole.TESTER) && (
                   <Button variant="outline" size="sm">
                     <PlusCircle className="h-4 w-4 mr-1" /> Asignar a proyecto
                   </Button>

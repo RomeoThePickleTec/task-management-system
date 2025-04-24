@@ -5,7 +5,10 @@ import {
   signOut,
   onAuthStateChanged,
   UserCredential,
-  User
+  User,
+  sendPasswordResetEmail,
+  confirmPasswordReset,
+  verifyPasswordResetCode
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
@@ -37,10 +40,25 @@ export const FirebaseAuthService = {
   },
 
   // Get auth token for API requests
-  getAuthToken: async (): Promise<string | null> => {
+  getAuthToken: async (forceRefresh: boolean = false): Promise<string | null> => {
     const user = auth.currentUser;
     if (!user) return null;
-    return await user.getIdToken();
+    return await user.getIdToken(forceRefresh);
+  },
+
+  // Send password reset email
+  sendPasswordResetEmail: async (email: string): Promise<void> => {
+    return await sendPasswordResetEmail(auth, email);
+  },
+
+  // Confirm password reset with code and new password
+  confirmPasswordReset: async (code: string, newPassword: string): Promise<void> => {
+    return await confirmPasswordReset(auth, code, newPassword);
+  },
+
+  // Verify password reset code
+  verifyPasswordResetCode: async (code: string): Promise<string> => {
+    return await verifyPasswordResetCode(auth, code);
   }
 };
 
