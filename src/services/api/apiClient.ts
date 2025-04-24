@@ -5,20 +5,30 @@
 // const API_BASE_URL = 'http://localhost:8081';
 const API_BASE_URL = 'http://220.158.78.114:8081';
 
-
-// Opciones por defecto para fetch
-const defaultOptions: RequestInit = {
-  headers: {
-    'Content-Type': 'application/json',
-  },
-};
-
 // Cliente API genérico
 export class ApiClient {
   private baseUrl: string;
+  private headers: HeadersInit;
 
   constructor(baseUrl: string = API_BASE_URL) {
     this.baseUrl = baseUrl;
+    this.headers = {
+      'Content-Type': 'application/json',
+    };
+  }
+
+  // Set auth token for authenticated requests
+  setAuthToken(token: string): void {
+    this.headers = {
+      ...this.headers,
+      'Authorization': `Bearer ${token}`
+    };
+  }
+
+  // Clear auth token
+  clearAuthToken(): void {
+    const { Authorization, ...rest } = this.headers as Record<string, string>;
+    this.headers = rest;
   }
 
   // Método GET
@@ -35,8 +45,8 @@ export class ApiClient {
     }
     
     const response = await fetch(url, {
-      ...defaultOptions,
       method: 'GET',
+      headers: this.headers,
     });
     
     if (!response.ok) {
@@ -50,8 +60,8 @@ export class ApiClient {
   async post<T>(path: string, data: any): Promise<T | null> {
     try {
       const response = await fetch(`${this.baseUrl}${path}`, {
-        ...defaultOptions,
         method: 'POST',
+        headers: this.headers,
         body: JSON.stringify(data),
       });
       
@@ -82,8 +92,8 @@ export class ApiClient {
   // Método PUT
   async put<T>(path: string, data: any): Promise<T> {
     const response = await fetch(`${this.baseUrl}${path}`, {
-      ...defaultOptions,
       method: 'PUT',
+      headers: this.headers,
       body: JSON.stringify(data),
     });
     
@@ -97,8 +107,8 @@ export class ApiClient {
   // Método DELETE
   async delete<T>(path: string): Promise<T> {
     const response = await fetch(`${this.baseUrl}${path}`, {
-      ...defaultOptions,
       method: 'DELETE',
+      headers: this.headers,
     });
     
     if (!response.ok) {

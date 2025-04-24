@@ -1,17 +1,10 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+"use client";
+
 import './globals.css';
-import Head from 'next/head';
+import { Inter } from 'next/font/google';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 const inter = Inter({ subsets: ['latin'] });
-
-export const metadata: Metadata = {
-  title: 'JAI-VIER',
-  description: 'Sistema de gestión de tareas estilo Jira con patrones de diseño en TypeScript',
-  icons: {
-    icon: '/favicon.png',
-  }
-};
 
 export default function RootLayout({
   children,
@@ -22,8 +15,14 @@ export default function RootLayout({
     <html lang="es">
       <head>
         <link rel="icon" href="/favicon.png" />
+        <title>JAI-VIER</title>
+        <meta name="description" content="Sistema de gestión de tareas estilo Jira con patrones de diseño en TypeScript" />
       </head>
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   );
 }

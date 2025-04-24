@@ -1,7 +1,9 @@
-// src/app/page.tsx
 "use client";
 
 import React, { useEffect, useState } from 'react';
+import { redirect } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,7 +21,7 @@ import { ITask, IProject, ISprint, TaskStatus, ProjectStatus, UserRole } from '@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-// Importamos los servicios reales de API
+// Import API services
 import { 
   TaskService, 
   ProjectService,
@@ -28,28 +30,61 @@ import {
 } from '@/services/api';
 
 export default function HomePage() {
+  const { currentUser, loading } = useAuth();
+  const router = useRouter();
+
+  // If no user and not loading, redirect to login
+  useEffect(() => {
+    if (!loading && !currentUser) {
+      router.push('/auth/login');
+    }
+  }, [loading, currentUser, router]);
+
+  // If still loading, show loading spinner
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  // If not authenticated, don't render the page content
+  if (!currentUser) {
+    return null;
+  }
+
+  // Render the dashboard with authentication protection
+  return (
+    <ProtectedRoute>
+      <DashboardContent />
+    </ProtectedRoute>
+  );
+}
+
+// Separate component for the dashboard content
+function DashboardContent() {
   const [recentTasks, setRecentTasks] = useState<ITask[]>([]);
   const [activeProjects, setActiveProjects] = useState<IProject[]>([]);
   const [activeSprints, setActiveSprints] = useState<ISprint[]>([]);
-  const [currentUser, setCurrentUser] = useState<UserRole>(UserRole.DEVELOPER);
   const [isLoading, setIsLoading] = useState({
     tasks: true,
     projects: true,
     sprints: true,
-    user: true
   });
   const [loadingTaskId, setLoadingTaskId] = useState<number | null>(null);
 
   const router = useRouter();
+  const { userRole } = useAuth();
 
   useEffect(() => {
-    // Cargar tareas recientes
+    // Load recent tasks
     const fetchTasks = async () => {
       try {
         const tasks = await TaskService.getTasks();
-        // Ordenar por fecha de creación (más recientes primero) y tomar las 6 primeras
+        // Sort by creation date (most recent first) and take the first 3
         const sortedTasks = tasks
-          .filter(task => task.created_at) // Asegurémonos de que tienen fecha de creación
+          .filter(task => task.created_at)
           .sort((a, b) => {
             const dateA = new Date(a.created_at || '').getTime();
             const dateB = new Date(b.created_at || '').getTime();
@@ -64,11 +99,11 @@ export default function HomePage() {
       }
     };
 
-    // Cargar proyectos activos
+    // Load active projects
     const fetchProjects = async () => {
       try {
         const projects = await ProjectService.getProjects({ status: ProjectStatus.ACTIVE });
-        setActiveProjects(projects.slice(0, 3)); // Mostrar solo los primeros 3
+        setActiveProjects(projects.slice(0, 3)); // Show only first 3
       } catch (error) {
         console.error("Error fetching projects:", error);
       } finally {
@@ -76,12 +111,12 @@ export default function HomePage() {
       }
     };
 
-    // Cargar sprints activos
+    // Load active sprints
     const fetchSprints = async () => {
       try {
-        // Obtener sprints con estado ACTIVE (1)
+        // Get sprints with status ACTIVE (1)
         const sprints = await SprintService.getSprints({ status: 1 });
-        setActiveSprints(sprints.slice(0, 3)); // Mostrar solo los primeros 3
+        setActiveSprints(sprints.slice(0, 3)); // Show only first 3
       } catch (error) {
         console.error("Error fetching sprints:", error);
       } finally {
@@ -89,28 +124,12 @@ export default function HomePage() {
       }
     };
 
-    // Intentar cargar un usuario (para demo, usar el primero que encontremos)
-    const fetchUser = async () => {
-      try {
-        const users = await UserService.getUsers();
-        if (users.length > 0) {
-          // Asumimos que el primer usuario es el actual para esta demo
-          setCurrentUser(UserRole.MANAGER); // Por defecto lo ponemos como MANAGER
-        }
-      } catch (error) {
-        console.error("Error fetching user:", error);
-      } finally {
-        setIsLoading(prev => ({ ...prev, user: false }));
-      }
-    };
-
     fetchTasks();
     fetchProjects();
     fetchSprints();
-    fetchUser();
   }, []);
 
-  // Cambiar el estado de una tarea
+  // Change task status
   const handleTaskStatusChange = async (taskId: number | undefined, status: TaskStatus) => {
     if (!taskId) return;
     
@@ -138,7 +157,7 @@ export default function HomePage() {
       const updatedTask = await TaskService.updateTask(taskId, updatedTaskData);
       
       if (updatedTask) {
-        // Actualizar la lista de tareas
+        // Refresh task list
         const allTasks = await TaskService.getTasks();
         const sortedTasks = allTasks
           .filter(task => task.created_at)
@@ -148,10 +167,8 @@ export default function HomePage() {
             return dateB - dateA;
           });
         
-        // Actualizar las tareas recientes
+        // Update recent tasks
         setRecentTasks(sortedTasks.slice(0, 3));
-        
-        console.log(`Tarea ${taskId} actualizada a estado ${status}`);
       }
     } catch (error) {
       console.error(`Error updating task ${taskId}:`, error);
@@ -160,14 +177,8 @@ export default function HomePage() {
     }
   };
 
-  // El usuario por defecto para esta demo
-  const demoUser = {
-    username: 'djeison',
-    userRole: currentUser
-  };
-
   return (
-    <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
+    <MainLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Panel de Control</h1>
@@ -181,7 +192,7 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Proyectos activos */}
+          {/* Active Projects */}
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-lg font-medium flex items-center">
@@ -227,7 +238,7 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          {/* Sprints activos */}
+          {/* Active Sprints */}
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-lg font-medium flex items-center">
@@ -273,7 +284,7 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          {/* Tareas pendientes */}
+          {/* Recent Tasks */}
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-lg font-medium flex items-center">
@@ -320,7 +331,7 @@ export default function HomePage() {
           </Card>
         </div>
 
-        {/* Tareas recientes */}
+        {/* Recent Tasks Section */}
         <div>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Tareas recientes</h2>
@@ -376,8 +387,14 @@ export default function HomePage() {
                                 e.stopPropagation();
                                 handleTaskStatusChange(task.id, TaskStatus.COMPLETED);
                               }}
+                              disabled={loadingTaskId === task.id}
                             >
-                              <CheckCircle2 className="h-3 w-3 mr-1" /> Completar
+                              {loadingTaskId === task.id ? (
+                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500 mr-1"></div>
+                              ) : (
+                                <CheckCircle2 className="h-3 w-3 mr-1" />
+                              )}
+                              Completar
                             </Button>
                           )}
                         </div>
