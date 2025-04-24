@@ -21,6 +21,7 @@ import {
 
 // Importamos los servicios reales de API
 import { UserService, ProjectService, ProjectMemberService } from '@/services/api';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 // Tipo extendido para usuarios con metadatos
 type UserWithMetadata = IUser & {
@@ -189,6 +190,7 @@ export default function TeamPage() {
   };
 
   return (
+    <ProtectedRoute requiredRoles={[UserRole.DEVELOPER, UserRole.MANAGER, UserRole.TESTER, UserRole.ADMIN]}>
     <MainLayout username={currentUser.username} userRole={currentUser.userRole}>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
@@ -307,5 +309,6 @@ export default function TeamPage() {
         )}
       </div>
     </MainLayout>
+    </ProtectedRoute>
   );
 }

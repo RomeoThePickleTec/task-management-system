@@ -39,7 +39,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
             <Menu className="h-5 w-5" />
           </Button>
           <div className="flex items-center">
-            <Layers className="h-6 w-6 text-red-600 mr-2" />
+            <Layers className="h-6 w-6 text-red-600 color-red-600 mr-2" />
             <h1 className="text-xl font-bold text-gray-900">
               JAI-VIER TASK MANAGEMENT SYSTEM
             </h1>

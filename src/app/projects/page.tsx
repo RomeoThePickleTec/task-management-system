@@ -16,6 +16,7 @@ import ProjectList from '@/components/projects/ProjectList';
 import Link from 'next/link';
 import { PlusCircle, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 // Importamos los servicios reales de API
 import { 
@@ -128,11 +129,12 @@ export default function ProjectsPage() {
   };
 
   return (
-    <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Proyectos</h1>
-          <div className="flex space-x-2">
+    <ProtectedRoute requiredRoles={[UserRole.DEVELOPER, UserRole.MANAGER]}>
+      <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl font-bold">Proyectos</h1>
+            <div className="flex space-x-2">
             <Link href="/projects/new" passHref>
               <Button>
                 <PlusCircle className="h-4 w-4 mr-2" /> Nuevo proyecto
@@ -179,5 +181,6 @@ export default function ProjectsPage() {
         />
       </div>
     </MainLayout>
+    </ProtectedRoute>
   );
 }

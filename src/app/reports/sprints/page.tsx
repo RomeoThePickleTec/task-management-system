@@ -43,6 +43,7 @@ import {
   ProjectService,
   TaskService
 } from '@/services/api';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 // Tipo extendido para los sprints con metadatos
 type SprintWithMetadata = ISprint & {
@@ -332,6 +333,7 @@ export default function SprintReportsPage() {
   };
 
   return (
+    <ProtectedRoute requiredRoles={[UserRole.DEVELOPER, UserRole.MANAGER, UserRole.TESTER, UserRole.ADMIN]}>
     <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -589,5 +591,6 @@ export default function SprintReportsPage() {
         )}
       </div>
     </MainLayout>
+    </ProtectedRoute>
   );
 }

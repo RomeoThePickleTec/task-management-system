@@ -60,19 +60,19 @@ const Sidebar: React.FC<SidebarProps> = ({
       title: 'Equipo',
       icon: <Users className="h-5 w-5" />,
       href: '/users',
-      roles: [UserRole.ADMIN, UserRole.MANAGER],
+      roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.DEVELOPER, UserRole.TESTER],
     },
     {
       title: 'Informes',
       icon: <BarChart2 className="h-5 w-5" />,
       href: '/reports',
-      roles: [UserRole.ADMIN, UserRole.MANAGER],
+      roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.DEVELOPER, UserRole.TESTER],
     },
     {
       title: 'Configuración',
       icon: <Settings className="h-5 w-5" />,
       href: '/settings',
-      roles: [UserRole.ADMIN],
+      roles: [UserRole.ADMIN, UserRole.DEVELOPER, UserRole.TESTER, UserRole.MANAGER],
     },
   ];
 

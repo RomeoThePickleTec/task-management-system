@@ -42,6 +42,7 @@ import {
   SprintService, 
   UserService 
 } from '@/services/api';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 export default function ReportsPage() {
   const router = useRouter();
@@ -218,6 +219,7 @@ export default function ReportsPage() {
   }, [selectedProject]);
 
   return (
+    <ProtectedRoute requiredRoles={[UserRole.DEVELOPER, UserRole.MANAGER]}>
     <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
@@ -486,5 +488,6 @@ export default function ReportsPage() {
         )}
       </div>
     </MainLayout>
+    </ProtectedRoute>
   );
 }
