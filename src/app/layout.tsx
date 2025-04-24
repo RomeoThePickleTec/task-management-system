@@ -24,7 +24,8 @@ export default function RootLayout({
         <AuthProvider>
           {children}
           <Toaster />
-          <ServerHealthCheck />
+          {/* <ServerHealthCheck /> */}
+
         </AuthProvider>
       </body>
     </html>
