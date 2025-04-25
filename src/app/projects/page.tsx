@@ -129,7 +129,7 @@ export default function ProjectsPage() {
   };
 
   return (
-    <ProtectedRoute requiredRoles={[UserRole.DEVELOPER, UserRole.MANAGER]}>
+    <ProtectedRoute requiredRoles={[UserRole.DEVELOPER, UserRole.MANAGER, UserRole.DEVELOPER, UserRole.TESTER ]}>
       <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
         <div className="space-y-6">
           <div className="flex justify-between items-center">

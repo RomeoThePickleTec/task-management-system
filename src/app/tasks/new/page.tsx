@@ -12,6 +12,7 @@ import { ChevronLeft } from "lucide-react";
 
 // Importamos los servicios reales de API
 import { ProjectService, SprintService, TaskService } from '@/services/api';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 export default function NewTaskPage() {
   const router = useRouter();
@@ -104,6 +105,7 @@ export default function NewTaskPage() {
   };
 
   return (
+    <ProtectedRoute requiredRoles={[UserRole.DEVELOPER, UserRole.MANAGER, UserRole.DEVELOPER, UserRole.TESTER ]}>
     <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
       <div className="space-y-6">
         <div className="flex items-center space-x-4">
@@ -142,5 +144,6 @@ export default function NewTaskPage() {
         )}
       </div>
     </MainLayout>
+    </ProtectedRoute>
   );
 }

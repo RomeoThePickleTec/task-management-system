@@ -258,6 +258,7 @@ function UserSyncContent() {
   };
 
   return (
+    <ProtectedRoute>
     <MainLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
@@ -486,5 +487,6 @@ function UserSyncContent() {
         </Card>
       </div>
     </MainLayout>
+    </ProtectedRoute>
   );
 }

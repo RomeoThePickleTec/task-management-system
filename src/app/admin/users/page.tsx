@@ -270,6 +270,7 @@ function UserManagementContent() {
   };
 
   return (
+    <ProtectedRoute>
     <MainLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
@@ -525,5 +526,6 @@ function UserManagementContent() {
         )}
       </div>
     </MainLayout>
+    </ProtectedRoute>
   );
 }
