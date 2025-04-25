@@ -229,11 +229,7 @@ export default function TaskDetailPage() {
           </div>
         </div>
       </div>
-    </MainLayout>
-    </ProtectedRoute>
-  );
-}
-    <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
+    
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
