@@ -20,6 +20,7 @@ import { useRouter } from 'next/navigation';
 
 // Importamos los servicios reales de API
 import { TaskService } from '@/services/api';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState<ITask[]>([]);
@@ -173,6 +174,7 @@ export default function TasksPage() {
   };
 
   return (
+    <ProtectedRoute>
     <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
       <div className="container mx-auto py-8">
         <div className="flex justify-between items-center mb-6">
@@ -235,5 +237,6 @@ export default function TasksPage() {
         />
       </div>
     </MainLayout>
+    </ProtectedRoute>
   );
 }

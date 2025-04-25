@@ -25,6 +25,7 @@ import {
 
 // Importamos los servicios reales de API
 import { TaskService, SubtaskService, CommentService } from '@/services/api';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 export default function TaskDetailPage() {
   const params = useParams();
@@ -174,16 +175,19 @@ export default function TaskDetailPage() {
 
   if (isLoading) {
     return (
+      <ProtectedRoute requiredRoles={[UserRole.DEVELOPER, UserRole.MANAGER, UserRole.DEVELOPER, UserRole.TESTER ]}>
       <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         </div>
       </MainLayout>
+      </ProtectedRoute>
     );
   }
 
   if (!task) {
     return (
+      <ProtectedRoute requiredRoles={[UserRole.DEVELOPER, UserRole.MANAGER, UserRole.DEVELOPER, UserRole.TESTER ]}>
       <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
         <div className="text-center p-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Tarea no encontrada</h2>
@@ -196,10 +200,39 @@ export default function TaskDetailPage() {
           </Link>
         </div>
       </MainLayout>
+      </ProtectedRoute>
     );
   }
 
   return (
+    <ProtectedRoute requiredRoles={[UserRole.DEVELOPER, UserRole.MANAGER, UserRole.DEVELOPER, UserRole.TESTER ]}>
+    <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Link href="/tasks" passHref>
+              <Button variant="outline" size="sm">
+                <ChevronLeft className="h-4 w-4 mr-1" /> Volver
+              </Button>
+            </Link>
+            <h1 className="text-2xl font-bold">{task.title}</h1>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Link href={`/tasks/${task.id}/edit`} passHref>
+              <Button variant="outline" size="sm">
+                <Edit className="h-4 w-4 mr-1" /> Editar
+              </Button>
+            </Link>
+            <Button variant="destructive" size="sm">
+              <Trash className="h-4 w-4 mr-1" /> Eliminar
+            </Button>
+          </div>
+        </div>
+      </div>
+    </MainLayout>
+    </ProtectedRoute>
+  );
+}
     <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -477,5 +510,7 @@ export default function TaskDetailPage() {
         </div>
       </div>
     </MainLayout>
+    </ProtectedRoute>
   );
 }
+

@@ -38,6 +38,7 @@ import {
   TaskService, 
   ProjectService 
 } from '@/services/api';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 // Tipo extendido para las tareas con metadatos
 type TaskWithMetadata = ITask & {
@@ -281,6 +282,7 @@ setStatistics(stats);
 }, [tasks, selectedProject, statusFilter, searchQuery, sortBy]);
 
 return (
+  <ProtectedRoute requiredRoles={[UserRole.DEVELOPER, UserRole.MANAGER, UserRole.DEVELOPER, UserRole.TESTER ]}>
 <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
 <div className="space-y-6">
   <div className="flex items-center justify-between">
@@ -474,5 +476,6 @@ return (
   )}
 </div>
 </MainLayout>
+</ProtectedRoute>
 );
 }

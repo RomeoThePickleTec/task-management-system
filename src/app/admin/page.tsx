@@ -74,6 +74,7 @@ function AdminDashboardContent() {
   ];
 
   return (
+    <ProtectedRoute >
     <MainLayout>
       <div className="space-y-6">
         <div>
@@ -112,5 +113,6 @@ function AdminDashboardContent() {
         </div>
       </div>
     </MainLayout>
+    </ProtectedRoute>
   );
 }

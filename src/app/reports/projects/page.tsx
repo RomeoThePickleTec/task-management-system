@@ -47,6 +47,7 @@ import {
   SprintService,
   ProjectMemberService
 } from '@/services/api';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 // Tipo extendido para los proyectos con metadatos
 type ProjectWithMetadata = IProject & {
@@ -401,6 +402,7 @@ const getDaysRemaining = (endDate: string) => {
   };
 
   return (
+    <ProtectedRoute requiredRoles={[UserRole.DEVELOPER, UserRole.MANAGER, UserRole.DEVELOPER, UserRole.TESTER ]}>
     <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -646,5 +648,6 @@ const getDaysRemaining = (endDate: string) => {
         )}
       </div>
     </MainLayout>
+    </ProtectedRoute>
   );
 }

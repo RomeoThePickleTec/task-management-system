@@ -23,6 +23,7 @@ import TaskList from '@/components/tasks/TaskList';
 
 // Importamos los servicios reales de API
 import { SprintService, TaskService, ProjectService } from '@/services/api';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 export default function SprintDetailPage() {
   const params = useParams();
@@ -198,6 +199,7 @@ export default function SprintDetailPage() {
 
   if (!sprint) {
     return (
+      <ProtectedRoute>
       <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
         <div className="text-center p-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Sprint no encontrado</h2>
@@ -210,10 +212,12 @@ export default function SprintDetailPage() {
           </Link>
         </div>
       </MainLayout>
+      </ProtectedRoute>
     );
   }
 
   return (
+    <ProtectedRoute>
     <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -413,5 +417,6 @@ export default function SprintDetailPage() {
         </div>
       </div>
     </MainLayout>
+    </ProtectedRoute>
   );
 }

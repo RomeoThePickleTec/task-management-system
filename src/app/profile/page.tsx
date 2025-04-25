@@ -71,6 +71,7 @@ function ProfileContent() {
   };
   
   return (
+    <ProtectedRoute>
     <MainLayout>
       <div className="max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold mb-6">Mi Perfil</h1>
@@ -147,5 +148,6 @@ function ProfileContent() {
         </Card>
       </div>
     </MainLayout>
+    </ProtectedRoute>
   );
 }

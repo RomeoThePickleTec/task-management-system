@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 
 // Importamos los servicios reales de API
 import { SprintService, ProjectService, TaskService } from '@/services/api';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 // Tipo extendido para los sprints con metadatos
 type SprintWithMetadata = ISprint & {
@@ -184,6 +185,7 @@ export default function SprintsPage() {
   };
 
   return (
+    <ProtectedRoute>
     <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
@@ -313,5 +315,6 @@ export default function SprintsPage() {
         )}
       </div>
     </MainLayout>
+    </ProtectedRoute>
   );
 }
