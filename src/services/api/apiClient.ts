@@ -50,7 +50,28 @@ export class ApiClient {
       
       // If the request was successful but server returned an error
       if (!response.ok) {
-        throw new Error(`API error: ${response.status} ${response.statusText}`);
+        // Handle specific error codes
+        if (response.status === 500) {
+          console.warn(`Server returned 500 Internal Server Error`);
+          
+          // Log additional information if available
+          try {
+            const errorText = await response.text();
+            console.warn(`Server error details: ${errorText}`);
+          } catch (e) {
+            // Ignore error reading response text
+          }
+          
+          // For 500 errors, we might not want to retry immediately as it's likely a server issue
+          if (retries <= 0) {
+            throw new Error(`API error: ${response.status} Internal Server Error`);
+          }
+          
+          // Wait longer for 500 errors before retrying
+          await this.delay(RETRY_DELAY * 2);
+        } else {
+          throw new Error(`API error: ${response.status} ${response.statusText}`);
+        }
       }
       
       return response;
@@ -95,10 +116,13 @@ export class ApiClient {
   // Método POST
   async post<T>(path: string, data: any): Promise<T | null> {
     try {
+      // Check if data has minimal required fields for common entities
+      const preparedData = this.prepareDataForPost(path, data);
+      
       const response = await this.fetchWithRetry(`${this.baseUrl}${path}`, {
         method: 'POST',
         headers: this.headers,
-        body: JSON.stringify(data),
+        body: JSON.stringify(preparedData),
       });
       
       // Verificar si hay contenido en la respuesta
@@ -117,8 +141,40 @@ export class ApiClient {
       return null;
     } catch (error) {
       console.error(`Error in POST request to ${path}:`, error);
+      
+      // Check if it's a 500 error
+      if (error instanceof Error && error.message.includes('500')) {
+        console.warn(`Server returned 500 for POST to ${path}. This might be due to validation issues.`);
+      }
+      
       throw error;
     }
+  }
+  
+  // Helper method to add common required fields based on entity type
+  private prepareDataForPost(path: string, data: any): any {
+    // Make a copy to avoid modifying the original
+    const preparedData = { ...data };
+    
+    // Add entity-specific default fields
+    if (path.includes('/userlist')) {
+      // Ensure user data has minimal required fields
+      if (!preparedData.username) preparedData.username = `user_${Date.now()}`;
+      if (!preparedData.email) preparedData.email = `${preparedData.username}@example.com`;
+      if (!preparedData.full_name) preparedData.full_name = preparedData.username;
+      if (preparedData.password_hash === undefined) preparedData.password_hash = 'defaultpassword';
+    }
+    
+    // Add timestamps if not present
+    if (!preparedData.created_at) {
+      preparedData.created_at = new Date().toISOString();
+    }
+    
+    if (!preparedData.updated_at) {
+      preparedData.updated_at = new Date().toISOString();
+    }
+    
+    return preparedData;
   }
 
   // Método PUT
@@ -143,45 +199,44 @@ export class ApiClient {
   }
 
   // Check if the API is available
-// Check if the API is available
-async healthCheck(): Promise<boolean> {
-  try {
-    // First try a health-check specific endpoint if available
+  async healthCheck(): Promise<boolean> {
     try {
-      const response = await fetch(`${this.baseUrl}/health-check`, {
-        method: 'GET',
-        headers: this.headers,
-        // Short timeout to avoid waiting too long
-        signal: AbortSignal.timeout(3000)
-      });
+      // First try a health-check specific endpoint if available
+      try {
+        const response = await fetch(`${this.baseUrl}/health-check`, {
+          method: 'GET',
+          headers: this.headers,
+          // Short timeout to avoid waiting too long
+          signal: AbortSignal.timeout(3000)
+        });
+        
+        if (response.ok) {
+          return true;
+        }
+      } catch (error) {
+        // Health-check endpoint might not exist, try something else
+        console.log("Health-check endpoint not available, trying alternatives");
+      }
       
-      if (response.ok) {
-        return true;
+      // If health-check endpoint is not available, try to get users
+      // or any other endpoint that should be accessible
+      try {
+        const response = await fetch(`${this.baseUrl}/userlist`, {
+          method: 'GET',
+          headers: this.headers,
+          signal: AbortSignal.timeout(3000)
+        });
+        
+        return response.ok;
+      } catch (error) {
+        console.error("Secondary health check failed:", error);
+        return false;
       }
     } catch (error) {
-      // Health-check endpoint might not exist, try something else
-      console.log("Health-check endpoint not available, trying alternatives");
-    }
-    
-    // If health-check endpoint is not available, try to get users
-    // or any other endpoint that should be accessible
-    try {
-      const response = await fetch(`${this.baseUrl}/userlist`, {
-        method: 'GET',
-        headers: this.headers,
-        signal: AbortSignal.timeout(3000)
-      });
-      
-      return response.ok;
-    } catch (error) {
-      console.error("Secondary health check failed:", error);
+      console.error('Health check failed:', error);
       return false;
     }
-  } catch (error) {
-    console.error('Health check failed:', error);
-    return false;
   }
-}
 }
 
 // Instancia del cliente API para usar en toda la aplicación

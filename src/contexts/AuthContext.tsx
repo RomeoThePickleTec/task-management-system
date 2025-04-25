@@ -98,73 +98,65 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
 // Sync user with backend and fetch user details
+// Sync user with backend and fetch user details
 const syncUserWithBackend = async (user: User) => {
-    try {
-      // First check if the user exists in the backend
-      let backendUser = null;
-      if (user.email) {
-        try {
-          backendUser = await UserService.getUserByEmail(user.email);
-        } catch (error) {
-          console.error(`Error finding user by email ${user.email}:`, error);
-          // Continue to create a new user
-        }
+  try {
+    // First check if the user exists in the backend
+    let backendUser = null;
+    if (user.email) {
+      try {
+        backendUser = await UserService.getUserByEmail(user.email);
+      } catch (error) {
+        console.error(`Error finding user by email ${user.email}:`, error);
+        // Continue to create a new user
       }
+    }
+    
+    // If user exists in Firebase but not in backend, create it in backend
+    if (!backendUser && user.email) {
+      // Create a new user in the backend based on Firebase data
+      const newUser = {
+        username: user.email.split('@')[0] || user.uid.substring(0, 8),
+        email: user.email,
+        full_name: user.displayName || user.email.split('@')[0],
+        role: UserRole.DEVELOPER, // Default role
+        work_mode: 'REMOTE', // Default work mode
+        active: true,
+        last_login: new Date().toISOString()
+      };
       
-      // If user exists in Firebase but not in backend, create it in backend
-      if (!backendUser && user.email) {
-        // Create a new user in the backend based on Firebase data
-        const newUser = {
-          username: user.email.split('@')[0] || user.uid.substring(0, 8),
-          email: user.email,
-          full_name: user.displayName || user.email.split('@')[0],
-          role: UserRole.DEVELOPER, // Default role
-          work_mode: 'REMOTE', // Default work mode
-          active: true,
-          last_login: new Date().toISOString()
-        };
+      try {
+        backendUser = await UserService.createUser(newUser);
+        console.log('Created user in backend from Firebase auth:', backendUser);
         
-        try {
-          backendUser = await UserService.createUser(newUser);
-          console.log('Created user in backend from Firebase auth:', backendUser);
-          
-          // Show success toast
+        // Show success toast only if we actually got a user back with an ID
+        if (backendUser && backendUser.id) {
           toast({
             title: "Usuario sincronizado",
             description: "Se ha creado tu perfil en el sistema. ¡Bienvenido!",
             variant: "default",
           });
-        } catch (error) {
-          console.error("Failed to create user in backend:", error);
-          // Continue with fallback user
+        }
+      } catch (error) {
+        console.error("Failed to create user in backend:", error);
+        
+        // Even if there was an error, we might have a local user from UserService
+        if (backendUser) {
+          toast({
+            title: "Sincronización parcial",
+            description: "Se ha creado tu perfil localmente pero ocurrió un error al sincronizar con el servidor.",
+            variant: "default",
+          });
         }
       }
-      
-      // If we found or created a backend user, use it
-      if (backendUser) {
-        setBackendUser(backendUser);
-        setUserRole(backendUser.role as UserRole || UserRole.DEVELOPER);
-        setIsBackendAvailable(true);
-      } else {
-        // Use fallback data from Firebase
-        const fallbackUser = {
-          id: null,
-          username: user.email?.split('@')[0] || '',
-          email: user.email || '',
-          full_name: user.displayName || '',
-          role: UserRole.DEVELOPER,
-          work_mode: 'REMOTE',
-          active: true
-        };
-        
-        setBackendUser(fallbackUser);
-        setUserRole(UserRole.DEVELOPER);
-      }
-    } catch (error) {
-      console.error("Failed to sync user with backend:", error);
-      // If we get here, there was an error communicating with the backend
-      setIsBackendAvailable(false);
-      
+    }
+    
+    // If we found or created a backend user, use it
+    if (backendUser) {
+      setBackendUser(backendUser);
+      setUserRole(backendUser.role as UserRole || UserRole.DEVELOPER);
+      setIsBackendAvailable(backendUser.id !== null); // If we have an ID, assume backend is available
+    } else {
       // Use fallback data from Firebase
       const fallbackUser = {
         id: null,
@@ -179,15 +171,40 @@ const syncUserWithBackend = async (user: User) => {
       setBackendUser(fallbackUser);
       setUserRole(UserRole.DEVELOPER);
       
-      // Show warning toast
       toast({
-        title: "Error de conexión",
-        description: "No se pudo conectar con el servidor. Algunas funciones pueden no estar disponibles.",
+        title: "Modo limitado",
+        description: "No se pudo crear tu perfil en el sistema. Algunas funciones estarán limitadas.",
         variant: "destructive",
-        duration: 5000,
       });
     }
-  };
+  } catch (error) {
+    console.error("Failed to sync user with backend:", error);
+    // If we get here, there was an error communicating with the backend
+    setIsBackendAvailable(false);
+    
+    // Use fallback data from Firebase
+    const fallbackUser = {
+      id: null,
+      username: user.email?.split('@')[0] || '',
+      email: user.email || '',
+      full_name: user.displayName || '',
+      role: UserRole.DEVELOPER,
+      work_mode: 'REMOTE',
+      active: true
+    };
+    
+    setBackendUser(fallbackUser);
+    setUserRole(UserRole.DEVELOPER);
+    
+    // Show warning toast
+    toast({
+      title: "Error de conexión",
+      description: "No se pudo conectar con el servidor. Algunas funciones pueden no estar disponibles.",
+      variant: "destructive",
+      duration: 5000,
+    });
+  }
+};
 
   useEffect(() => {
     // Subscribe to auth state changes
