@@ -12,6 +12,7 @@ import { ChevronLeft } from "lucide-react";
 
 // Importamos los servicios reales de API
 import { ProjectService, SprintService, TaskService } from '@/services/api';
+import SprintForm from '@/components/sprints/SprintForm';
 
 export default function NewTaskPage() {
   const router = useRouter();
@@ -37,10 +38,6 @@ export default function NewTaskPage() {
         console.log('Proyectos obtenidos:', projectsData);
         setProjects(projectsData);
         
-        // Obtener sprints
-        const sprintsData = await SprintService.getSprints();
-        console.log('Sprints obtenidos:', sprintsData);
-        setSprints(sprintsData);
       } catch (error) {
         console.error('Error fetching form data:', error);
         setMessage({ 
@@ -55,27 +52,29 @@ export default function NewTaskPage() {
     fetchData();
   }, []);
 
-  const handleSubmit = async (taskData: Omit<ITask, 'id' | 'created_at' | 'updated_at'>) => {
-    console.log('Submit task data:', taskData);
+  const handleSubmit = async (sprintData: Omit<ISprint, 'id' | 'created_at' | 'updated_at'>) => {
+    console.log('Submit task data:', sprintData);
     setIsSubmitting(true);
     setMessage(null);
     
     try {
       // Asegurarnos de que los datos tienen el formato correcto
-      const formattedTaskData = {
-        ...taskData,
-        priority: Number(taskData.priority),
-        status: Number(taskData.status),
-        estimated_hours: Number(taskData.estimated_hours),
-        sprint_id: taskData.sprint_id ? Number(taskData.sprint_id) : undefined,
-      };
+      const formattedSprintData = {
+        ...sprintData,
+        status: sprintData.status,
+        start_date: sprintData.start_date,
+        project_id: sprintData.project_id,
+        name: sprintData.name,
+        description: sprintData.description,
+        end_date: sprintData.end_date,
+        };
       
-      console.log('Formatted task data to send:', formattedTaskData);
+      console.log('Formatted task data to send:', formattedSprintData);
       
-      const createdTask = await TaskService.createTask(formattedTaskData);
-      console.log('Task created:', createdTask);
+      const createdSprint = await SprintService.createSprint(formattedSprintData);
+      console.log('Task created:', createdSprint);
       
-      // Consideramos la tarea creada incluso si la respuesta es null
+      // Consideramos el sprint creado incluso si la respuesta es null
       setMessage({ 
         type: 'success',
         text: '¡Tarea creada correctamente! Redirigiendo...'
@@ -83,19 +82,19 @@ export default function NewTaskPage() {
       
       // Esperar un momento para que el usuario vea el mensaje de éxito
       setTimeout(() => {
-        // Redirigir a la lista de tareas ya que no tenemos el ID
-        router.push('/tasks');
+        // Redirigir a la lista de sprints ya que no tenemos el ID
+        router.push('/sprints');
       }, 2000);
     } catch (error) {
       console.error('Error creating task:', error);
       setMessage({
         type: 'error',
-        text: 'Hubo un error al crear la tarea. La tarea podría haberse creado pero no pudimos recibir la confirmación.'
+        text: 'Hubo un error al crear El sprint. El sprint podría haberse creado pero no pudimos recibir la confirmación.'
       });
       
       // Aún así, después de un tiempo prudencial, volvemos a la lista de tareas
       setTimeout(() => {
-        router.push('/tasks');
+        router.push('/sprints');
       }, 3000);
     } finally {
       setIsSubmitting(false);
@@ -106,12 +105,12 @@ export default function NewTaskPage() {
     <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
       <div className="space-y-6">
         <div className="flex items-center space-x-4">
-          <Link href="/tasks" passHref>
+          <Link href="/sprints" passHref>
             <Button variant="outline" size="sm">
               <ChevronLeft className="h-4 w-4 mr-1" /> Volver
             </Button>
           </Link>
-          <h1 className="text-2xl font-bold">Nueva tarea</h1>
+          <h1 className="text-2xl font-bold">Nuevo Sprint</h1>
         </div>
 
         {message && (
@@ -131,11 +130,10 @@ export default function NewTaskPage() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
           </div>
         ) : (
-          <TaskForm 
+          <SprintForm
             projects={projects}
-            sprints={sprints}
             onSubmit={handleSubmit}
-            onCancel={() => router.push('/tasks')}
+            onCancel={() => router.push('/sprints')}
             isSubmitting={isSubmitting}
           />
         )}

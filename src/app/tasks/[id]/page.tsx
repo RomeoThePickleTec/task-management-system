@@ -417,9 +417,9 @@ export default function TaskDetailPage() {
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 mb-1">Proyecto</h3>
                   <p className="text-gray-800">
-                    {task.project_id ? (
-                      <Link href={`/projects/${task.project_id}`} className="text-blue-500 hover:underline">
-                        Proyecto #{task.project_id}
+                    {task.sprint_id ? (
+                      <Link href={`/projects/${task.sprint_id}`} className="text-blue-500 hover:underline">
+                        Proyecto #{task.sprint_id}
                       </Link>
                     ) : (
                       'Sin proyecto asignado'

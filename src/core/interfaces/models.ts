@@ -45,9 +45,8 @@ export interface ITask {
   priority: number;
   status: TaskStatus;
   estimated_hours: number;
-  project_id?: number;
-  subtasks?: ISubtask[];
   sprint_id?: number;
+  subtasks?: ISubtask[];
 }
 
 export interface ISubtask {
