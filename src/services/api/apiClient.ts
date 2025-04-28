@@ -39,6 +39,60 @@ export class ApiClient {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
+// Agregar un interceptor para refrescar tokens expirados
+private async handleTokenRefresh(url: string, options: RequestInit): Promise<Response> {
+  try {
+    const response = await fetch(url, options);
+    
+    // Si hay un error 401 (Unauthorized), intentar refrescar el token
+    if (response.status === 401) {
+      // Verificar si hay un refreshToken disponible
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (!refreshToken) {
+        throw new Error('No hay refreshToken disponible');
+      }
+      
+      // Intentar refrescar el token
+      try {
+        const refreshResponse = await fetch(`${this.baseUrl}/auth/refresh`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(refreshToken),
+        });
+        
+        if (!refreshResponse.ok) {
+          throw new Error('Error al refrescar token');
+        }
+        
+        const data = await refreshResponse.json();
+        
+        // Guardar el nuevo token y actualizar los headers
+        localStorage.setItem('accessToken', data.accessToken);
+        this.setAuthToken(data.accessToken);
+        
+        // Reintentar la solicitud original con el nuevo token
+        options.headers = {
+          ...options.headers,
+          'Authorization': `Bearer ${data.accessToken}`
+        };
+        
+        return fetch(url, options);
+      } catch (error) {
+        // Si falla el refresh, eliminar tokens y devolver el error
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        throw error;
+      }
+    }
+    
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
+
   // Add retry logic to fetch requests
   private async fetchWithRetry(
     url: string, 

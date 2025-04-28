@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/BackendAuthContext';
 import { Button } from './button';
 import { AlertCircle, RefreshCw, Loader2 } from 'lucide-react';
 import { toast } from './use-toast';

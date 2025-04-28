@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/BackendAuthContext'; // Actualizar la importación
 import { UserRole } from '@/core/interfaces/models';
 
 interface ProtectedRouteProps {
@@ -18,22 +18,21 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const router = useRouter();
 
   useEffect(() => {
-    // If not loading and no user is logged in, redirect to login
+    // Si no está cargando y no hay usuario, redirigir a login
     if (!loading && !currentUser) {
       router.push('/auth/login');
     }
     
-    // If roles are required, check if user has the required role
+    // Si se requieren roles, verificar si el usuario tiene el rol requerido
     if (!loading && currentUser && requiredRoles.length > 0) {
       const hasRequiredRole = requiredRoles.includes(userRole);
       if (!hasRequiredRole) {
-        // Redirect to dashboard or unauthorized page
         router.push('/unauthorized');
       }
     }
   }, [loading, currentUser, userRole, requiredRoles, router]);
 
-  // Show loading state
+  // Mostrar estado de carga
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -42,17 +41,17 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  // If not logged in, don't render children
+  // Si no está autenticado, no renderizar los hijos
   if (!currentUser) {
     return null;
   }
 
-  // If roles are required and user doesn't have them, don't render children
+  // Si se requieren roles y el usuario no los tiene, no renderizar los hijos
   if (requiredRoles.length > 0 && !requiredRoles.includes(userRole)) {
     return null;
   }
 
-  // Render children if authorized
+  // Renderizar hijos si está autorizado
   return <>{children}</>;
 };
 

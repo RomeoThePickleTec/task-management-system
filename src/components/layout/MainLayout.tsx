@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/BackendAuthContext';
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import Sidebar from './Sidebar';
 import AppHeader from './AppHeader';

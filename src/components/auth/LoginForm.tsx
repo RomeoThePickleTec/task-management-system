@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/BackendAuthContext'; // Cambia la importación
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Loader2 } from 'lucide-react';
 
 const LoginForm: React.FC = () => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState(''); // Cambiado de email a username
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -26,30 +26,12 @@ const LoginForm: React.FC = () => {
     setIsLoading(true);
 
     try {
-      await login(email, password);
-      router.push('/'); // Redirect to dashboard on success
+      await login(username, password);
+      router.push('/'); // Redirige al dashboard después del login
     } catch (error: any) {
-      setLoginError(getFirebaseErrorMessage(error.code) || 'Failed to log in');
+      setLoginError('Credenciales inválidas o error de conexión');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  // Translate Firebase error codes to user-friendly messages
-  const getFirebaseErrorMessage = (errorCode: string): string => {
-    switch(errorCode) {
-      case 'auth/invalid-email':
-        return 'Invalid email address';
-      case 'auth/user-disabled':
-        return 'This account has been disabled';
-      case 'auth/user-not-found':
-        return 'No account found with this email';
-      case 'auth/wrong-password':
-        return 'Incorrect password';
-      case 'auth/too-many-requests':
-        return 'Too many failed login attempts. Please try again later';
-      default:
-        return 'An error occurred during login';
     }
   };
 
@@ -57,9 +39,9 @@ const LoginForm: React.FC = () => {
     <div className="flex min-h-screen items-center justify-center bg-gray-50">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Sign In</CardTitle>
+          <CardTitle className="text-2xl font-bold">Iniciar Sesión</CardTitle>
           <CardDescription>
-            Enter your email and password to access your account
+            Ingresa tu nombre de usuario y contraseña para acceder
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -71,21 +53,21 @@ const LoginForm: React.FC = () => {
           )}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="username">Nombre de usuario</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="name@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="username"
+                type="text" 
+                placeholder="usuario"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 required
               />
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Contraseña</Label>
                 <Link href="/auth/forgot-password" className="text-sm text-blue-600 hover:text-blue-800">
-                  Forgot password?
+                  ¿Olvidaste tu contraseña?
                 </Link>
               </div>
               <Input
@@ -105,10 +87,10 @@ const LoginForm: React.FC = () => {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
+                  Iniciando sesión...
                 </>
               ) : (
-                'Sign In'
+                'Iniciar Sesión'
               )}
             </Button>
           </form>
