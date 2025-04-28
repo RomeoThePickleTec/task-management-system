@@ -1,7 +1,7 @@
 // src/services/api/projectService.ts
 // Servicios para operaciones con proyectos
 import { apiClient } from './apiClient';
-import { IProject, ProjectFilter } from '../../core/interfaces/models';
+import { IProject, ProjectFilter, ProjectStatus } from '../../core/interfaces/models';
 
 export class ProjectService {
   private static readonly BASE_PATH = '/projectlist';
@@ -33,7 +33,13 @@ export class ProjectService {
   // Crear un nuevo proyecto
   static async createProject(projectData: Omit<IProject, 'id' | 'created_at' | 'updated_at'>): Promise<IProject | null> {
     try {
-      return await apiClient.post<IProject>(this.BASE_PATH, projectData);
+      // Asegurarse de que el estado es un número (enum)
+      const payload = {
+        ...projectData,
+        status: Number(projectData.status)
+      };
+      
+      return await apiClient.post<IProject>(this.BASE_PATH, payload);
     } catch (error) {
       console.error('Error creating project:', error);
       return null;
@@ -43,7 +49,24 @@ export class ProjectService {
   // Actualizar un proyecto existente
   static async updateProject(id: number, projectData: Partial<IProject>): Promise<IProject | null> {
     try {
-      return await apiClient.put<IProject>(`${this.BASE_PATH}/${id}`, projectData);
+      // Obtener el proyecto actual
+      const currentProject = await this.getProjectById(id);
+      
+      if (!currentProject) {
+        console.error(`Project with ID ${id} not found for update`);
+        return null;
+      }
+      
+      // Preparar datos para la actualización
+      const updatePayload = {
+        name: projectData.name || currentProject.name,
+        description: projectData.description || currentProject.description,
+        start_date: projectData.start_date || currentProject.start_date,
+        end_date: projectData.end_date || currentProject.end_date,
+        status: Number(projectData.status !== undefined ? projectData.status : currentProject.status)
+      };
+      
+      return await apiClient.put<IProject>(`${this.BASE_PATH}/${id}`, updatePayload);
     } catch (error) {
       console.error(`Error updating project ${id}:`, error);
       return null;
@@ -58,6 +81,16 @@ export class ProjectService {
     } catch (error) {
       console.error(`Error deleting project ${id}:`, error);
       return false;
+    }
+  }
+  
+  // Actualizar el estado de un proyecto
+  static async updateProjectStatus(id: number, status: ProjectStatus): Promise<IProject | null> {
+    try {
+      return await this.updateProject(id, { status });
+    } catch (error) {
+      console.error(`Error updating status for project ${id}:`, error);
+      return null;
     }
   }
 }

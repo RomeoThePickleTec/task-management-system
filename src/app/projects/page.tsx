@@ -1,7 +1,7 @@
-// src/app/projects/page.tsx
 "use client";
 
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +32,7 @@ type ProjectWithMetadata = IProject & {
 };
 
 export default function ProjectsPage() {
+  const router = useRouter();
   const [projects, setProjects] = useState<ProjectWithMetadata[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<ProjectWithMetadata[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -122,65 +123,66 @@ export default function ProjectsPage() {
     setFilteredProjects(filtered);
   }, [statusFilter, searchQuery, projects]);
 
-  // Función para manejar la creación de un nuevo proyecto
-  const handleCreateProject = () => {
-    // Redirigir a la página de creación de proyectos
-    console.log('Crear nuevo proyecto');
+  // Función para manejar la navegación al detalle del proyecto
+  const handleProjectClick = (id: number | undefined) => {
+    if (id !== undefined) {
+      router.push(`/projects/${id}`);
+    }
   };
 
   return (
-    <ProtectedRoute requiredRoles={[UserRole.DEVELOPER, UserRole.MANAGER, UserRole.DEVELOPER, UserRole.TESTER ]}>
+    <ProtectedRoute requiredRoles={[UserRole.DEVELOPER, UserRole.MANAGER, UserRole.TESTER]}>
       <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
         <div className="space-y-6">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold">Proyectos</h1>
             <div className="flex space-x-2">
-            <Link href="/projects/new" passHref>
-              <Button>
-                <PlusCircle className="h-4 w-4 mr-2" /> Nuevo proyecto
-              </Button>
-            </Link>
+              <Link href="/projects/new" passHref>
+                <Button>
+                  <PlusCircle className="h-4 w-4 mr-2" /> Nuevo proyecto
+                </Button>
+              </Link>
+            </div>
           </div>
-        </div>
 
-        {/* Filtros */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
-            <Input
-              placeholder="Buscar proyectos..."
-              className="pl-8"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+          {/* Filtros */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+              <Input
+                placeholder="Buscar proyectos..."
+                className="pl-8"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-44">
+                <SelectValue placeholder="Filtrar por estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los estados</SelectItem>
+                <SelectItem value={ProjectStatus.PLANNING.toString()}>Planificación</SelectItem>
+                <SelectItem value={ProjectStatus.ACTIVE.toString()}>Activo</SelectItem>
+                <SelectItem value={ProjectStatus.COMPLETED.toString()}>Completado</SelectItem>
+                <SelectItem value={ProjectStatus.ON_HOLD.toString()}>En pausa</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full sm:w-44">
-              <SelectValue placeholder="Filtrar por estado" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos los estados</SelectItem>
-              <SelectItem value={ProjectStatus.PLANNING.toString()}>Planificación</SelectItem>
-              <SelectItem value={ProjectStatus.ACTIVE.toString()}>Activo</SelectItem>
-              <SelectItem value={ProjectStatus.COMPLETED.toString()}>Completado</SelectItem>
-              <SelectItem value={ProjectStatus.ON_HOLD.toString()}>En pausa</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
 
-        {/* Lista de proyectos */}
-        <ProjectList 
-          projects={filteredProjects}
-          onProjectClick={(id) => console.log(`Ver proyecto ${id}`)}
-          isLoading={isLoading}
-          emptyMessage={
-            searchQuery || statusFilter !== "all" 
-              ? "No hay proyectos que coincidan con los filtros" 
-              : "No hay proyectos disponibles"
-          }
-        />
-      </div>
-    </MainLayout>
+          {/* Lista de proyectos */}
+          <ProjectList 
+            projects={filteredProjects}
+            onProjectClick={handleProjectClick}
+            isLoading={isLoading}
+            emptyMessage={
+              searchQuery || statusFilter !== "all" 
+                ? "No hay proyectos que coincidan con los filtros" 
+                : "No hay proyectos disponibles"
+            }
+          />
+        </div>
+      </MainLayout>
     </ProtectedRoute>
   );
 }

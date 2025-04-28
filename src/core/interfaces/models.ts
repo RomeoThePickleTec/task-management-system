@@ -47,6 +47,8 @@ export interface ITask {
   estimated_hours: number;
   sprint_id?: number;
   subtasks?: ISubtask[];
+  comments?: IComment[];
+  project_id?: number;
 }
 
 export interface ISubtask {
@@ -68,6 +70,9 @@ export interface IProject {
   status: ProjectStatus;
   created_at?: string;
   updated_at?: string;
+  sprints?: ISprint[];
+  taskCount?: number;
+  memberCount?: number;
 }
 
 export interface IUser {
@@ -80,6 +85,10 @@ export interface IUser {
   work_mode: WorkMode;
   created_at?: string;
   updated_at?: string;
+  last_login?: string | null;
+  active?: boolean;
+  selectedProject?: IProject | null;
+  selectedProject_id?: number | null;
 }
 
 export interface IProjectMember {
@@ -89,6 +98,8 @@ export interface IProjectMember {
   };
   project_id: number;
   user_id: number;
+  joined_date?: string;
+  role?: string;
   project?: IProject;
   user?: IUser;
 }
@@ -113,6 +124,7 @@ export interface ISprint {
   project_id: number;
   created_at?: string;
   updated_at?: string;
+  tasks?: ITask[];
 }
 
 // Interfaces para respuestas de API
@@ -128,6 +140,7 @@ export interface TaskFilter {
   status?: TaskStatus;
   priority?: number;
   sprint_id?: number;
+  assignee_id?: number;
 }
 
 export interface ProjectFilter {
@@ -138,4 +151,27 @@ export interface SprintFilter {
   project_id?: number;
   status?: SprintStatus;
   active?: boolean;
+}
+
+// Interfaces para estadísticas
+export interface ProjectStats {
+  totalTasks: number;
+  completedTasks: number;
+  inProgressTasks: number;
+  todoTasks: number;
+  completionPercentage: number;
+}
+
+export interface UserStats {
+  tasksAssigned: number;
+  tasksCompleted: number;
+  projectsInvolved: number;
+  completionPercentage: number;
+}
+
+// Interface para la respuesta de autenticación
+export interface AuthResponse {
+  accessToken: string;
+  refreshToken: string;
+  user: IUser;
 }

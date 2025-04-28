@@ -392,7 +392,7 @@ export default function ReportsPage() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
-                        <div className="h-3 w-3 rounded-full bg-gray-300 mr-2"></div>
+                        <div className="h-3 w-3 rounded-full bg-orange-300 mr-2"></div>
                         <p>Por hacer</p>
                       </div>
                       <span className="font-medium">{statistics.pendingTasks - statistics.blockedTasks}</span>
@@ -434,7 +434,7 @@ export default function ReportsPage() {
                             style={{ width: `${statistics.totalTasks ? ((statistics.pendingTasks - (statistics.totalTasks - statistics.completedTasks - statistics.blockedTasks)) / statistics.totalTasks) * 100 : 0}%` }}
                           ></div>
                           <div 
-                            className="bg-gray-300 h-full" 
+                            className="bg-orange-300 h-full" 
                             style={{ width: `${statistics.totalTasks ? ((statistics.pendingTasks - statistics.blockedTasks) / statistics.totalTasks) * 100 : 0}%` }}
                           ></div>
                           <div 
