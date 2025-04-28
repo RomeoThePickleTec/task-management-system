@@ -2,7 +2,7 @@
 // Cliente API base para realizar solicitudes a la API
 
 // const API_BASE_URL = 'http://backend-service:8081';
-// const API_BASE_URL = 'http://localhost:8081';
+//const API_BASE_URL = 'http://localhost:8081';
 const API_BASE_URL = 'http://220.158.78.114:8081';
 
 const MAX_RETRIES = 2; // Maximum number of retry attempts
