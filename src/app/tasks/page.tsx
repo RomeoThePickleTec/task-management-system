@@ -201,9 +201,10 @@ export default function TasksPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="1">Pendiente</SelectItem>
-                <SelectItem value="2">En progreso</SelectItem>
-                <SelectItem value="3">Completado</SelectItem>
+                <SelectItem value="0">Pendiente</SelectItem>
+                <SelectItem value="1">En progreso</SelectItem>
+                <SelectItem value="2">Completado</SelectItem>
+                <SelectItem value="3">Bloqueado</SelectItem>
               </SelectContent>
             </Select>
             <Select value={priorityFilter} onValueChange={setPriorityFilter}>
@@ -212,9 +213,9 @@ export default function TasksPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="1">Alta</SelectItem>
+                <SelectItem value="3">Alta</SelectItem>
                 <SelectItem value="2">Media</SelectItem>
-                <SelectItem value="3">Baja</SelectItem>
+                <SelectItem value="1">Baja</SelectItem>
               </SelectContent>
             </Select>
           </div>

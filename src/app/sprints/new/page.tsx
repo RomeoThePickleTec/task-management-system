@@ -1,23 +1,21 @@
-// src/app/tasks/new/page.tsx
+// src/app/sprints/new/page.tsx
 "use client";
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import MainLayout from '@/components/layout/MainLayout';
-import TaskForm from '@/components/tasks/TaskForm';
 import { Button } from "@/components/ui/button";
-import { IProject, ISprint, ITask, UserRole } from '@/core/interfaces/models';
+import { IProject, ISprint, UserRole } from '@/core/interfaces/models';
 import Link from 'next/link';
 import { ChevronLeft } from "lucide-react";
 
 // Importamos los servicios reales de API
-import { ProjectService, SprintService, TaskService } from '@/services/api';
+import { ProjectService, SprintService } from '@/services/api';
 import SprintForm from '@/components/sprints/SprintForm';
 
-export default function NewTaskPage() {
+export default function NewSprintPage() {
   const router = useRouter();
   const [projects, setProjects] = useState<IProject[]>([]);
-  const [sprints, setSprints] = useState<ISprint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
