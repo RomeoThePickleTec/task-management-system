@@ -1,4 +1,4 @@
-name: Test and Docker Build and Publish
+name: Docker Build and Publish
 
 on:
   push:
@@ -29,7 +29,7 @@ jobs:
           node-version: '18'
           
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
       
       - name: Run Cypress tests
         run: npm run test
