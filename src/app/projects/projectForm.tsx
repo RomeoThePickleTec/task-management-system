@@ -39,6 +39,8 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
   // Inicializar formulario con datos de proyecto si existe
   useEffect(() => {
     if (project) {
+      // Destructuring while ignoring unused properties
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { id, created_at, updated_at, sprints, ...projectData } = project;
       setFormData(projectData);
     }
