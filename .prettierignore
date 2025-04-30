@@ -11,3 +11,4 @@ docker
 docker-compose.yml
 yarn.lock
 package-lock.json
+README.md

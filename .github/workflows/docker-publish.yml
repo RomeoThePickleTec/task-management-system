@@ -16,6 +16,21 @@ env:
   IMAGE_NAME: task-management-system
 
 jobs:
+  lint:
+    name: Lint code and prettier
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+      - name: Lint code
+        run: npm run lint || true
+  
   test:
     runs-on: ubuntu-latest
     
@@ -31,9 +46,6 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
       
-      - name: Lint code
-        run: npm run lint || true
-        
       - name: Build Next.js app and run Cypress tests
         run: |
           # Instalar paquete start-server-and-test con --legacy-peer-deps
