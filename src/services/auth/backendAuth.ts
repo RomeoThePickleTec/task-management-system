@@ -5,7 +5,7 @@ export class BackendAuthService {
   static async login(username: string, password: string) {
     try {
       const response = await apiClient.post('/auth/login', { username, password });
-      
+
       if (response && response.accessToken) {
         // Guarda los tokens en localStorage
         localStorage.setItem('accessToken', response.accessToken);
@@ -33,9 +33,9 @@ export class BackendAuthService {
       if (!refreshToken) {
         throw new Error('No hay refreshToken disponible');
       }
-      
+
       const response = await apiClient.post('/auth/refresh', refreshToken);
-      
+
       if (response && response.accessToken) {
         localStorage.setItem('accessToken', response.accessToken);
         apiClient.setAuthToken(response.accessToken);
@@ -54,7 +54,7 @@ export class BackendAuthService {
     try {
       const token = localStorage.getItem('accessToken');
       if (!token) return null;
-      
+
       return await apiClient.get('/auth/me');
     } catch (error) {
       console.error('Error al obtener usuario actual:', error);

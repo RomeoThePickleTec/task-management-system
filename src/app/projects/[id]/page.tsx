@@ -1,42 +1,31 @@
-"use client";
+'use client';
 
 import React, { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import MainLayout from '@/components/layout/MainLayout';
-import { Button } from "@/components/ui/button";
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
-} from "@/components/ui/tabs";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { 
-  IProject, 
-  IProjectMember, 
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import {
+  IProject,
+  IProjectMember,
   ISprint,
-  ProjectStatus, 
+  ProjectStatus,
   UserRole,
-  SprintStatus 
+  SprintStatus,
 } from '@/core/interfaces/models';
-import { 
-  Calendar, 
-  Clock, 
-  FileText, 
-  PenSquare, 
-  Trash2, 
-  Users, 
+import {
+  Calendar,
+  Clock,
+  FileText,
+  PenSquare,
+  Trash2,
+  Users,
   AlertTriangle,
   CheckCircle2,
-  Plus
-} from "lucide-react";
+  Plus,
+} from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -44,7 +33,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -55,7 +44,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale/es';
 import { ProjectService, ProjectMemberService } from '@/services/api';
@@ -69,7 +58,7 @@ const ProjectDetailsPage = () => {
   const params = useParams();
   const router = useRouter();
   const projectId = parseInt(params.id as string);
-  
+
   const [project, setProject] = useState<IProject | null>(null);
   const [members, setMembers] = useState<IProjectMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -82,7 +71,7 @@ const ProjectDetailsPage = () => {
   // El usuario por defecto para esta demo
   const demoUser = {
     username: 'djeison',
-    userRole: UserRole.MANAGER
+    userRole: UserRole.MANAGER,
   };
 
   // Cargar datos del proyecto
@@ -90,22 +79,22 @@ const ProjectDetailsPage = () => {
     const fetchProjectData = async () => {
       setIsLoading(true);
       setError(null);
-      
+
       try {
         // Cargar proyecto
         const projectData = await ProjectService.getProjectById(projectId);
         if (!projectData) {
-          setError("No se encontró el proyecto especificado.");
+          setError('No se encontró el proyecto especificado.');
           return;
         }
         setProject(projectData);
-        
+
         // Cargar miembros del proyecto
         const memberData = await ProjectMemberService.getProjectMembersByProject(projectId);
         setMembers(memberData);
       } catch (err) {
-        console.error("Error al cargar datos del proyecto:", err);
-        setError("Error al cargar el proyecto. Por favor, inténtelo de nuevo.");
+        console.error('Error al cargar datos del proyecto:', err);
+        setError('Error al cargar el proyecto. Por favor, inténtelo de nuevo.');
       } finally {
         setIsLoading(false);
       }
@@ -125,13 +114,29 @@ const ProjectDetailsPage = () => {
   const getStatusBadge = (status: ProjectStatus) => {
     switch (status) {
       case ProjectStatus.PLANNING:
-        return <Badge variant="outline" className="bg-purple-100 text-purple-800">Planificación</Badge>;
+        return (
+          <Badge variant="outline" className="bg-purple-100 text-purple-800">
+            Planificación
+          </Badge>
+        );
       case ProjectStatus.ACTIVE:
-        return <Badge variant="default" className="bg-green-500">Activo</Badge>;
+        return (
+          <Badge variant="default" className="bg-green-500">
+            Activo
+          </Badge>
+        );
       case ProjectStatus.COMPLETED:
-        return <Badge variant="default" className="bg-blue-500">Completado</Badge>;
+        return (
+          <Badge variant="default" className="bg-blue-500">
+            Completado
+          </Badge>
+        );
       case ProjectStatus.ON_HOLD:
-        return <Badge variant="default" className="bg-amber-500">En pausa</Badge>;
+        return (
+          <Badge variant="default" className="bg-amber-500">
+            En pausa
+          </Badge>
+        );
       default:
         return <Badge variant="outline">Desconocido</Badge>;
     }
@@ -141,11 +146,23 @@ const ProjectDetailsPage = () => {
   const getSprintStatusBadge = (status: SprintStatus) => {
     switch (status) {
       case SprintStatus.PLANNING:
-        return <Badge variant="outline" className="bg-purple-100 text-purple-800">Planificación</Badge>;
+        return (
+          <Badge variant="outline" className="bg-purple-100 text-purple-800">
+            Planificación
+          </Badge>
+        );
       case SprintStatus.ACTIVE:
-        return <Badge variant="default" className="bg-green-500">Activo</Badge>;
+        return (
+          <Badge variant="default" className="bg-green-500">
+            Activo
+          </Badge>
+        );
       case SprintStatus.COMPLETED:
-        return <Badge variant="default" className="bg-blue-500">Completado</Badge>;
+        return (
+          <Badge variant="default" className="bg-blue-500">
+            Completado
+          </Badge>
+        );
       default:
         return <Badge variant="outline">Desconocido</Badge>;
     }
@@ -153,56 +170,58 @@ const ProjectDetailsPage = () => {
 
   // Calcular días restantes
   const getRemainingDays = () => {
-    if (!project) return "";
-    
+    if (!project) return '';
+
     const endDate = new Date(project.end_date);
     const today = new Date();
     const diffTime = endDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays < 0) return "Vencido";
-    if (diffDays === 0) return "Vence hoy";
+
+    if (diffDays < 0) return 'Vencido';
+    if (diffDays === 0) return 'Vence hoy';
     return `${diffDays} días restantes`;
   };
 
   // Calcular la clase para los días restantes
   const getRemainingDaysClass = () => {
-    if (!project) return "";
-    
+    if (!project) return '';
+
     const endDate = new Date(project.end_date);
     const today = new Date();
     const diffTime = endDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays < 0) return "text-red-600";
-    if (diffDays <= 7) return "text-amber-600";
-    return "text-gray-600";
+
+    if (diffDays < 0) return 'text-red-600';
+    if (diffDays <= 7) return 'text-amber-600';
+    return 'text-gray-600';
   };
 
   // Manejar actualización de proyecto
-  const handleUpdateProject = async (projectData: Omit<IProject, 'id' | 'created_at' | 'updated_at'>) => {
+  const handleUpdateProject = async (
+    projectData: Omit<IProject, 'id' | 'created_at' | 'updated_at'>
+  ) => {
     if (!project) return;
-    
+
     setIsUpdating(true);
     setError(null);
-    
+
     try {
       const updatedProject = await ProjectService.updateProject(projectId, projectData);
       if (updatedProject) {
         setProject(updatedProject);
-        setSuccessMessage("Proyecto actualizado correctamente");
+        setSuccessMessage('Proyecto actualizado correctamente');
         setIsEditDialogOpen(false);
-        
+
         // Ocultar mensaje de éxito después de 3 segundos
         setTimeout(() => {
           setSuccessMessage(null);
         }, 3000);
       } else {
-        throw new Error("No se pudo actualizar el proyecto");
+        throw new Error('No se pudo actualizar el proyecto');
       }
     } catch (err) {
-      console.error("Error al actualizar el proyecto:", err);
-      setError("Error al actualizar el proyecto. Por favor, inténtelo de nuevo.");
+      console.error('Error al actualizar el proyecto:', err);
+      setError('Error al actualizar el proyecto. Por favor, inténtelo de nuevo.');
     } finally {
       setIsUpdating(false);
     }
@@ -212,18 +231,18 @@ const ProjectDetailsPage = () => {
   const handleDeleteProject = async () => {
     setIsDeleting(true);
     setError(null);
-    
+
     try {
       const success = await ProjectService.deleteProject(projectId);
       if (success) {
         // Redirigir a la página de proyectos
         router.push('/projects');
       } else {
-        throw new Error("No se pudo eliminar el proyecto");
+        throw new Error('No se pudo eliminar el proyecto');
       }
     } catch (err) {
-      console.error("Error al eliminar el proyecto:", err);
-      setError("Error al eliminar el proyecto. Por favor, inténtelo de nuevo.");
+      console.error('Error al eliminar el proyecto:', err);
+      setError('Error al eliminar el proyecto. Por favor, inténtelo de nuevo.');
       setIsDeleting(false);
     }
   };
@@ -251,7 +270,18 @@ const ProjectDetailsPage = () => {
               <div className="flex items-center gap-2 mb-2">
                 <Link href="/projects" className="text-gray-500 hover:text-gray-700">
                   <Button variant="ghost" size="sm" className="h-8 px-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-4 w-4"
+                    >
                       <path d="m15 18-6-6 6-6"></path>
                     </svg>
                     Proyectos
@@ -267,7 +297,7 @@ const ProjectDetailsPage = () => {
                 project && getStatusBadge(project.status)
               )}
             </div>
-            
+
             <div className="flex space-x-2 self-end sm:self-start">
               <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                 <DialogTrigger asChild>
@@ -279,7 +309,8 @@ const ProjectDetailsPage = () => {
                   <DialogHeader>
                     <DialogTitle>Editar Proyecto</DialogTitle>
                     <DialogDescription>
-                      Actualiza los detalles del proyecto. Los campos marcados con * son obligatorios.
+                      Actualiza los detalles del proyecto. Los campos marcados con * son
+                      obligatorios.
                     </DialogDescription>
                   </DialogHeader>
                   {project && (
@@ -292,7 +323,7 @@ const ProjectDetailsPage = () => {
                   )}
                 </DialogContent>
               </Dialog>
-              
+
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="destructive" disabled={isLoading || isDeleting}>
@@ -303,13 +334,13 @@ const ProjectDetailsPage = () => {
                   <AlertDialogHeader>
                     <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Esta acción no se puede deshacer. Se eliminará permanentemente este proyecto
-                      y todos sus datos relacionados.
+                      Esta acción no se puede deshacer. Se eliminará permanentemente este proyecto y
+                      todos sus datos relacionados.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction 
+                    <AlertDialogAction
                       onClick={handleDeleteProject}
                       className="bg-red-600 hover:bg-red-700"
                     >
@@ -320,7 +351,7 @@ const ProjectDetailsPage = () => {
               </AlertDialog>
             </div>
           </div>
-          
+
           {/* Mensajes de error/éxito */}
           {error && (
             <Alert variant="destructive">
@@ -328,14 +359,14 @@ const ProjectDetailsPage = () => {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          
+
           {successMessage && (
             <Alert variant="default" className="bg-green-50 border-green-200">
               <CheckCircle2 className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-600">{successMessage}</AlertDescription>
             </Alert>
           )}
-          
+
           {/* Contenido principal con pestañas */}
           <Tabs defaultValue="details" className="w-full">
             <TabsList className="mb-4">
@@ -343,15 +374,13 @@ const ProjectDetailsPage = () => {
               <TabsTrigger value="members">Miembros</TabsTrigger>
               <TabsTrigger value="sprints">Sprints</TabsTrigger>
             </TabsList>
-            
+
             {/* Pestaña de Detalles */}
             <TabsContent value="details">
               <Card>
                 <CardHeader>
                   <CardTitle>Información del Proyecto</CardTitle>
-                  <CardDescription>
-                    Detalles completos y estado actual del proyecto
-                  </CardDescription>
+                  <CardDescription>Detalles completos y estado actual del proyecto</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {isLoading ? (
@@ -370,10 +399,10 @@ const ProjectDetailsPage = () => {
                           <FileText className="h-4 w-4 mr-2" /> Descripción
                         </h3>
                         <p className="text-gray-700 whitespace-pre-line">
-                          {project.description || "Sin descripción"}
+                          {project.description || 'Sin descripción'}
                         </p>
                       </div>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <h3 className="font-medium flex items-center mb-1">
@@ -381,27 +410,31 @@ const ProjectDetailsPage = () => {
                           </h3>
                           <div className="space-y-1">
                             <p className="text-sm text-gray-700">
-                              <span className="font-medium">Inicio:</span> {formatDate(project.start_date)}
+                              <span className="font-medium">Inicio:</span>{' '}
+                              {formatDate(project.start_date)}
                             </p>
                             <p className="text-sm text-gray-700">
-                              <span className="font-medium">Fin:</span> {formatDate(project.end_date)}
+                              <span className="font-medium">Fin:</span>{' '}
+                              {formatDate(project.end_date)}
                             </p>
                             <p className={`text-sm font-medium ${getRemainingDaysClass()}`}>
                               {getRemainingDays()}
                             </p>
                           </div>
                         </div>
-                        
+
                         <div>
                           <h3 className="font-medium flex items-center mb-1">
                             <Clock className="h-4 w-4 mr-2" /> Tiempos del Proyecto
                           </h3>
                           <div className="space-y-1">
                             <p className="text-sm text-gray-700">
-                              <span className="font-medium">Creado:</span> {project.created_at ? formatDate(project.created_at) : 'N/A'}
+                              <span className="font-medium">Creado:</span>{' '}
+                              {project.created_at ? formatDate(project.created_at) : 'N/A'}
                             </p>
                             <p className="text-sm text-gray-700">
-                              <span className="font-medium">Actualizado:</span> {project.updated_at ? formatDate(project.updated_at) : 'N/A'}
+                              <span className="font-medium">Actualizado:</span>{' '}
+                              {project.updated_at ? formatDate(project.updated_at) : 'N/A'}
                             </p>
                           </div>
                         </div>
@@ -413,16 +446,14 @@ const ProjectDetailsPage = () => {
                 </CardContent>
               </Card>
             </TabsContent>
-            
+
             {/* Pestaña de Miembros */}
             <TabsContent value="members">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                   <div>
                     <CardTitle>Miembros del Proyecto</CardTitle>
-                    <CardDescription>
-                      Equipo asignado a este proyecto
-                    </CardDescription>
+                    <CardDescription>Equipo asignado a este proyecto</CardDescription>
                   </div>
                   <Button variant="outline" size="sm">
                     <Plus className="h-4 w-4 mr-2" /> Añadir miembro
@@ -449,13 +480,12 @@ const ProjectDetailsPage = () => {
                           </thead>
                           <tbody>
                             {members.map((member) => (
-                              <tr key={`${member.project_id}-${member.user_id}`} className="border-b">
-                                <td className="py-2 px-4">
-                                  {member.user_id}
-                                </td>
-                                <td className="py-2 px-4">
-                                  {member.role || 'Miembro'}
-                                </td>
+                              <tr
+                                key={`${member.project_id}-${member.user_id}`}
+                                className="border-b"
+                              >
+                                <td className="py-2 px-4">{member.user_id}</td>
+                                <td className="py-2 px-4">{member.role || 'Miembro'}</td>
                                 <td className="py-2 px-4">
                                   {member.joined_date ? formatDate(member.joined_date) : 'N/A'}
                                 </td>
@@ -482,16 +512,14 @@ const ProjectDetailsPage = () => {
                 </CardContent>
               </Card>
             </TabsContent>
-            
+
             {/* Pestaña de Sprints */}
             <TabsContent value="sprints">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                   <div>
                     <CardTitle>Sprints</CardTitle>
-                    <CardDescription>
-                      Ciclos de desarrollo del proyecto
-                    </CardDescription>
+                    <CardDescription>Ciclos de desarrollo del proyecto</CardDescription>
                   </div>
                   <Button variant="outline" size="sm">
                     <Plus className="h-4 w-4 mr-2" /> Nuevo sprint
@@ -519,11 +547,11 @@ const ProjectDetailsPage = () => {
                           </CardHeader>
                           <CardContent className="p-4 pt-2">
                             <p className="text-sm text-gray-600 mb-2">
-                              {sprint.description || "Sin descripción"}
+                              {sprint.description || 'Sin descripción'}
                             </p>
                             <div className="flex justify-between items-center">
                               <div className="text-xs text-gray-500">
-                                {sprint.tasks ? `${sprint.tasks.length} tareas` : "0 tareas"}
+                                {sprint.tasks ? `${sprint.tasks.length} tareas` : '0 tareas'}
                               </div>
                               <Button variant="ghost" size="sm" className="h-8">
                                 Ver detalles

@@ -1,13 +1,13 @@
 // src/app/sprints/new/page.tsx
-"use client";
+'use client';
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import MainLayout from '@/components/layout/MainLayout';
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import { IProject, ISprint, UserRole } from '@/core/interfaces/models';
 import Link from 'next/link';
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft } from 'lucide-react';
 
 // Importamos los servicios reales de API
 import { ProjectService, SprintService } from '@/services/api';
@@ -18,12 +18,12 @@ export default function NewSprintPage() {
   const [projects, setProjects] = useState<IProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // El usuario por defecto para esta demo
   const demoUser = {
     username: 'djeison',
-    userRole: UserRole.MANAGER
+    userRole: UserRole.MANAGER,
   };
 
   useEffect(() => {
@@ -35,12 +35,11 @@ export default function NewSprintPage() {
         const projectsData = await ProjectService.getProjects();
         console.log('Proyectos obtenidos:', projectsData);
         setProjects(projectsData);
-        
       } catch (error) {
         console.error('Error fetching form data:', error);
-        setMessage({ 
+        setMessage({
           type: 'error',
-          text: 'No se pudieron cargar los datos. Por favor, intenta de nuevo.'
+          text: 'No se pudieron cargar los datos. Por favor, intenta de nuevo.',
         });
       } finally {
         setIsLoading(false);
@@ -54,7 +53,7 @@ export default function NewSprintPage() {
     console.log('Submit task data:', sprintData);
     setIsSubmitting(true);
     setMessage(null);
-    
+
     try {
       // Asegurarnos de que los datos tienen el formato correcto
       const formattedSprintData = {
@@ -65,19 +64,19 @@ export default function NewSprintPage() {
         name: sprintData.name,
         description: sprintData.description,
         end_date: sprintData.end_date,
-        };
-      
+      };
+
       console.log('Formatted task data to send:', formattedSprintData);
-      
+
       const createdSprint = await SprintService.createSprint(formattedSprintData);
       console.log('Task created:', createdSprint);
-      
+
       // Consideramos el sprint creado incluso si la respuesta es null
-      setMessage({ 
+      setMessage({
         type: 'success',
-        text: '¡Tarea creada correctamente! Redirigiendo...'
+        text: '¡Tarea creada correctamente! Redirigiendo...',
       });
-      
+
       // Esperar un momento para que el usuario vea el mensaje de éxito
       setTimeout(() => {
         // Redirigir a la lista de sprints ya que no tenemos el ID
@@ -87,9 +86,9 @@ export default function NewSprintPage() {
       console.error('Error creating task:', error);
       setMessage({
         type: 'error',
-        text: 'Hubo un error al crear El sprint. El sprint podría haberse creado pero no pudimos recibir la confirmación.'
+        text: 'Hubo un error al crear El sprint. El sprint podría haberse creado pero no pudimos recibir la confirmación.',
       });
-      
+
       // Aún así, después de un tiempo prudencial, volvemos a la lista de tareas
       setTimeout(() => {
         router.push('/sprints');
@@ -112,13 +111,17 @@ export default function NewSprintPage() {
         </div>
 
         {message && (
-          <div 
+          <div
             className={`${
-              message.type === 'success' ? 'bg-green-100 border-green-400 text-green-700' : 'bg-red-100 border-red-400 text-red-700'
-            } px-4 py-3 rounded relative border`} 
+              message.type === 'success'
+                ? 'bg-green-100 border-green-400 text-green-700'
+                : 'bg-red-100 border-red-400 text-red-700'
+            } px-4 py-3 rounded relative border`}
             role="alert"
           >
-            <strong className="font-bold">{message.type === 'success' ? 'Éxito: ' : 'Aviso: '}</strong>
+            <strong className="font-bold">
+              {message.type === 'success' ? 'Éxito: ' : 'Aviso: '}
+            </strong>
             <span className="block sm:inline">{message.text}</span>
           </div>
         )}

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/BackendAuthContext';
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 import Sidebar from './Sidebar';
 import AppHeader from './AppHeader';
 import { BackendStatus } from '@/components/ui/BackendStatus';
@@ -14,7 +14,7 @@ interface MainLayoutProps {
 export default function MainLayout({ children }: MainLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { currentUser, userRole, backendUser, logout } = useAuth();
-  
+
   // Derive username from user data
   const username = backendUser?.username || currentUser?.email?.split('@')[0] || 'User';
 
@@ -23,7 +23,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
       await logout();
       // Redirect will happen automatically via the AuthContext
     } catch (error) {
-      console.error("Failed to log out:", error);
+      console.error('Failed to log out:', error);
     }
   };
 
@@ -41,9 +41,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
       </Sheet>
 
       {/* App Header */}
-      <AppHeader 
-        username={username} 
-        userRole={userRole} 
+      <AppHeader
+        username={username}
+        userRole={userRole}
         onLogout={handleLogout}
         onToggleSidebar={toggleSidebar}
       />
@@ -56,12 +56,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
         {/* Main content */}
         <div className="flex-1 overflow-auto">
-          <main className="py-6 px-4 sm:px-6 lg:px-8">
-            {children}
-          </main>
+          <main className="py-6 px-4 sm:px-6 lg:px-8">{children}</main>
         </div>
       </div>
-      
+
       {/* Backend status notification */}
       <BackendStatus />
     </div>

@@ -30,7 +30,9 @@ export class CommentService {
   }
 
   // Crear un nuevo comentario
-  static async createComment(commentData: Omit<IComment, 'id' | 'created_at' | 'updated_at'>): Promise<IComment | null> {
+  static async createComment(
+    commentData: Omit<IComment, 'id' | 'created_at' | 'updated_at'>
+  ): Promise<IComment | null> {
     try {
       const createdComment = await apiClient.post<IComment>(this.BASE_PATH, commentData);
       return createdComment;

@@ -1,10 +1,10 @@
 // src/components/tasks/TaskCard.tsx
 import React from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { ITask, TaskStatus } from '@/core/interfaces/models';
-import { CalendarIcon, Clock, CheckCircle2, AlertCircle, BarChart2 } from "lucide-react";
+import { CalendarIcon, Clock, CheckCircle2, AlertCircle, BarChart2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface TaskCardProps {
@@ -20,11 +20,23 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, onStatusChange }) =>
   const getStatusBadge = (status: TaskStatus) => {
     switch (status) {
       case TaskStatus.TODO:
-        return <Badge variant="outline" className="bg-gray-100">Por hacer</Badge>;
+        return (
+          <Badge variant="outline" className="bg-gray-100">
+            Por hacer
+          </Badge>
+        );
       case TaskStatus.IN_PROGRESS:
-        return <Badge variant="default" className="bg-blue-500">En progreso</Badge>;
+        return (
+          <Badge variant="default" className="bg-blue-500">
+            En progreso
+          </Badge>
+        );
       case TaskStatus.COMPLETED:
-        return <Badge variant="default" className="bg-green-500">Completado</Badge>;
+        return (
+          <Badge variant="default" className="bg-green-500">
+            Completado
+          </Badge>
+        );
       case TaskStatus.BLOCKED:
         return <Badge variant="destructive">Bloqueado</Badge>;
       default:
@@ -36,9 +48,17 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, onStatusChange }) =>
   const getPriorityBadge = (priority: number) => {
     switch (priority) {
       case 1:
-        return <Badge variant="outline" className="bg-gray-100">Baja</Badge>;
+        return (
+          <Badge variant="outline" className="bg-gray-100">
+            Baja
+          </Badge>
+        );
       case 2:
-        return <Badge variant="default" className="bg-yellow-500">Media</Badge>;
+        return (
+          <Badge variant="default" className="bg-yellow-500">
+            Media
+          </Badge>
+        );
       case 3:
         return <Badge variant="destructive">Alta</Badge>;
       default:
@@ -55,19 +75,19 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, onStatusChange }) =>
 
   // Calcular si la fecha de vencimiento está próxima o ya pasó
   const getDueDateClass = () => {
-    if (!task.due_date) return "text-gray-600";
-    
+    if (!task.due_date) return 'text-gray-600';
+
     const dueDate = new Date(task.due_date);
     const today = new Date();
     const threeDaysLater = new Date();
     threeDaysLater.setDate(today.getDate() + 3);
-    
+
     if (dueDate < today) {
-      return "text-red-600";
+      return 'text-red-600';
     } else if (dueDate < threeDaysLater) {
-      return "text-amber-600";
+      return 'text-amber-600';
     }
-    return "text-gray-600";
+    return 'text-gray-600';
   };
 
   // Manejar click en completar tarea
@@ -120,19 +140,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, onStatusChange }) =>
         <div>{getStatusBadge(task.status)}</div>
         <div className="flex gap-2">
           {task.status !== TaskStatus.COMPLETED && (
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleCompleteTask}
-            >
+            <Button variant="outline" size="sm" onClick={handleCompleteTask}>
               <CheckCircle2 className="h-4 w-4 mr-1" /> Completar
             </Button>
           )}
-          <Button 
-            variant="default" 
-            size="sm"
-            onClick={handleViewDetails}
-          >
+          <Button variant="default" size="sm" onClick={handleViewDetails}>
             Ver detalles
           </Button>
         </div>

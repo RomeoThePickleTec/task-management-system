@@ -17,7 +17,9 @@ export class SubtaskService {
   }
 
   // Crear una nueva subtarea
-  static async createSubtask(subtaskData: Omit<ISubtask, 'id' | 'created_at' | 'updated_at'>): Promise<ISubtask | null> {
+  static async createSubtask(
+    subtaskData: Omit<ISubtask, 'id' | 'created_at' | 'updated_at'>
+  ): Promise<ISubtask | null> {
     try {
       return await apiClient.post<ISubtask>(this.BASE_PATH, subtaskData);
     } catch (error) {

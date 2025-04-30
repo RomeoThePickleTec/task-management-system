@@ -6,9 +6,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { PenSquare } from "lucide-react";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { PenSquare } from 'lucide-react';
 import { IProject } from '@/core/interfaces/models';
 import ProjectForm from './ProjectForm';
 
@@ -25,7 +25,7 @@ const ProjectEditDialog: React.FC<ProjectEditDialogProps> = ({
   isOpen,
   onOpenChange,
   onSubmit,
-  isSubmitting
+  isSubmitting,
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>

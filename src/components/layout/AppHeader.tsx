@@ -1,6 +1,6 @@
 // src/components/layout/AppHeader.tsx
 import React from 'react';
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,10 +8,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import { UserRole } from '@/core/interfaces/models';
 import Link from 'next/link';
-import { Layers, Calendar, CheckSquare, Users, LogOut, User, Menu, Plus } from "lucide-react";
+import { Layers, Calendar, CheckSquare, Users, LogOut, User, Menu, Plus } from 'lucide-react';
 
 interface AppHeaderProps {
   username?: string;
@@ -30,22 +30,15 @@ const AppHeader: React.FC<AppHeaderProps> = ({
     <header className="bg-white shadow">
       <div className="px-4 sm:px-6 py-3 flex justify-between items-center">
         <div className="flex items-center">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="md:hidden mr-2" 
-            onClick={onToggleSidebar}
-          >
+          <Button variant="ghost" size="icon" className="md:hidden mr-2" onClick={onToggleSidebar}>
             <Menu className="h-5 w-5" />
           </Button>
           <div className="flex items-center">
             <Layers className="h-6 w-6 text-red-600 color-red-600 mr-2" />
-            <h1 className="text-xl font-bold text-gray-900">
-              JAI-VIER TASK MANAGEMENT SYSTEM
-            </h1>
+            <h1 className="text-xl font-bold text-gray-900">JAI-VIER TASK MANAGEMENT SYSTEM</h1>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -75,7 +68,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
               )}
             </DropdownMenuContent>
           </DropdownMenu>
-          
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">

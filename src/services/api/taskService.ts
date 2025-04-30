@@ -15,7 +15,7 @@ export class TaskService {
       if (filter?.status !== undefined) queryParams['status'] = filter.status.toString();
       if (filter?.priority) queryParams['priority'] = filter.priority.toString();
       if (filter?.sprint_id) queryParams['sprint_id'] = filter.sprint_id.toString();
-      
+
       return await apiClient.get<ITask[]>(this.BASE_PATH, queryParams);
     } catch (error) {
       console.error('Error fetching tasks:', error);
@@ -34,10 +34,12 @@ export class TaskService {
   }
 
   // Crear una nueva tarea
-  static async createTask(taskData: Omit<ITask, 'id' | 'created_at' | 'updated_at'>): Promise<ITask | null> {
+  static async createTask(
+    taskData: Omit<ITask, 'id' | 'created_at' | 'updated_at'>
+  ): Promise<ITask | null> {
     try {
       console.log('TaskService.createTask - Datos recibidos:', taskData);
-      
+
       // Formatear los datos para asegurar que tienen el formato correcto
       const taskPayload = {
         title: taskData.title,
@@ -48,15 +50,15 @@ export class TaskService {
         estimated_hours: Number(taskData.estimated_hours),
         project_id: taskData.project_id ? Number(taskData.project_id) : null,
         sprint_id: taskData.sprint_id ? Number(taskData.sprint_id) : null,
-        subtasks: taskData.subtasks || []
+        subtasks: taskData.subtasks || [],
       };
-      
+
       console.log('TaskService.createTask - Datos a enviar:', taskPayload);
-      
+
       try {
         const createdTask = await apiClient.post<ITask>(this.BASE_PATH, taskPayload);
         console.log('TaskService.createTask - Respuesta:', createdTask);
-        
+
         // Consideramos la operación exitosa incluso si la respuesta es null
         return createdTask;
       } catch (apiError) {
@@ -76,12 +78,12 @@ export class TaskService {
     try {
       // Primero obtenemos la tarea completa actual
       const currentTask = await this.getTaskById(id);
-      
+
       if (!currentTask) {
         console.error(`Task with ID ${id} not found`);
         return null;
       }
-      
+
       // Construimos el objeto completo para la actualización
       // Asegurando que incluimos todos los campos requeridos por la API
       const updatePayload = {
@@ -92,9 +94,9 @@ export class TaskService {
         due_date: taskData.due_date || currentTask.due_date,
         priority: taskData.priority !== undefined ? taskData.priority : currentTask.priority,
         status: taskData.status !== undefined ? taskData.status : currentTask.status,
-        estimated_hours: taskData.estimated_hours || currentTask.estimated_hours
+        estimated_hours: taskData.estimated_hours || currentTask.estimated_hours,
       };
-      
+
       const updatedTask = await apiClient.put<ITask>(`${this.BASE_PATH}/${id}`, updatePayload);
       return updatedTask;
     } catch (error) {

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -10,10 +10,7 @@ interface ProtectedRouteProps {
   requiredRoles?: UserRole[];
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
-  children, 
-  requiredRoles = [] 
-}) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRoles = [] }) => {
   const { currentUser, userRole, loading } = useAuth();
   const router = useRouter();
 
@@ -22,7 +19,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     if (!loading && !currentUser) {
       router.push('/auth/login');
     }
-    
+
     // Si se requieren roles, verificar si el usuario tiene el rol requerido
     if (!loading && currentUser && requiredRoles.length > 0) {
       const hasRequiredRole = requiredRoles.includes(userRole);

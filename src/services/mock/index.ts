@@ -19,7 +19,7 @@ export const configureServices = (useMock: boolean = true) => {
     // Inicializar datos mock
     initializeMockData();
   }
-  
+
   return {
     useMock,
     taskService: useMock ? MockTaskService : null, // Se reemplazaría por el servicio real

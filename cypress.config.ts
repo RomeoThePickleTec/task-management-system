@@ -1,4 +1,4 @@
-import { defineConfig } from "cypress";
+import { defineConfig } from 'cypress';
 
 export default defineConfig({
   e2e: {
@@ -6,6 +6,6 @@ export default defineConfig({
       // implement node event listeners here
     },
     experimentalStudio: true,
-    baseUrl: 'http://localhost:3000'
+    baseUrl: 'http://localhost:3000',
   },
 });

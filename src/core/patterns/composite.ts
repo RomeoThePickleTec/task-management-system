@@ -1,7 +1,7 @@
 // src/core/patterns/composite.ts
 // Composite Pattern: Manejar tareas y subtareas de forma uniforme
 
-import { ITask, ISubtask, TaskStatus } from "../interfaces/models";
+import { ITask, ISubtask, TaskStatus } from '../interfaces/models';
 
 // Interfaz común para componentes (tareas y subtareas)
 export interface TaskComponent {
@@ -143,10 +143,10 @@ export class CompositeTask implements TaskComponent {
 
   constructor(task: ITask) {
     this.task = task;
-    
+
     // Inicializar con subtareas si existen
     if (task.subtasks && task.subtasks.length > 0) {
-      this.children = task.subtasks.map(subtask => new SubtaskComponent(subtask, task.id));
+      this.children = task.subtasks.map((subtask) => new SubtaskComponent(subtask, task.id));
     }
   }
 
@@ -168,17 +168,19 @@ export class CompositeTask implements TaskComponent {
       return this.task.status;
     }
 
-    const allCompleted = this.children.every(child => child.isCompleted());
+    const allCompleted = this.children.every((child) => child.isCompleted());
     if (allCompleted) {
       return TaskStatus.COMPLETED;
     }
 
-    const anyBlocked = this.children.some(child => child.getStatus() === TaskStatus.BLOCKED);
+    const anyBlocked = this.children.some((child) => child.getStatus() === TaskStatus.BLOCKED);
     if (anyBlocked) {
       return TaskStatus.BLOCKED;
     }
 
-    const anyInProgress = this.children.some(child => child.getStatus() === TaskStatus.IN_PROGRESS);
+    const anyInProgress = this.children.some(
+      (child) => child.getStatus() === TaskStatus.IN_PROGRESS
+    );
     if (anyInProgress) {
       return TaskStatus.IN_PROGRESS;
     }
@@ -190,9 +192,9 @@ export class CompositeTask implements TaskComponent {
   setStatus(status: TaskStatus): void {
     this.task.status = status;
     this.task.updated_at = new Date().toISOString();
-    
+
     // Propagar a las subtareas
-    this.children.forEach(child => child.setStatus(status));
+    this.children.forEach((child) => child.setStatus(status));
   }
 
   getEstimatedHours(): number {
@@ -208,7 +210,7 @@ export class CompositeTask implements TaskComponent {
     if (this.children.length === 0) {
       return this.task.status === TaskStatus.COMPLETED ? 1 : 0;
     }
-    
+
     const totalProgress = this.children.reduce((sum, child) => sum + child.getProgress(), 0);
     return totalProgress / this.children.length;
   }
@@ -220,7 +222,7 @@ export class CompositeTask implements TaskComponent {
 
   removeChild(componentId: number | undefined): void {
     if (!componentId) return;
-    this.children = this.children.filter(child => child.getId() !== componentId);
+    this.children = this.children.filter((child) => child.getId() !== componentId);
   }
 
   getChildren(): TaskComponent[] {
@@ -230,12 +232,12 @@ export class CompositeTask implements TaskComponent {
   getTask(): ITask {
     // Crear una copia actualizada de la tarea con sus subtareas
     const updatedTask = { ...this.task };
-    
+
     // Actualizar las subtareas
     updatedTask.subtasks = this.children
-      .filter(child => child instanceof SubtaskComponent)
-      .map(child => (child as SubtaskComponent).getSubtask());
-    
+      .filter((child) => child instanceof SubtaskComponent)
+      .map((child) => (child as SubtaskComponent).getSubtask());
+
     return updatedTask;
   }
 }

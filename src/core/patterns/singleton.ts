@@ -1,7 +1,15 @@
 // src/core/patterns/singleton.ts
 // Singleton para gestionar el estado de la aplicación en memoria
 
-import { ITask, ISubtask, IProject, IUser, IProjectMember, IComment, ISprint } from "../interfaces/models";
+import {
+  ITask,
+  ISubtask,
+  IProject,
+  IUser,
+  IProjectMember,
+  IComment,
+  ISprint,
+} from '../interfaces/models';
 
 export class AppState {
   private static instance: AppState | null = null;
@@ -36,7 +44,7 @@ export class AppState {
 
   public setTasks(tasks: ITask[]): void {
     this.tasks.clear();
-    tasks.forEach(task => {
+    tasks.forEach((task) => {
       if (task.id) {
         this.tasks.set(task.id, task);
       }
@@ -62,11 +70,11 @@ export class AppState {
   }
 
   public getTasksByProject(projectId: number): ITask[] {
-    return this.getTasks().filter(task => task.project_id === projectId);
+    return this.getTasks().filter((task) => task.project_id === projectId);
   }
 
   public getTasksBySprint(sprintId: number): ITask[] {
-    return this.getTasks().filter(task => task.sprint_id === sprintId);
+    return this.getTasks().filter((task) => task.sprint_id === sprintId);
   }
 
   // Subtasks
@@ -79,12 +87,12 @@ export class AppState {
   }
 
   public getSubtasksByTask(taskId: number): ISubtask[] {
-    return this.getSubtasks().filter(subtask => subtask.task_id === taskId);
+    return this.getSubtasks().filter((subtask) => subtask.task_id === taskId);
   }
 
   public setSubtasks(subtasks: ISubtask[]): void {
     this.subtasks.clear();
-    subtasks.forEach(subtask => {
+    subtasks.forEach((subtask) => {
       if (subtask.id) {
         this.subtasks.set(subtask.id, subtask);
       }
@@ -120,7 +128,7 @@ export class AppState {
 
   public setProjects(projects: IProject[]): void {
     this.projects.clear();
-    projects.forEach(project => {
+    projects.forEach((project) => {
       if (project.id) {
         this.projects.set(project.id, project);
       }
@@ -156,7 +164,7 @@ export class AppState {
 
   public setUsers(users: IUser[]): void {
     this.users.clear();
-    users.forEach(user => {
+    users.forEach((user) => {
       if (user.id) {
         this.users.set(user.id, user);
       }
@@ -187,11 +195,11 @@ export class AppState {
   }
 
   public getProjectMembersByProject(projectId: number): IProjectMember[] {
-    return this.projectMembers.filter(pm => pm.project_id === projectId);
+    return this.projectMembers.filter((pm) => pm.project_id === projectId);
   }
 
   public getProjectMembersByUser(userId: number): IProjectMember[] {
-    return this.projectMembers.filter(pm => pm.user_id === userId);
+    return this.projectMembers.filter((pm) => pm.user_id === userId);
   }
 
   public setProjectMembers(projectMembers: IProjectMember[]): void {
@@ -205,7 +213,7 @@ export class AppState {
   public deleteProjectMember(projectId: number, userId: number): boolean {
     const initialLength = this.projectMembers.length;
     this.projectMembers = this.projectMembers.filter(
-      pm => !(pm.project_id === projectId && pm.user_id === userId)
+      (pm) => !(pm.project_id === projectId && pm.user_id === userId)
     );
     return this.projectMembers.length !== initialLength;
   }
@@ -220,12 +228,12 @@ export class AppState {
   }
 
   public getCommentsByTask(taskId: number): IComment[] {
-    return this.getComments().filter(comment => comment.task_id === taskId);
+    return this.getComments().filter((comment) => comment.task_id === taskId);
   }
 
   public setComments(comments: IComment[]): void {
     this.comments.clear();
-    comments.forEach(comment => {
+    comments.forEach((comment) => {
       if (comment.id) {
         this.comments.set(comment.id, comment);
       }
@@ -260,16 +268,16 @@ export class AppState {
   }
 
   public getSprintsByProject(projectId: number): ISprint[] {
-    return this.getSprints().filter(sprint => sprint.project_id === projectId);
+    return this.getSprints().filter((sprint) => sprint.project_id === projectId);
   }
 
   public getActiveSprintsByProject(projectId: number): ISprint[] {
-    return this.getSprintsByProject(projectId).filter(sprint => sprint.status === 1);
+    return this.getSprintsByProject(projectId).filter((sprint) => sprint.status === 1);
   }
 
   public setSprints(sprints: ISprint[]): void {
     this.sprints.clear();
-    sprints.forEach(sprint => {
+    sprints.forEach((sprint) => {
       if (sprint.id) {
         this.sprints.set(sprint.id, sprint);
       }

@@ -1,14 +1,21 @@
-"use client";
+'use client';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/BackendAuthContext';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, Loader2 } from 'lucide-react';
 
 const RegisterForm: React.FC = () => {
@@ -16,7 +23,7 @@ const RegisterForm: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const { login } = useAuth();
   const router = useRouter();
 
@@ -37,7 +44,7 @@ const RegisterForm: React.FC = () => {
 
   // Translate Firebase error codes to user-friendly messages
   const getFirebaseErrorMessage = (errorCode: string): string => {
-    switch(errorCode) {
+    switch (errorCode) {
       case 'auth/invalid-email':
         return 'Invalid email address';
       case 'auth/user-disabled':
@@ -58,9 +65,7 @@ const RegisterForm: React.FC = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Sign In</CardTitle>
-          <CardDescription>
-            Enter your email and password to access your account
-          </CardDescription>
+          <CardDescription>Enter your email and password to access your account</CardDescription>
         </CardHeader>
         <CardContent>
           {loginError && (
@@ -84,7 +89,10 @@ const RegisterForm: React.FC = () => {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
-                <Link href="/auth/forgot-password" className="text-sm text-blue-600 hover:text-blue-800">
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-sm text-blue-600 hover:text-blue-800"
+                >
                   Forgot password?
                 </Link>
               </div>
@@ -97,11 +105,7 @@ const RegisterForm: React.FC = () => {
                 required
               />
             </div>
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading}
-            >
+            <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

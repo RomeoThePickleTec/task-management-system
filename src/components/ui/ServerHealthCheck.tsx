@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useEffect, useState } from 'react';
 import { apiClient } from '@/services/api/apiClient';
@@ -12,9 +12,9 @@ interface ServerHealthCheckProps {
   showSuccessToast?: boolean;
 }
 
-export function ServerHealthCheck({ 
+export function ServerHealthCheck({
   interval = 30000, // 30 seconds by default
-  showSuccessToast = false 
+  showSuccessToast = false,
 }: ServerHealthCheckProps) {
   const [isServerAvailable, setIsServerAvailable] = useState<boolean | null>(null);
   const [isChecking, setIsChecking] = useState(false);
@@ -23,47 +23,49 @@ export function ServerHealthCheck({
   // Function to check server health
   const checkServerHealth = async () => {
     if (isChecking) return;
-    
+
     setIsChecking(true);
-    
+
     try {
       const isAvailable = await apiClient.healthCheck();
-      
+
       // Update state
       setIsServerAvailable(isAvailable);
       setLastChecked(new Date());
-      
+
       // If status changed, show toast
       if (isAvailable && isServerAvailable === false) {
         toast({
-          title: "Servidor disponible",
-          description: "Se ha restablecido la conexión con el servidor.",
-          variant: "default",
+          title: 'Servidor disponible',
+          description: 'Se ha restablecido la conexión con el servidor.',
+          variant: 'default',
         });
       } else if (!isAvailable && isServerAvailable === true) {
         toast({
-          title: "Servidor no disponible",
-          description: "Se ha perdido la conexión con el servidor. Algunas funciones pueden no estar disponibles.",
-          variant: "destructive",
+          title: 'Servidor no disponible',
+          description:
+            'Se ha perdido la conexión con el servidor. Algunas funciones pueden no estar disponibles.',
+          variant: 'destructive',
         });
       } else if (isAvailable && showSuccessToast && isServerAvailable === null) {
         // First check and server is available
         toast({
-          title: "Servidor disponible",
-          description: "Conexión establecida con el servidor.",
-          variant: "default",
+          title: 'Servidor disponible',
+          description: 'Conexión establecida con el servidor.',
+          variant: 'default',
         });
       }
     } catch (error) {
-      console.error("Error checking server health:", error);
+      console.error('Error checking server health:', error);
       setIsServerAvailable(false);
-      
+
       if (isServerAvailable === true) {
         // Only show toast if status changed from available to unavailable
         toast({
-          title: "Servidor no disponible",
-          description: "Se ha perdido la conexión con el servidor. Algunas funciones pueden no estar disponibles.",
-          variant: "destructive",
+          title: 'Servidor no disponible',
+          description:
+            'Se ha perdido la conexión con el servidor. Algunas funciones pueden no estar disponibles.',
+          variant: 'destructive',
         });
       }
     } finally {
@@ -75,10 +77,10 @@ export function ServerHealthCheck({
   useEffect(() => {
     // Initial check
     checkServerHealth();
-    
+
     // Set up interval for regular checks
     const intervalId = setInterval(checkServerHealth, interval);
-    
+
     // Clean up interval on unmount
     return () => clearInterval(intervalId);
   }, [interval, isServerAvailable]);
@@ -89,9 +91,7 @@ export function ServerHealthCheck({
       <div className="fixed bottom-4 right-4 z-50">
         <Alert className="bg-gray-50 border border-gray-200 shadow-lg">
           <Loader2 className="h-5 w-5 text-blue-500 animate-spin mr-2" />
-          <AlertDescription>
-            Verificando conexión con el servidor...
-          </AlertDescription>
+          <AlertDescription>Verificando conexión con el servidor...</AlertDescription>
         </Alert>
       </div>
     );
@@ -112,9 +112,9 @@ export function ServerHealthCheck({
                 </span>
               )}
             </AlertDescription>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className="ml-2 bg-white hover:bg-red-50 text-red-700 border-red-300"
               onClick={checkServerHealth}
               disabled={isChecking}
@@ -146,9 +146,9 @@ export function ServerHealthCheck({
                 </span>
               )}
             </AlertDescription>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className="ml-2 bg-white hover:bg-green-50 text-green-700 border-green-300"
               onClick={checkServerHealth}
               disabled={isChecking}

@@ -2,18 +2,10 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { 
-  Layers, 
-  CheckSquare, 
-  Users, 
-  Calendar, 
-  BarChart2,
-  Settings,
-  Home
-} from "lucide-react";
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Layers, CheckSquare, Users, Calendar, BarChart2, Settings, Home } from 'lucide-react';
 import { UserRole } from '@/core/interfaces/models';
 
 interface SidebarProps {
@@ -21,10 +13,7 @@ interface SidebarProps {
   userRole?: UserRole;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({
-  className,
-  userRole = UserRole.DEVELOPER,
-}) => {
+const Sidebar: React.FC<SidebarProps> = ({ className, userRole = UserRole.DEVELOPER }) => {
   const pathname = usePathname();
 
   const isActive = (path: string) => {
@@ -77,23 +66,19 @@ const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   // Filtrar elementos de navegación según el rol del usuario
-  const filteredNavItems = navItems.filter(item => 
-    item.roles.includes(userRole)
-  );
+  const filteredNavItems = navItems.filter((item) => item.roles.includes(userRole));
 
   return (
-    <div className={cn("pb-12 border-r h-full", className)}>
+    <div className={cn('pb-12 border-r h-full', className)}>
       <div className="space-y-4 py-4">
         <div className="px-4 py-2">
-          <h2 className="mb-2 px-2 text-lg font-semibold tracking-tight">
-            Navegación
-          </h2>
+          <h2 className="mb-2 px-2 text-lg font-semibold tracking-tight">Navegación</h2>
           <ScrollArea className="h-[calc(100vh-9rem)]">
             <div className="space-y-1">
               {filteredNavItems.map((item, index) => (
                 <Link key={index} href={item.href} passHref>
                   <Button
-                    variant={isActive(item.href) ? "secondary" : "ghost"}
+                    variant={isActive(item.href) ? 'secondary' : 'ghost'}
                     size="sm"
                     className="w-full justify-start"
                   >

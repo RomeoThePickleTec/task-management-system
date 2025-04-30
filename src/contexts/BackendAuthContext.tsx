@@ -1,13 +1,7 @@
 // src/contexts/BackendAuthContext.tsx
-"use client";
+'use client';
 
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode
-} from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { apiClient } from '@/services/api/apiClient';
 import { UserRole, IUser } from '@/core/interfaces/models';
 import { toast } from '@/components/ui/use-toast';
@@ -21,7 +15,11 @@ interface AuthContextType {
   isBackendAvailable: boolean;
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  updateProfile: (data: { fullName?: string, workMode?: string, role?: UserRole }) => Promise<boolean>;
+  updateProfile: (data: {
+    fullName?: string;
+    workMode?: string;
+    role?: UserRole;
+  }) => Promise<boolean>;
   retryBackendConnection: () => Promise<boolean>;
 }
 
@@ -53,7 +51,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsBackendAvailable(isAvailable);
       return isAvailable;
     } catch (error) {
-      console.error("Backend connection failed:", error);
+      console.error('Backend connection failed:', error);
       setIsBackendAvailable(false);
       return false;
     }
@@ -63,11 +61,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const retryBackendConnection = async (): Promise<boolean> => {
     setLoading(true);
     const isAvailable = await checkBackendConnection();
-    
+
     if (isAvailable) {
       await loadUserData();
     }
-    
+
     setLoading(false);
     return isAvailable;
   };
@@ -79,10 +77,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (token) {
         apiClient.setAuthToken(token);
         const user = await BackendAuthService.getCurrentUser();
-        
+
         if (user) {
           setCurrentUser(user);
-          setUserRole(user.role as UserRole || UserRole.DEVELOPER);
+          setUserRole((user.role as UserRole) || UserRole.DEVELOPER);
         } else {
           // Token inválido o expirado
           setCurrentUser(null);
@@ -92,7 +90,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setCurrentUser(null);
       }
     } catch (error) {
-      console.error("Failed to load user data:", error);
+      console.error('Failed to load user data:', error);
       setCurrentUser(null);
       BackendAuthService.logout();
     }
@@ -112,36 +110,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setError(null);
       setLoading(true);
-      
+
       await BackendAuthService.login(username, password);
       await loadUserData();
-      
+
       setLoading(false);
     } catch (err: any) {
-      setError(err.message || "Error al iniciar sesión");
+      setError(err.message || 'Error al iniciar sesión');
       setLoading(false);
       throw err;
     }
   };
 
-  const updateProfile = async (data: { fullName?: string, workMode?: string, role?: UserRole }) => {
+  const updateProfile = async (data: { fullName?: string; workMode?: string; role?: UserRole }) => {
     try {
       setError(null);
-      
+
       if (!currentUser) {
-        throw new Error("Usuario no autenticado");
+        throw new Error('Usuario no autenticado');
       }
-      
+
       const updatedData: Partial<IUser> = {
         full_name: data.fullName || currentUser.full_name,
         work_mode: data.workMode || currentUser.work_mode,
         role: data.role || currentUser.role,
       };
-      
+
       // Actualizar el usuario en el backend
       if (currentUser.id) {
         const updatedUser = await apiClient.put<IUser>(`/userlist/${currentUser.id}`, updatedData);
-        
+
         if (updatedUser) {
           setCurrentUser(updatedUser);
           if (data.role) {
@@ -149,14 +147,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }
         }
       }
-      
+
       return true;
     } catch (err: any) {
-      setError(err.message || "Error al actualizar perfil");
+      setError(err.message || 'Error al actualizar perfil');
       toast({
-        title: "Error",
-        description: err.message || "No se pudo actualizar el perfil.",
-        variant: "destructive",
+        title: 'Error',
+        description: err.message || 'No se pudo actualizar el perfil.',
+        variant: 'destructive',
       });
       return false;
     }
@@ -168,7 +166,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       BackendAuthService.logout();
       setCurrentUser(null);
     } catch (err: any) {
-      setError(err.message || "Error al cerrar sesión");
+      setError(err.message || 'Error al cerrar sesión');
       throw err;
     }
   };
@@ -182,14 +180,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     logout,
     updateProfile,
-    retryBackendConnection
+    retryBackendConnection,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {!loading && children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 };
 
 export default AuthContext;

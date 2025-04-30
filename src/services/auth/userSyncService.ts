@@ -21,7 +21,7 @@ export class UserSyncService {
     try {
       // Check if user already exists in the backend
       const existingUser = await this.findUserByEmail(firebaseUser.email);
-      
+
       if (existingUser) {
         // User exists, update any necessary fields
         return await this.updateExistingUser(existingUser, firebaseUser);
@@ -31,7 +31,7 @@ export class UserSyncService {
       }
     } catch (error) {
       console.error('Error syncing user with backend:', error);
-      
+
       // Return a fallback user object based on Firebase data
       // This allows the app to function even if backend sync fails
       return this.createFallbackUserFromFirebase(firebaseUser);
@@ -44,7 +44,7 @@ export class UserSyncService {
    */
   private static createFallbackUserFromFirebase(firebaseUser: User): IUser {
     const username = firebaseUser.email?.split('@')[0] || firebaseUser.uid.substring(0, 8);
-    
+
     return {
       id: null, // No ID since this isn't from backend
       username,
@@ -55,7 +55,7 @@ export class UserSyncService {
       active: true,
       created_at: firebaseUser.metadata.creationTime,
       updated_at: firebaseUser.metadata.lastSignInTime,
-      last_login: firebaseUser.metadata.lastSignInTime
+      last_login: firebaseUser.metadata.lastSignInTime,
     };
   }
 
@@ -66,9 +66,9 @@ export class UserSyncService {
     try {
       // Get all users from backend
       const users = await UserService.getUsers();
-      
+
       // Find user with matching email
-      return users.find(user => user.email.toLowerCase() === email.toLowerCase()) || null;
+      return users.find((user) => user.email.toLowerCase() === email.toLowerCase()) || null;
     } catch (error) {
       console.error('Error finding user by email:', error);
       throw error; // Let the calling function handle this
@@ -78,7 +78,10 @@ export class UserSyncService {
   /**
    * Update an existing user in the backend with Firebase data
    */
-  private static async updateExistingUser(existingUser: IUser, firebaseUser: User): Promise<IUser | null> {
+  private static async updateExistingUser(
+    existingUser: IUser,
+    firebaseUser: User
+  ): Promise<IUser | null> {
     try {
       // Check if we need to update any fields
       // For this implementation, we'll just ensure last_login is updated
@@ -92,7 +95,7 @@ export class UserSyncService {
         full_name: existingUser.full_name,
         work_mode: existingUser.work_mode,
         role: existingUser.role,
-        active: true
+        active: true,
       };
 
       // If the user has a display name in Firebase but not in backend, update it
@@ -104,7 +107,7 @@ export class UserSyncService {
       if (existingUser.id) {
         return await UserService.updateUser(existingUser.id, updates);
       }
-      
+
       return existingUser;
     } catch (error) {
       console.error('Error updating existing user:', error);
@@ -119,7 +122,7 @@ export class UserSyncService {
     try {
       // Create a username from email (remove domain)
       const username = firebaseUser.email?.split('@')[0] || firebaseUser.uid.substring(0, 8);
-      
+
       // Create a new user with default values
       const newUser: Omit<IUser, 'id' | 'created_at' | 'updated_at'> = {
         username,
@@ -128,7 +131,7 @@ export class UserSyncService {
         role: UserRole.DEVELOPER, // Default role
         work_mode: WorkMode.REMOTE, // Default work mode
         active: true,
-        last_login: new Date().toISOString()
+        last_login: new Date().toISOString(),
       };
 
       return await UserService.createUser(newUser);
@@ -144,15 +147,15 @@ export class UserSyncService {
    * Handles backend connection failures gracefully
    */
   static async updateUserProfile(
-    userId: number | null, 
-    firebaseUser: User, 
+    userId: number | null,
+    firebaseUser: User,
     profileData: { fullName?: string; workMode?: string; role?: UserRole }
   ): Promise<IUser | null> {
     // Always update Firebase profile if fullName is provided
     if (profileData.fullName && firebaseUser) {
       try {
         await firebaseUser.updateProfile({
-          displayName: profileData.fullName
+          displayName: profileData.fullName,
         });
       } catch (error) {
         console.error('Error updating Firebase profile:', error);
@@ -165,14 +168,14 @@ export class UserSyncService {
       // Return a fallback user with the updated profile data
       return this.createFallbackUserFromFirebase({
         ...firebaseUser,
-        displayName: profileData.fullName || firebaseUser.displayName
+        displayName: profileData.fullName || firebaseUser.displayName,
       });
     }
 
     // Try to update backend
     try {
       const updates: Partial<IUser> = {
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       };
 
       if (profileData.fullName) {
@@ -191,11 +194,11 @@ export class UserSyncService {
       return await UserService.updateUser(userId, updates);
     } catch (error) {
       console.error('Error updating user profile in backend:', error);
-      
+
       // Return a fallback user with the updated profile data
       return this.createFallbackUserFromFirebase({
         ...firebaseUser,
-        displayName: profileData.fullName || firebaseUser.displayName
+        displayName: profileData.fullName || firebaseUser.displayName,
       });
     }
   }
@@ -205,7 +208,7 @@ export class UserSyncService {
    */
   static async deleteUser(userId: number | null, firebaseUser: User): Promise<boolean> {
     let backendDeleted = false;
-    
+
     // Try to delete from backend if we have a userId
     if (userId !== null) {
       try {
@@ -215,7 +218,7 @@ export class UserSyncService {
         // Continue with Firebase deletion even if backend deletion fails
       }
     }
-    
+
     // Try to delete from Firebase
     try {
       await firebaseUser.delete();

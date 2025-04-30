@@ -5,33 +5,33 @@ export enum TaskStatus {
   TODO = 0,
   IN_PROGRESS = 1,
   COMPLETED = 2,
-  BLOCKED = 3
+  BLOCKED = 3,
 }
 
 export enum ProjectStatus {
   PLANNING = 0,
   ACTIVE = 1,
   COMPLETED = 2,
-  ON_HOLD = 3
+  ON_HOLD = 3,
 }
 
 export enum UserRole {
-  ADMIN = "ADMIN",
-  MANAGER = "MANAGER",
-  DEVELOPER = "DEVELOPER",
-  TESTER = "TESTER"
+  ADMIN = 'ADMIN',
+  MANAGER = 'MANAGER',
+  DEVELOPER = 'DEVELOPER',
+  TESTER = 'TESTER',
 }
 
 export enum WorkMode {
-  OFFICE = "OFFICE",
-  REMOTE = "REMOTE",
-  HYBRID = "HYBRID"
+  OFFICE = 'OFFICE',
+  REMOTE = 'REMOTE',
+  HYBRID = 'HYBRID',
 }
 
 export enum SprintStatus {
   PLANNING = 0,
   ACTIVE = 1,
-  COMPLETED = 2
+  COMPLETED = 2,
 }
 
 // Interfaces de modelos

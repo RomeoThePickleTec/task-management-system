@@ -10,7 +10,8 @@
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
     "test": "cypress run --spec 'cypress/e2e/**/*.cy.ts'",
-    "test:component": "cypress run --component"
+    "test:component": "cypress run --component",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\""
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.11",
@@ -49,6 +50,7 @@
     "cypress": "^14.3.2",
     "eslint": "^9",
     "eslint-config-next": "15.2.4",
+    "prettier": "^3.5.3",
     "tailwindcss": "^4.1.2",
     "typescript": "^5"
   }

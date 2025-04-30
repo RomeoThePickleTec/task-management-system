@@ -1,14 +1,21 @@
-"use client";
+'use client';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/BackendAuthContext'; // Cambia la importación
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, Loader2 } from 'lucide-react';
 
 const LoginForm: React.FC = () => {
@@ -16,7 +23,7 @@ const LoginForm: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const { login } = useAuth();
   const router = useRouter();
 
@@ -56,7 +63,7 @@ const LoginForm: React.FC = () => {
               <Label htmlFor="username">Nombre de usuario</Label>
               <Input
                 id="username"
-                type="text" 
+                type="text"
                 placeholder="usuario"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -66,7 +73,10 @@ const LoginForm: React.FC = () => {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Contraseña</Label>
-                <Link href="/auth/forgot-password" className="text-sm text-blue-600 hover:text-blue-800">
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-sm text-blue-600 hover:text-blue-800"
+                >
                   ¿Olvidaste tu contraseña?
                 </Link>
               </div>
@@ -79,11 +89,7 @@ const LoginForm: React.FC = () => {
                 required
               />
             </div>
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading}
-            >
+            <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -95,8 +101,7 @@ const LoginForm: React.FC = () => {
             </Button>
           </form>
         </CardContent>
-        <CardFooter className="flex flex-col">
-        </CardFooter>
+        <CardFooter className="flex flex-col"></CardFooter>
       </Card>
     </div>
   );

@@ -7,24 +7,31 @@ Un sistema completo de gestión de tareas inspirado en Jira, desarrollado con Ne
 ## Vista Previa
 
 ### Página de Inicio
+
 ![JAI-VIER Página de Inicio](./JaivierInicio.png)
 
 ### Gestión de Proyectos
+
 ![JAI-VIER Proyectos](./JavierProyects.png)
 
 ### Gestión de Sprints
+
 ![JAI-VIER Sprints](./JaivierSprints.png)
 
 ### Gestión de Tareas
+
 ![JAI-VIER Tareas](./JaivierTareas.png)
 
 ### Detalles de Tareas
+
 ![JAI-VIER Detalles de Tareas](./JaivierTareasDetail.png)
 
 ### Informes y Análisis
+
 ![JAI-VIER Informes](./InformesJaivier.png)
 
 ### Nuestro Equipo
+
 ![Equipo JAI-VIER](./EquipoJaivier.png)
 
 ## Características
@@ -62,12 +69,14 @@ Un sistema completo de gestión de tareas inspirado en Jira, desarrollado con Ne
 ## Instalación
 
 1. Clona el repositorio:
+
    ```bash
    git clone https://github.com/equipo31/jai-vier.git
    cd jai-vier
    ```
 
 2. Instala las dependencias:
+
    ```bash
    npm install
    # o
@@ -77,6 +86,7 @@ Un sistema completo de gestión de tareas inspirado en Jira, desarrollado con Ne
 3. Configura las credenciales según las instrucciones proporcionadas al ejecutar el backend de Spring Boot.
 
 4. Inicia el servidor de desarrollo:
+
    ```bash
    npm run dev
    # o
@@ -129,21 +139,25 @@ CJ task-management-system/
 ## Uso
 
 ### Proyectos
+
 - Visualiza todos los proyectos en la página de proyectos
 - Crea nuevos proyectos con el botón "Nuevo proyecto"
 - Accede a detalles, asigna miembros y administra sprints
 
 ### Sprints
+
 - Organiza el trabajo en sprints con fechas de inicio y fin
 - Monitorea el progreso de los sprints en tiempo real
 - Analiza la velocidad del equipo y el rendimiento
 
 ### Tareas
+
 - Crea tareas y subtareas con descripciones detalladas
 - Asigna tareas a sprints y proyectos específicos
 - Cambia el estado de las tareas (Por hacer, En progreso, Completado, Bloqueado)
 
 ### Informes
+
 - Accede a informes detallados de tareas, sprints y proyectos
 - Filtra y ordena los datos según tus necesidades
 - Identifica cuellos de botella y proyectos en riesgo
@@ -181,6 +195,7 @@ Actualmente, existen algunos problemas con la implementación del backend. Entre
 Para preparar la aplicación para producción:
 
 1. Compila el proyecto:
+
    ```bash
    npm run build
    # o

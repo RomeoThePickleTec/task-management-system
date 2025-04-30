@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React from 'react';
 import { useAuth } from '@/contexts/BackendAuthContext';
@@ -21,19 +21,20 @@ export function BackendStatus() {
       const result = await retryBackendConnection();
       if (result) {
         toast({
-          title: "Conexión restaurada",
-          description: "Se ha restablecido la conexión con el servidor.",
-          variant: "default",
+          title: 'Conexión restaurada',
+          description: 'Se ha restablecido la conexión con el servidor.',
+          variant: 'default',
         });
       } else {
         toast({
-          title: "Error de conexión",
-          description: "No se pudo conectar con el servidor. Algunas funciones pueden no estar disponibles.",
-          variant: "destructive",
+          title: 'Error de conexión',
+          description:
+            'No se pudo conectar con el servidor. Algunas funciones pueden no estar disponibles.',
+          variant: 'destructive',
         });
       }
     } catch (error) {
-      console.error("Error retrying connection:", error);
+      console.error('Error retrying connection:', error);
     } finally {
       setIsRetrying(false);
     }
@@ -51,9 +52,9 @@ export function BackendStatus() {
               Algunas funciones pueden no estar disponibles.
             </p>
             <div className="mt-3">
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 className="bg-white hover:bg-red-50 text-red-700 border-red-300"
                 onClick={handleRetry}
                 disabled={isRetrying}

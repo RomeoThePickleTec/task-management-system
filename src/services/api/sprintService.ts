@@ -13,7 +13,7 @@ export class SprintService {
       const queryParams: Record<string, string> = {};
       if (filter?.project_id) queryParams['project_id'] = filter.project_id.toString();
       if (filter?.status !== undefined) queryParams['status'] = filter.status.toString();
-      
+
       return await apiClient.get<ISprint[]>(this.BASE_PATH, queryParams);
     } catch (error) {
       console.error('Error fetching sprints:', error);
@@ -34,7 +34,9 @@ export class SprintService {
   // Obtener sprints activos por proyecto
   static async getActiveSprintsByProject(projectId: number): Promise<ISprint[]> {
     try {
-      return await apiClient.get<ISprint[]>(`${this.BASE_PATH}/active`, { project_id: projectId.toString() });
+      return await apiClient.get<ISprint[]>(`${this.BASE_PATH}/active`, {
+        project_id: projectId.toString(),
+      });
     } catch (error) {
       console.error(`Error fetching active sprints for project ${projectId}:`, error);
       return [];
@@ -42,7 +44,9 @@ export class SprintService {
   }
 
   // Crear un nuevo sprint
-  static async createSprint(sprintData: Omit<ISprint, 'id' | 'created_at' | 'updated_at'>): Promise<ISprint | null> {
+  static async createSprint(
+    sprintData: Omit<ISprint, 'id' | 'created_at' | 'updated_at'>
+  ): Promise<ISprint | null> {
     try {
       return await apiClient.post<ISprint>(this.BASE_PATH, sprintData);
     } catch (error) {

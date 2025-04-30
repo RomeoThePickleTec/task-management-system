@@ -1,10 +1,10 @@
 // src/components/sprints/SprintCard.tsx
 import React from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { ISprint, SprintStatus } from '@/core/interfaces/models';
-import { CalendarIcon, CheckSquare } from "lucide-react";
+import { CalendarIcon, CheckSquare } from 'lucide-react';
 
 interface SprintCardProps {
   sprint: ISprint;
@@ -13,21 +13,33 @@ interface SprintCardProps {
   onViewDetails?: () => void;
 }
 
-const SprintCard: React.FC<SprintCardProps> = ({ 
-  sprint, 
-  taskCount = 0, 
-  completedTaskCount = 0, 
-  onViewDetails 
+const SprintCard: React.FC<SprintCardProps> = ({
+  sprint,
+  taskCount = 0,
+  completedTaskCount = 0,
+  onViewDetails,
 }) => {
   // Helper para obtener badge según el estado
   const getStatusBadge = (status: SprintStatus) => {
     switch (status) {
       case SprintStatus.PLANNING:
-        return <Badge variant="outline" className="bg-purple-100 text-purple-800">Planificación</Badge>;
+        return (
+          <Badge variant="outline" className="bg-purple-100 text-purple-800">
+            Planificación
+          </Badge>
+        );
       case SprintStatus.ACTIVE:
-        return <Badge variant="default" className="bg-green-500">Activo</Badge>;
+        return (
+          <Badge variant="default" className="bg-green-500">
+            Activo
+          </Badge>
+        );
       case SprintStatus.COMPLETED:
-        return <Badge variant="default" className="bg-blue-500">Completado</Badge>;
+        return (
+          <Badge variant="default" className="bg-blue-500">
+            Completado
+          </Badge>
+        );
       default:
         return <Badge variant="outline">Desconocido</Badge>;
     }
@@ -45,9 +57,9 @@ const SprintCard: React.FC<SprintCardProps> = ({
     const today = new Date();
     const diffTime = endDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays < 0) return "Terminado";
-    if (diffDays === 0) return "Termina hoy";
+
+    if (diffDays < 0) return 'Terminado';
+    if (diffDays === 0) return 'Termina hoy';
     return `${diffDays} días restantes`;
   };
 
@@ -57,10 +69,10 @@ const SprintCard: React.FC<SprintCardProps> = ({
     const today = new Date();
     const diffTime = endDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays < 0) return "text-red-600";
-    if (diffDays <= 3) return "text-amber-600";
-    return "text-gray-600";
+
+    if (diffDays < 0) return 'text-red-600';
+    if (diffDays <= 3) return 'text-amber-600';
+    return 'text-gray-600';
   };
 
   // Calcular el progreso
@@ -92,11 +104,13 @@ const SprintCard: React.FC<SprintCardProps> = ({
           </div>
           <div className="flex items-center gap-2">
             <CheckSquare className="h-4 w-4 text-gray-600" />
-            <span>{completedTaskCount}/{taskCount} tareas completadas</span>
+            <span>
+              {completedTaskCount}/{taskCount} tareas completadas
+            </span>
           </div>
           <div className="w-full bg-gray-200 h-2 rounded-full mt-2">
-            <div 
-              className="h-full bg-blue-500 rounded-full" 
+            <div
+              className="h-full bg-blue-500 rounded-full"
               style={{ width: `${getProgress()}%` }}
             ></div>
           </div>

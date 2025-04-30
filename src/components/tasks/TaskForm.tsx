@@ -1,24 +1,20 @@
 // src/components/tasks/TaskForm.tsx
 import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import { ITask, TaskStatus, IProject, ISprint } from '@/core/interfaces/models';
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface TaskFormProps {
   task?: ITask;
@@ -59,7 +55,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
   // Manejador de cambio para inputs y textareas
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   // Manejador para selects
@@ -67,47 +63,47 @@ const TaskForm: React.FC<TaskFormProps> = ({
     if (name === 'project_id' || name === 'sprint_id') {
       // Convertir a número si no está vacío
       const numValue = value ? parseInt(value, 10) : undefined;
-      setFormData(prev => ({ ...prev, [name]: numValue }));
-      
+      setFormData((prev) => ({ ...prev, [name]: numValue }));
+
       // Si cambiamos el proyecto, resetear el sprint_id
       if (name === 'project_id') {
-        setFormData(prev => ({ ...prev, sprint_id: undefined }));
+        setFormData((prev) => ({ ...prev, sprint_id: undefined }));
       }
     } else if (name === 'status' || name === 'priority') {
       // Convertir a número para los enums
-      setFormData(prev => ({ ...prev, [name]: parseInt(value, 10) }));
+      setFormData((prev) => ({ ...prev, [name]: parseInt(value, 10) }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
   // Manejador para fecha
   const handleDateChange = (date: Date | undefined) => {
     if (date) {
-      setFormData(prev => ({ ...prev, due_date: date.toISOString() }));
+      setFormData((prev) => ({ ...prev, due_date: date.toISOString() }));
     }
   };
 
   // Manejador para números
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: Number(value) }));
+    setFormData((prev) => ({ ...prev, [name]: Number(value) }));
   };
 
   // Filtrar sprints por proyecto seleccionado
-  const filteredSprints = formData.project_id 
-    ? sprints.filter(sprint => sprint.project_id === formData.project_id)
+  const filteredSprints = formData.project_id
+    ? sprints.filter((sprint) => sprint.project_id === formData.project_id)
     : [];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validaciones antes de enviar
     if (!formData.title.trim()) {
       alert('El título es obligatorio');
       return;
     }
-    
+
     if (!formData.description.trim()) {
       alert('La descripción es obligatoria');
       return;
@@ -180,7 +176,11 @@ const TaskForm: React.FC<TaskFormProps> = ({
             disabled={!formData.project_id || filteredSprints.length === 0}
           >
             <SelectTrigger>
-              <SelectValue placeholder={!formData.project_id ? "Selecciona un proyecto primero" : "Selecciona un sprint"} />
+              <SelectValue
+                placeholder={
+                  !formData.project_id ? 'Selecciona un proyecto primero' : 'Selecciona un sprint'
+                }
+              />
             </SelectTrigger>
             <SelectContent>
               {filteredSprints.map((sprint) => (
@@ -256,12 +256,13 @@ const TaskForm: React.FC<TaskFormProps> = ({
         </label>
         <Popover>
           <PopoverTrigger asChild>
-            <Button
-              variant={"outline"}
-              className="w-full justify-start text-left font-normal"
-            >
+            <Button variant={'outline'} className="w-full justify-start text-left font-normal">
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {formData.due_date ? format(new Date(formData.due_date), 'PP') : <span>Selecciona una fecha</span>}
+              {formData.due_date ? (
+                format(new Date(formData.due_date), 'PP')
+              ) : (
+                <span>Selecciona una fecha</span>
+              )}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0">

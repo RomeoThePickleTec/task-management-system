@@ -1,24 +1,20 @@
 // src/components/sprints/SprintForm.tsx
 import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import { ISprint, SprintStatus, IProject } from '@/core/interfaces/models';
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface SprintFormProps {
   sprint?: ISprint;
@@ -52,25 +48,25 @@ const SprintForm: React.FC<SprintFormProps> = ({
       const { id, created_at, updated_at, ...sprintData } = sprint;
       setFormData(sprintData);
     } else if (projectId) {
-      setFormData(prev => ({ ...prev, project_id: projectId }));
+      setFormData((prev) => ({ ...prev, project_id: projectId }));
     }
   }, [sprint, projectId]);
 
   // Manejador de cambio para inputs y textareas
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   // Manejador para selects
   const handleSelectChange = (name: string, value: string) => {
-    setFormData(prev => ({ ...prev, [name]: name === 'project_id' ? Number(value) : value }));
+    setFormData((prev) => ({ ...prev, [name]: name === 'project_id' ? Number(value) : value }));
   };
 
   // Manejador para fechas
   const handleDateChange = (name: 'start_date' | 'end_date') => (date: Date | undefined) => {
     if (date) {
-      setFormData(prev => ({ ...prev, [name]: date.toISOString() }));
+      setFormData((prev) => ({ ...prev, [name]: date.toISOString() }));
     }
   };
 
@@ -140,12 +136,13 @@ const SprintForm: React.FC<SprintFormProps> = ({
           </label>
           <Popover>
             <PopoverTrigger asChild>
-              <Button
-                variant={"outline"}
-                className="w-full justify-start text-left font-normal"
-              >
+              <Button variant={'outline'} className="w-full justify-start text-left font-normal">
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {formData.start_date ? format(new Date(formData.start_date), 'PP') : <span>Selecciona una fecha</span>}
+                {formData.start_date ? (
+                  format(new Date(formData.start_date), 'PP')
+                ) : (
+                  <span>Selecciona una fecha</span>
+                )}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
@@ -165,12 +162,13 @@ const SprintForm: React.FC<SprintFormProps> = ({
           </label>
           <Popover>
             <PopoverTrigger asChild>
-              <Button
-                variant={"outline"}
-                className="w-full justify-start text-left font-normal"
-              >
+              <Button variant={'outline'} className="w-full justify-start text-left font-normal">
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {formData.end_date ? format(new Date(formData.end_date), 'PP') : <span>Selecciona una fecha</span>}
+                {formData.end_date ? (
+                  format(new Date(formData.end_date), 'PP')
+                ) : (
+                  <span>Selecciona una fecha</span>
+                )}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
