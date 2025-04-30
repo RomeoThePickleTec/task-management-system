@@ -31,7 +31,7 @@ jobs:
       - name: Lint code
         run: npm run lint || true
       - name: Prettier
-        run: npm run prettier || true
+        run: npm run format || true
   
   test:
     runs-on: ubuntu-latest
