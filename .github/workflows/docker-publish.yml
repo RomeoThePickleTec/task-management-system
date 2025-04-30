@@ -31,8 +31,13 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
       
-      - name: Run Cypress tests
-        run: npm run test
+      - name: Start server and run Cypress tests
+        run: |
+          # Instalar paquete start-server-and-test si no está incluido en tus dependencias
+          npm install --save-dev start-server-and-test
+          
+          # Iniciar el servidor, esperar a que esté disponible, y luego ejecutar pruebas
+          npx start-server-and-test "npm start" http://localhost:3000 "cypress run --spec 'cypress/e2e/**/*.cy.ts'"
         
   build:
     runs-on: ubuntu-latest
