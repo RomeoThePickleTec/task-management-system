@@ -30,6 +30,8 @@ jobs:
         run: npm ci --legacy-peer-deps
       - name: Lint code
         run: npm run lint || true
+      - name: Prettier
+        run: npm run prettier || true
   
   test:
     runs-on: ubuntu-latest
