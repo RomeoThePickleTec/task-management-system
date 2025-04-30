@@ -31,6 +31,9 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
       
+      - name: Lint code
+        run: npm run lint || true
+        
       - name: Build Next.js app and run Cypress tests
         run: |
           # Instalar paquete start-server-and-test con --legacy-peer-deps

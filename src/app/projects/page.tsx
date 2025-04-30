@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { IProject, ITask, ProjectStatus, UserRole } from '@/core/interfaces/models';
+import { IProject, ProjectStatus, UserRole } from '@/core/interfaces/models';
 import ProjectList from '@/components/projects/ProjectList';
 import Link from 'next/link';
 import { PlusCircle, Search } from "lucide-react";

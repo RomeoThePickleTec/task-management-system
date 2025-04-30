@@ -2,7 +2,6 @@
 // Servicios para operaciones con tareas
 import { apiClient } from './apiClient';
 import { ITask, TaskFilter } from '../../core/interfaces/models';
-import { TaskFactory } from '../../core/patterns/factory';
 
 export class TaskService {
   private static readonly BASE_PATH = '/tasklist';

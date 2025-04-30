@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { redirect } from 'next/navigation';
 import { useAuth } from '@/contexts/BackendAuthContext';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import MainLayout from '@/components/layout/MainLayout';
@@ -17,7 +16,7 @@ import {
   CheckCircle2,
   Calendar
 } from "lucide-react";
-import { ITask, IProject, ISprint, TaskStatus, ProjectStatus, UserRole } from '@/core/interfaces/models';
+import { ITask, IProject, ISprint, TaskStatus, ProjectStatus } from '@/core/interfaces/models';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -25,8 +24,7 @@ import { useRouter } from 'next/navigation';
 import { 
   TaskService, 
   ProjectService,
-  SprintService,
-  UserService
+  SprintService
 } from '@/services/api';
 
 export default function HomePage() {
@@ -75,7 +73,6 @@ function DashboardContent() {
   const [loadingTaskId, setLoadingTaskId] = useState<number | null>(null);
 
   const router = useRouter();
-  const { userRole } = useAuth();
 
   useEffect(() => {
     // Load recent tasks

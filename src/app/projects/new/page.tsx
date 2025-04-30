@@ -11,7 +11,7 @@ import {
   CardHeader, 
   CardTitle 
 } from "@/components/ui/card";
-import { IProject, ProjectStatus, UserRole } from '@/core/interfaces/models';
+import { IProject, UserRole } from '@/core/interfaces/models';
 import { ArrowLeft, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import ProjectForm from '@/components/projects/ProjectForm';

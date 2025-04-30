@@ -44,8 +44,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogFooter,
-  DialogClose,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -59,8 +57,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { format } from 'date-fns';
-import es from 'date-fns/locale/es';
-import { ProjectService, ProjectMemberService, UserService } from '@/services/api';
+import { es } from 'date-fns/locale/es';
+import { ProjectService, ProjectMemberService } from '@/services/api';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import ProjectForm from '@/components/projects/ProjectForm';
 import { Skeleton } from '@/components/ui/skeleton';
