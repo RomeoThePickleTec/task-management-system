@@ -22,7 +22,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from '@/components/ui/use-toast';
-import BackendToFirebaseSync from '@/services/auth/backendToFirebaseSync';
 
 export default function NewUserPage() {
   return (
@@ -98,70 +97,7 @@ function NewUserContent() {
       };
       
       const backendUser = await UserService.createUser(userData);
-      
-      if (!backendUser) {
-        throw new Error('Error al crear usuario en el backend');
-      }
-      
-      // Step 2: Create or check user in Firebase
-      if (password) {
-        // If password is provided, create user in Firebase with that password
-        try {
-          await BackendToFirebaseSync.createFirebaseUserWithPassword(
-            backendUser, 
-            password,
-            sendPasswordEmail
-          );
-          
-          toast({
-            title: "Usuario creado",
-            description: "El usuario ha sido creado correctamente en el backend y en Firebase.",
-            variant: "default",
-          });
-        } catch (firebaseError: any) {
-          // Check if error is because user already exists
-          if (firebaseError.code === 'auth/email-already-in-use') {
-            toast({
-              title: "Usuario parcialmente creado",
-              description: "El usuario ya existe en Firebase pero se ha creado en el backend.",
-              variant: "default",
-            });
-          } else {
-            console.error('Error creating Firebase user:', firebaseError);
-            toast({
-              title: "Usuario parcialmente creado",
-              description: "El usuario se creó en el backend pero hubo un error al crearlo en Firebase.",
-              variant: "destructive",
-            });
-          }
-        }
-      } else {
-        // If no password, create Firebase user with temp password
-        try {
-          await BackendToFirebaseSync.syncBackendUserToFirebase(
-            backendUser.id!,
-            sendPasswordEmail
-          );
-          
-          toast({
-            title: "Usuario creado",
-            description: "El usuario ha sido creado correctamente en el backend y en Firebase.",
-            variant: "default",
-          });
-        } catch (firebaseError) {
-          console.error('Error syncing to Firebase:', firebaseError);
-          toast({
-            title: "Usuario parcialmente creado",
-            description: "El usuario se creó en el backend pero hubo un error al sincronizarlo con Firebase.",
-            variant: "destructive",
-          });
-        }
-      }
-      
-      setSuccess('Usuario creado correctamente');
-      setTimeout(() => {
-        router.push(`/users/${backendUser.id || ''}`);
-      }, 1500);
+      console.log('Backend user created:', backendUser);
     } catch (error) {
       console.error('Error creating user:', error);
       setError('Error al crear el usuario');
