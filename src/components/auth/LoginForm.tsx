@@ -53,7 +53,7 @@ const LoginForm: React.FC = () => {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Iniciar Sesión</CardTitle>
           <CardDescription>
-            Ingresa tu nombre de usuario y contraseña para acceder a Jaivier
+            Ingresa tu nombre de usuario y contraseña para acceder
           </CardDescription>
         </CardHeader>
         <CardContent>
