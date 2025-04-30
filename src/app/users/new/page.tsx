@@ -21,7 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { toast } from '@/components/ui/use-toast';
 
 export default function NewUserPage() {
   return (
@@ -36,7 +35,8 @@ export default function NewUserPage() {
 function NewUserContent() {
   const router = useRouter();
   const { userRole } = useAuth();
-
+  console.log('userRole', userRole);
+  
   // Form state
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');

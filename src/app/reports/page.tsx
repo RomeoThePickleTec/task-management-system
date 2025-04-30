@@ -15,8 +15,6 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   IProject,
-  ITask,
-  ISprint,
   TaskStatus,
   ProjectStatus,
   SprintStatus,
@@ -24,9 +22,7 @@ import {
 } from '@/core/interfaces/models';
 import {
   BarChart,
-  PieChart,
   Calendar,
-  Clock,
   AlertTriangle,
   CheckCircle,
   Timer,
@@ -36,7 +32,7 @@ import {
 import Link from 'next/link';
 
 // Importamos los servicios reales de API
-import { ProjectService, TaskService, SprintService, UserService } from '@/services/api';
+import { ProjectService, TaskService, SprintService } from '@/services/api';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 export default function ReportsPage() {
@@ -75,7 +71,7 @@ export default function ReportsPage() {
         setProjects(projectsData);
 
         // Inicializar estadísticas
-        let stats = {
+        const stats = {
           totalProjects: projectsData.length,
           activeProjects: projectsData.filter((p) => p.status === ProjectStatus.ACTIVE).length,
           completedProjects: projectsData.filter((p) => p.status === ProjectStatus.COMPLETED)
@@ -166,7 +162,7 @@ export default function ReportsPage() {
         const sprintsData = await SprintService.getSprints({ project_id: projectId });
 
         // Inicializar estadísticas específicas del proyecto
-        let stats = {
+        const stats = {
           ...statistics,
           totalTasks: tasksData.length,
           completedTasks: tasksData.filter((t) => t.status === TaskStatus.COMPLETED).length,
@@ -220,7 +216,7 @@ export default function ReportsPage() {
     };
 
     fetchProjectSpecificData();
-  }, [selectedProject]);
+  }, [selectedProject, statistics]);
 
   return (
     <ProtectedRoute requiredRoles={[UserRole.DEVELOPER, UserRole.MANAGER]}>

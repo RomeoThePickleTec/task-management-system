@@ -37,6 +37,12 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+// Custom error type for handling errors in a type-safe way
+interface ServiceError {
+  message?: string;
+  [key: string]: unknown;
+}
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<IUser | null>(null);
   const [userRole, setUserRole] = useState<UserRole>(UserRole.DEVELOPER);
@@ -115,8 +121,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await loadUserData();
 
       setLoading(false);
-    } catch (err: any) {
-      setError(err.message || 'Error al iniciar sesión');
+    } catch (err: unknown) {
+      const error = err as ServiceError;
+      setError(error.message || 'Error al iniciar sesión');
       setLoading(false);
       throw err;
     }
@@ -149,11 +156,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       return true;
-    } catch (err: any) {
-      setError(err.message || 'Error al actualizar perfil');
+    } catch (err: unknown) {
+      const error = err as ServiceError;
+      setError(error.message || 'Error al actualizar perfil');
       toast({
         title: 'Error',
-        description: err.message || 'No se pudo actualizar el perfil.',
+        description: error.message || 'No se pudo actualizar el perfil.',
         variant: 'destructive',
       });
       return false;
@@ -165,8 +173,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setError(null);
       BackendAuthService.logout();
       setCurrentUser(null);
-    } catch (err: any) {
-      setError(err.message || 'Error al cerrar sesión');
+    } catch (err: unknown) {
+      const error = err as ServiceError;
+      setError(error.message || 'Error al cerrar sesión');
       throw err;
     }
   };

@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   IProject,
@@ -20,13 +20,11 @@ import {
   ISprint,
   ProjectStatus,
   TaskStatus,
-  SprintStatus,
   UserRole,
 } from '@/core/interfaces/models';
 import {
   ChevronLeft,
   Download,
-  Calendar,
   Clock,
   CheckCircle,
   XCircle,
@@ -34,7 +32,6 @@ import {
   Users,
   BarChart,
   Layers,
-  Zap,
   Search,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -115,10 +112,8 @@ export default function ProjectReportsPage() {
 
   // Función para calcular el índice de progreso (progreso vs tiempo transcurrido)
   const calculateProgressIndex = (startDate: string, endDate: string, completionRate: number) => {
-    const today = new Date();
-    const start = new Date(startDate);
+    const today = new Date();    
     const end = new Date(endDate);
-
     // Si el proyecto está terminado o la fecha de fin ya pasó
     if (today > end) {
       return completionRate;

@@ -66,7 +66,7 @@ export class UserService {
       try {
         const user = await apiClient.get<IUser>(`${this.BASE_PATH}/email/${email}`);
         return user;
-      } catch (error) {
+      } catch {
         // Specific endpoint might not exist, try getting all users
         const users = await this.getUsers();
         return users.find((user) => user.email?.toLowerCase() === email.toLowerCase()) || null;
@@ -77,7 +77,6 @@ export class UserService {
     }
   }
 
-  // Create a new user
   // Create a new user
   static async createUser(
     userData: Omit<IUser, 'id' | 'created_at' | 'updated_at'>

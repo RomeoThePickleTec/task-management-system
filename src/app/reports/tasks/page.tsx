@@ -12,15 +12,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ITask, IProject, TaskStatus, UserRole } from '@/core/interfaces/models';
 import {
-  BarChart,
   ChevronLeft,
   Download,
   Clock,
-  Calendar,
   AlertTriangle,
   Check,
   Search,

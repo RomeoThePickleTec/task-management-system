@@ -14,7 +14,7 @@ import {
 import { ITask, TaskStatus, UserRole } from '@/core/interfaces/models';
 import TaskList from '@/components/tasks/TaskList';
 import Link from 'next/link';
-import { PlusCircle, Search } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/navigation';
 
@@ -43,7 +43,7 @@ export default function TasksPage() {
       setIsLoading(true);
       try {
         const allTasks = await TaskService.getTasks();
-
+        console.log('loadingTasks', loadingTaskId)
         // Asegurarnos de que cada tarea tenga un valor para due_date
         const tasksWithDefaults = allTasks.map((task) => {
           if (!task.due_date) {

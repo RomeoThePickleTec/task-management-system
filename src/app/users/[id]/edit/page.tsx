@@ -36,9 +36,11 @@ function UserEditContent() {
   const userId = Number(params.id);
   const router = useRouter();
   const { userRole } = useAuth();
+  console.log('userRole', userRole);
 
   // Form state
   const [userData, setUserData] = useState<IUser | null>(null);
+  console.log('userData', userData);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');

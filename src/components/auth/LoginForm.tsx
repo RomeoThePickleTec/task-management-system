@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@/contexts/BackendAuthContext'; // Cambia la importación
+import { useAuth } from '@/contexts/BackendAuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -15,28 +15,33 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 const LoginForm: React.FC = () => {
-  const [username, setUsername] = useState(''); // Cambiado de email a username
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [loginError, setLoginError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const { login } = useAuth();
   const router = useRouter();
+  const { toast } = useToast(); // Importamos el hook useToast
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoginError(null);
     setIsLoading(true);
 
     try {
       await login(username, password);
       router.push('/'); // Redirige al dashboard después del login
-    } catch (error: any) {
-      setLoginError('Credenciales inválidas o error de conexión');
+    } catch (error: unknown) {
+      // Mostrar toast de error en lugar de Alert
+      toast({
+        variant: "destructive",
+        title: "Error de autenticación",
+        description: "Credenciales inválidas o error de conexión",
+      });
+      console.error('Login error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -52,12 +57,6 @@ const LoginForm: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {loginError && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{loginError}</AlertDescription>
-            </Alert>
-          )}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="username">Nombre de usuario</Label>

@@ -40,7 +40,14 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
   // Inicializar formulario con datos de proyecto si existe
   useEffect(() => {
     if (project) {
-      const { id, created_at, updated_at, ...projectData } = project;
+      // Extract only the fields we need for the form data
+      const projectData = {
+        name: project.name,
+        description: project.description,
+        start_date: project.start_date,
+        end_date: project.end_date,
+        status: project.status,
+      };
       setFormData(projectData);
     }
   }, [project]);

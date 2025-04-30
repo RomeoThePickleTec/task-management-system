@@ -35,7 +35,7 @@ export class TaskFactory {
       (!taskData.subtasks || taskData.subtasks.length === 0)
     ) {
       const numSubtasks = Math.ceil(taskData.estimated_hours / TaskFactory.HOURS_THRESHOLD);
-      const hoursPerSubtask = Math.ceil(taskData.estimated_hours / numSubtasks);
+     // const hoursPerSubtask = Math.ceil(taskData.estimated_hours / numSubtasks);
 
       const subtasks: ISubtask[] = [];
 

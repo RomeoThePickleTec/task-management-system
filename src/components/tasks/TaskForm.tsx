@@ -47,7 +47,17 @@ const TaskForm: React.FC<TaskFormProps> = ({
   // Inicializar formulario con datos de tarea si existe
   useEffect(() => {
     if (task) {
-      const { id, created_at, updated_at, ...taskData } = task;
+      // Extract only the fields we need for the form data
+      const taskData = {
+        title: task.title,
+        description: task.description,
+        due_date: task.due_date,
+        priority: task.priority,
+        status: task.status,
+        estimated_hours: task.estimated_hours,
+        project_id: task.project_id,
+        sprint_id: task.sprint_id,
+      };
       setFormData(taskData);
     }
   }, [task]);

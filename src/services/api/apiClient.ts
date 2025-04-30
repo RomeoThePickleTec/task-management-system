@@ -30,8 +30,10 @@ export class ApiClient {
 
   // Clear auth token
   clearAuthToken(): void {
-    const { Authorization, ...rest } = this.headers as Record<string, string>;
-    this.headers = rest;
+    const headers = { ...this.headers } as Record<string, string>;
+    // Remove Authorization header if it exists
+    delete headers.Authorization;
+    this.headers = headers;
   }
 
   // Helper to delay for retry
@@ -112,7 +114,7 @@ export class ApiClient {
           try {
             const errorText = await response.text();
             console.warn(`Server error details: ${errorText}`);
-          } catch (e) {
+          } catch {
             // Ignore error reading response text
           }
 
@@ -171,7 +173,7 @@ export class ApiClient {
   }
 
   // Método POST
-  async post<T>(path: string, data: any): Promise<T | null> {
+  async post<T>(path: string, data: Record<string, unknown>): Promise<T | null> {
     try {
       // Check if data has minimal required fields for common entities
       const preparedData = this.prepareDataForPost(path, data);
@@ -187,8 +189,8 @@ export class ApiClient {
       if (contentType && contentType.includes('application/json')) {
         try {
           return await response.json();
-        } catch (e) {
-          console.warn('Empty JSON response body', e);
+        } catch {
+          console.warn('Empty JSON response body');
           return null;
         }
       }
@@ -211,7 +213,7 @@ export class ApiClient {
   }
 
   // Helper method to add common required fields based on entity type
-  private prepareDataForPost(path: string, data: any): any {
+  private prepareDataForPost(path: string, data: Record<string, unknown>): Record<string, unknown> {
     // Make a copy to avoid modifying the original
     const preparedData = { ...data };
 
@@ -237,7 +239,7 @@ export class ApiClient {
   }
 
   // Método PUT
-  async put<T>(path: string, data: any): Promise<T> {
+  async put<T>(path: string, data: Record<string, unknown>): Promise<T> {
     const response = await this.fetchWithRetry(`${this.baseUrl}${path}`, {
       method: 'PUT',
       headers: this.headers,
@@ -272,7 +274,7 @@ export class ApiClient {
         if (response.ok) {
           return true;
         }
-      } catch (error) {
+      } catch {
         // Health-check endpoint might not exist, try something else
         console.log('Health-check endpoint not available, trying alternatives');
       }
@@ -287,12 +289,12 @@ export class ApiClient {
         });
 
         return response.ok;
-      } catch (error) {
-        console.error('Secondary health check failed:', error);
+      } catch {
+        console.error('Secondary health check failed');
         return false;
       }
-    } catch (error) {
-      console.error('Health check failed:', error);
+    } catch {
+      console.error('Health check failed');
       return false;
     }
   }
