@@ -53,7 +53,7 @@ const LoginForm: React.FC = () => {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Iniciar Sesión</CardTitle>
           <CardDescription>
-            Ingresa tu nombre de usuario y contraseña para acceders
+            Ingresa tu nombre de usuario y contraseña para acceder
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -72,12 +72,6 @@ const LoginForm: React.FC = () => {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Contraseña</Label>
-                <Link
-                  href="/auth/forgot-password"
-                  className="text-sm text-blue-600 hover:text-blue-800"
-                >
-                  ¿Olvidaste tu contraseña?
-                </Link>
               </div>
               <Input
                 id="password"
