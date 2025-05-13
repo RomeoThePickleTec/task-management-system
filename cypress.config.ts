@@ -1,9 +1,11 @@
 import { defineConfig } from 'cypress';
 import * as fs from 'fs';
 import CryptoJS from 'crypto-js';
-require('dotenv').config(); // Cargar variables de entorno
+import dotenv from 'dotenv';
 
-const SECRET_KEY = process.env.SECRET_KEY;
+dotenv.config(); // Cargar las variables del archivo .env
+
+const SECRET_KEY = process.env.SECRET_KEY; // Usar la variable desde el archivo .env
 
 if (!SECRET_KEY) {
   throw new Error("❌ Error: SECRET_KEY no está definida. Verifica tu archivo .env");
@@ -24,7 +26,7 @@ export default defineConfig({
   e2e: {
     setupNodeEvents(on, config) {
       const decryptedEnv = decryptEnvVariables();
-      config.env = { ...config.env, ...decryptedEnv, apiKey: process.env.CYPRESS_API_KEY };
+      config.env = { ...config.env, ...decryptedEnv };
       return config;
     },
     experimentalStudio: true,
