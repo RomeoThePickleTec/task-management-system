@@ -1,9 +1,13 @@
 import { defineConfig } from 'cypress';
 import * as fs from 'fs';
 import CryptoJS from 'crypto-js';
-require('dotenv').config(); 
+require('dotenv').config(); // Cargar variables de entorno
 
-const SECRET_KEY = process.env.SECRET_KEY || '24)#^Of3qm62U$@BgHc*]VlJ.e7~SADz';
+const SECRET_KEY = process.env.SECRET_KEY;
+
+if (!SECRET_KEY) {
+  throw new Error("❌ Error: SECRET_KEY no está definida. Verifica tu archivo .env");
+}
 
 function decryptEnvVariables() {
   const envPath = './cypress.env.enc';
