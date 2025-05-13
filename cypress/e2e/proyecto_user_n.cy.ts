@@ -1,4 +1,4 @@
-describe('Basic test for login', () => {
+describe('Pryecto CRUD normal User', () => {
   it('passes', () => {
     cy.visit(Cypress.config('baseUrl'));
 
@@ -18,23 +18,7 @@ describe('Basic test for login', () => {
     cy.get('.bg-card').click();
     cy.get('.inline-flex').click();
     cy.get('.space-y-1 > [href="/projects"] > .inline-flex').click();
-    cy.get('[href="/tasks"] > .inline-flex > .ml-2').click();
-    cy.get('[href="/sprints"] > .inline-flex > .ml-2').click();
-    cy.get('[href="/users"] > .inline-flex > .ml-2').click();
-    cy.get('[href="/reports"] > .inline-flex > .ml-2').click();
     /* ==== End Cypress Studio ==== */
   });
 
-  // For negative test
-  it('fails', () => {
-    cy.visit(Cypress.config('baseUrl'));
-
-    /* ==== Generated with Cypress Studio ==== */
-    cy.get('#username').clear();
-    cy.get('#username').type('incorrect_user');
-    cy.get('#password').clear();
-    cy.get('#password').type('incorrect_password');
-    cy.get('.inline-flex').click();
-    /* ==== End Cypress Studio ==== */
-  });
 });
