@@ -14,7 +14,6 @@
 /coverage
 cypress.env.json
 cypress.env.enc
-encrypt-env.js
 .env
 
 # next.js
