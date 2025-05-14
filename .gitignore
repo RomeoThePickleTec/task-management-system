@@ -12,6 +12,9 @@
 
 # testing
 /coverage
+cypress.env.json
+cypress.env.enc
+.env
 
 # next.js
 /.next/

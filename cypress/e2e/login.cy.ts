@@ -1,35 +1,40 @@
 describe('Basic test for login', () => {
+  before(() => {
+    const username = Cypress.env('USERNAME');
+    const password = Cypress.env('PASSWORD');
+
+    if (!username || !password) {
+      throw new Error("❌ No se encontraron las variables de entorno cifradas. Verifica el archivo cypress.env.enc y la clave de descifrado.");
+    }
+  });
+
   it('passes', () => {
     cy.visit(Cypress.config('baseUrl'));
 
-    /* ==== Generated with Cypress Studio ==== */
-    cy.get('#username').clear('d');
-    cy.get('#username').type('djeison');
-    cy.get('#password').clear('H');
-    cy.get('#password').type('Hello123');
-    cy.get('.bg-card').click();
-    cy.get('.inline-flex').click();
-    cy.get('.space-y-1 > [href="/projects"] > .inline-flex').click();
-    cy.get('[href="/tasks"] > .inline-flex > .ml-2').click();
-    cy.get('[href="/sprints"] > .inline-flex > .ml-2').click();
-    cy.get('[href="/users"] > .inline-flex > .ml-2').click();
-    cy.get('[href="/reports"] > .inline-flex > .ml-2').click();
-    /* ==== End Cypress Studio ==== */
+    // Espera explícita antes de interactuar con los campos de login
+    cy.wait(3000);  // Ajusta este tiempo si es necesario
 
-  })
-  //for negative test
+    cy.get('#username', { timeout: 10000 }).should('be.visible').type(Cypress.env('USERNAME'));
+    cy.get('#password', { timeout: 10000 }).should('be.visible').type(Cypress.env('PASSWORD'));
+    cy.get('.bg-card').click();
+
+
+    /* ==== End Cypress Studio ==== */
+    /* ==== Generated with Cypress Studio ==== */
+    cy.get('.inline-flex').click();
+    cy.get('[href="/projects"] > .inline-flex > .ml-2').click();
+    /* ==== End Cypress Studio ==== */
+  });
+
+  // For negative test
   it('fails', () => {
     cy.visit(Cypress.config('baseUrl'));
-    /* ==== Generated with Cypress Studio ==== */
+    
+    // Espera explícita antes de interactuar con los campos de login
+    cy.wait(3000);
 
-    /* ==== End Cypress Studio ==== */
-    /* ==== Generated with Cypress Studio ==== */
-    cy.get('#username').clear('d');
-    cy.get('#username').type('dadawdfwa');
-    cy.get('#password').clear('faw');
-    cy.get('#password').type('fawfawfaw');
+    cy.get('#username').clear().type('incorrect_user');
+    cy.get('#password').clear().type('incorrect_password');
     cy.get('.inline-flex').click();
-    /* ==== End Cypress Studio ==== */
-  })
-  
-})
+  });
+});
