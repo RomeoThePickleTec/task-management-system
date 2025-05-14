@@ -133,9 +133,9 @@ jobs:
             --build-arg NODE_ENV=production \
             --build-arg PORT=3000 \
             --build-arg HOSTNAME=0.0.0.0 \
-            --build-arg SECRET_KEY=${{ secrets.SECRET_KEY }} \
-            -t ${{ env.REGISTRY }}/${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest \
-            -t ${{ env.REGISTRY }}/${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            --build-arg SECRET_KEY="${{ secrets.SECRET_KEY }}" \
+            -t "${{ env.REGISTRY }}/${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest" \
+            -t "${{ env.REGISTRY }}/${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}" \
             .
 
       # List built images
@@ -148,8 +148,8 @@ jobs:
       - name: Push Docker image
         run: |
           echo "Pushing Docker image..."
-          docker push ${{ env.REGISTRY }}/${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
-          docker push ${{ env.REGISTRY }}/${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker push "${{ env.REGISTRY }}/${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest"
+          docker push "${{ env.REGISTRY }}/${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
 
       # Debug Docker push
       - name: Debug Docker push
@@ -160,7 +160,7 @@ jobs:
           echo "- latest"
           echo "- ${{ github.sha }}"
           docker images
-          docker inspect ${{ env.REGISTRY }}/${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
+          docker inspect "${{ env.REGISTRY }}/${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}"
 
   deploy:
     runs-on: ubuntu-latest
