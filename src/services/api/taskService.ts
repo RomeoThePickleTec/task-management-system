@@ -115,4 +115,44 @@ export class TaskService {
       return false;
     }
   }
+  // Método para obtener tareas asignadas a un usuario específico
+static async getTasksByAssignedUser(userId: number): Promise<ITask[]> {
+  try {
+    return await apiClient.get<ITask[]>(`${this.BASE_PATH}/assigned/${userId}`);
+  } catch (error) {
+    console.error(`Error fetching tasks for user ${userId}:`, error);
+    // Si falla, intentar filtrar todas las tareas
+    try {
+      const allTasks = await this.getTasks();
+      return allTasks.filter(task => task.assigned_to === userId);
+    } catch (innerError) {
+      console.error('Fallback also failed:', innerError);
+      return [];
+    }
+  }
+}
+
+// Método para obtener las tareas completadas por un usuario en un sprint específico
+static async getCompletedTasksByUserAndSprint(userId: number, sprintId: number): Promise<ITask[]> {
+  try {
+    // Intentar primero con un endpoint específico si existe
+    return await apiClient.get<ITask[]>(`${this.BASE_PATH}/completed`, {
+      assigned_to: userId.toString(),
+      sprint_id: sprintId.toString()
+    });
+  } catch (error) {
+    console.error(`Error fetching completed tasks for user ${userId} in sprint ${sprintId}:`, error);
+    
+    // Si no hay un endpoint específico, obtener todas las tareas del sprint y filtrar
+    try {
+      const sprintTasks = await this.getTasks({ sprint_id: sprintId });
+      return sprintTasks.filter(
+        task => task.assigned_to === userId && task.status === TaskStatus.COMPLETED
+      );
+    } catch (innerError) {
+      console.error('Fallback also failed:', innerError);
+      return [];
+    }
+  }
+}
 }

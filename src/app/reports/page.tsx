@@ -28,6 +28,7 @@ import {
   Timer,
   FileBarChart,
   ChevronRight,
+  Users,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -518,6 +519,21 @@ export default function ReportsPage() {
                       </p>
                     </CardContent>
                   </Card>
+                  
+            <Card
+              className="hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => router.push('/reports/developer-performance')}
+            >
+              <CardContent className="p-6 flex flex-col items-center text-center">
+                <div className="h-12 w-12 bg-amber-100 rounded-full flex items-center justify-center mb-4">
+                  <Users className="h-6 w-6 text-amber-600" />
+                </div>
+                <h3 className="font-semibold text-lg mb-2">Rendimiento por Desarrollador</h3>
+                <p className="text-sm text-gray-600">
+                  Análisis de horas trabajadas y tareas completadas por cada miembro del equipo en diferentes sprints.
+                </p>
+              </CardContent>
+            </Card>
                 </div>
               </div>
             </>
