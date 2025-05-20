@@ -37,6 +37,7 @@ import {
 
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
+
 // Datos mock para desarrolladores
 const mockDevelopers = [
     { id: 1, username: 'jesusbanales', fullName: 'Jesus Enrique Bañales Lopez | A01642425' },
