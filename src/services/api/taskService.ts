@@ -26,6 +26,7 @@ export class TaskService {
   // Obtener una tarea por ID
   static async getTaskById(id: number): Promise<ITask | null> {
     try {
+      console.log('TaskService.getTaskById - ID recibido:', id);
       return await apiClient.get<ITask>(`${this.BASE_PATH}/${id}`);
     } catch (error) {
       console.error(`Error fetching task ${id}:`, error);

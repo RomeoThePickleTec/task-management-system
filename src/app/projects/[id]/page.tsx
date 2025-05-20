@@ -24,6 +24,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   Plus,
+  RefreshCw,
 } from 'lucide-react';
 import {
   Dialog,
@@ -61,6 +62,7 @@ const ProjectDetailsPage = () => {
   const [project, setProject] = useState<IProject | null>(null);
   const [members, setMembers] = useState<IProjectMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -74,31 +76,53 @@ const ProjectDetailsPage = () => {
   };
 
   // Cargar datos del proyecto
-  useEffect(() => {
-    const fetchProjectData = async () => {
+  const fetchProjectData = async (showLoading = true) => {
+    if (showLoading) {
       setIsLoading(true);
-      setError(null);
+    } else {
+      setIsRefreshing(true);
+    }
+    
+    setError(null);
 
-      try {
-        // Cargar proyecto
-        const projectData = await ProjectService.getProjectById(projectId);
-        if (!projectData) {
-          setError('No se encontró el proyecto especificado.');
-          return;
-        }
-        setProject(projectData);
-
-        // Cargar miembros del proyecto
-        const memberData = await ProjectMemberService.getProjectMembersByProject(projectId);
-        setMembers(memberData);
-      } catch (err) {
-        console.error('Error al cargar datos del proyecto:', err);
-        setError('Error al cargar el proyecto. Por favor, inténtelo de nuevo.');
-      } finally {
-        setIsLoading(false);
+    try {
+      console.log(`Cargando datos del proyecto ${projectId}...`);
+      
+      // Cargar proyecto con el método actualizado
+      const projectData = await ProjectService.getProjectById(projectId);
+      
+      if (!projectData) {
+        setError('No se encontró el proyecto especificado.');
+        return;
       }
-    };
+      
+      console.log('Datos del proyecto cargados:', projectData.name);
+      setProject(projectData);
 
+      // Cargar miembros del proyecto
+      const memberData = await ProjectMemberService.getProjectMembersByProject(projectId);
+      setMembers(memberData);
+      
+      // Si estamos refrescando, mostrar mensaje
+      if (!showLoading) {
+        setSuccessMessage('Datos actualizados correctamente');
+        setTimeout(() => {
+          setSuccessMessage(null);
+        }, 3000);
+      }
+    } catch (err) {
+      console.error('Error al cargar datos del proyecto:', err);
+      setError('Error al cargar el proyecto. Por favor, inténtelo de nuevo.');
+    } finally {
+      if (showLoading) {
+        setIsLoading(false);
+      } else {
+        setIsRefreshing(false);
+      }
+    }
+  };
+
+  useEffect(() => {
     if (projectId) {
       fetchProjectData();
     }
@@ -195,6 +219,11 @@ const ProjectDetailsPage = () => {
     return 'text-gray-600';
   };
 
+  // Función para refrescar manualmente los datos
+  const handleRefresh = () => {
+    fetchProjectData(false);
+  };
+
   // Manejar actualización de proyecto
   const handleUpdateProject = async (
     projectData: Omit<IProject, 'id' | 'created_at' | 'updated_at'>
@@ -234,6 +263,9 @@ const ProjectDetailsPage = () => {
     try {
       const success = await ProjectService.deleteProject(projectId);
       if (success) {
+        // Forzar recarga de la lista de proyectos
+        await ProjectService.refreshProjects();
+        
         // Redirigir a la página de proyectos
         router.push('/projects');
       } else {
@@ -245,6 +277,36 @@ const ProjectDetailsPage = () => {
       setIsDeleting(false);
     }
   };
+
+  // Obtener estadísticas de tareas para el proyecto
+  const getTaskStats = () => {
+    if (!project || !project.sprints) return { total: 0, completed: 0, inProgress: 0, pending: 0 };
+
+    let total = 0;
+    let completed = 0;
+    let inProgress = 0;
+    let pending = 0;
+
+    project.sprints.forEach(sprint => {
+      if (sprint.tasks && sprint.tasks.length > 0) {
+        total += sprint.tasks.length;
+        
+        sprint.tasks.forEach(task => {
+          if (task.status === 3) { // Completada
+            completed++;
+          } else if (task.status === 1 || task.status === 2) { // En progreso
+            inProgress++;
+          } else { // Pendiente
+            pending++;
+          }
+        });
+      }
+    });
+
+    return { total, completed, inProgress, pending };
+  };
+
+  const taskStats = getTaskStats();
 
   return (
     <ProtectedRoute requiredRoles={[UserRole.DEVELOPER, UserRole.MANAGER, UserRole.TESTER]}>
@@ -276,6 +338,15 @@ const ProjectDetailsPage = () => {
                 <h1 className="text-2xl font-bold">
                   {isLoading ? <Skeleton className="h-8 w-64" /> : project?.name}
                 </h1>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={handleRefresh}
+                  disabled={isRefreshing || isLoading}
+                >
+                  <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                </Button>
               </div>
               {isLoading ? (
                 <Skeleton className="h-6 w-32" />
@@ -351,6 +422,44 @@ const ProjectDetailsPage = () => {
               <CheckCircle2 className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-600">{successMessage}</AlertDescription>
             </Alert>
+          )}
+
+          {/* Resumen del proyecto */}
+          {!isLoading && project && (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <Card>
+                <CardHeader className="py-4 px-6">
+                  <CardTitle className="text-sm font-medium text-gray-500">TAREAS TOTALES</CardTitle>
+                </CardHeader>
+                <CardContent className="py-0 px-6 pb-4">
+                  <div className="text-2xl font-bold">{taskStats.total}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="py-4 px-6">
+                  <CardTitle className="text-sm font-medium text-gray-500">COMPLETADAS</CardTitle>
+                </CardHeader>
+                <CardContent className="py-0 px-6 pb-4">
+                  <div className="text-2xl font-bold text-green-600">{taskStats.completed}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="py-4 px-6">
+                  <CardTitle className="text-sm font-medium text-gray-500">EN PROGRESO</CardTitle>
+                </CardHeader>
+                <CardContent className="py-0 px-6 pb-4">
+                  <div className="text-2xl font-bold text-blue-600">{taskStats.inProgress}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="py-4 px-6">
+                  <CardTitle className="text-sm font-medium text-gray-500">PENDIENTES</CardTitle>
+                </CardHeader>
+                <CardContent className="py-0 px-6 pb-4">
+                  <div className="text-2xl font-bold text-amber-600">{taskStats.pending}</div>
+                </CardContent>
+              </Card>
+            </div>
           )}
 
           {/* Contenido principal con pestañas */}
@@ -459,6 +568,8 @@ const ProjectDetailsPage = () => {
                           <thead>
                             <tr className="border-b">
                               <th className="text-left py-2 px-4 font-medium">ID</th>
+                              <th className="text-left py-2 px-4 font-medium">Nombre</th>
+                              <th className="text-left py-2 px-4 font-medium">Correo</th>
                               <th className="text-left py-2 px-4 font-medium">Rol</th>
                               <th className="text-left py-2 px-4 font-medium">Fecha de Unión</th>
                               <th className="text-left py-2 px-4 font-medium">Acciones</th>
@@ -471,6 +582,12 @@ const ProjectDetailsPage = () => {
                                 className="border-b"
                               >
                                 <td className="py-2 px-4">{member.user_id}</td>
+                                <td className="py-2 px-4">
+                                  {member.user ? member.user.username : 'Usuario no encontrado'}
+                                </td>
+                                <td className="py-2 px-4">
+                                  {member.user ? member.user.email : 'Correo no disponible'}
+                                </td>
                                 <td className="py-2 px-4">{member.role || 'Miembro'}</td>
                                 <td className="py-2 px-4">
                                   {member.joined_date ? formatDate(member.joined_date) : 'N/A'}
@@ -539,7 +656,12 @@ const ProjectDetailsPage = () => {
                               <div className="text-xs text-gray-500">
                                 {sprint.tasks ? `${sprint.tasks.length} tareas` : '0 tareas'}
                               </div>
-                              <Button variant="ghost" size="sm" className="h-8">
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-8"
+                                onClick={() => router.push(`/projects/${projectId}/sprints/${sprint.id}`)}
+                              >
                                 Ver detalles
                               </Button>
                             </div>
