@@ -376,7 +376,23 @@ export class ApiClient {
 
       // Verificar si hay contenido en la respuesta
       const contentType = response.headers.get('content-type');
+      const contentLength = response.headers.get('content-length');
       const endTime = Date.now();
+      
+      // Handle empty responses
+      if (response.status === 201 || response.status === 204 || !contentType || contentLength === '0') {
+        this.log(LogLevel.INFO, `POST request to ${path} completed in ${endTime - startTime}ms with no JSON content`);
+        
+        // Try to construct a minimal response using the Location header if available
+        const location = response.headers.get('location');
+        if (location) {
+          // Extract ID from location if possible
+          const id = location.split('/').pop();
+          return { ...preparedData, id } as unknown as T;
+        }
+        
+        return preparedData as unknown as T;
+      }
       
       if (contentType && contentType.includes('application/json')) {
         try {
@@ -461,8 +477,17 @@ export class ApiClient {
         body: JSON.stringify(data),
       });
 
-      const responseData = await response.json();
+      const contentType = response.headers.get('content-type');
+      const contentLength = response.headers.get('content-length');
       const endTime = Date.now();
+      
+      // Handle empty responses
+      if (response.status === 204 || !contentType || contentLength === '0') {
+        this.log(LogLevel.INFO, `PUT request to ${path} completed in ${endTime - startTime}ms (no content)`);
+        return data as unknown as T;
+      }
+
+      const responseData = await response.json();
       this.log(LogLevel.INFO, `PUT request to ${path} completed in ${endTime - startTime}ms`);
       
       return responseData;
@@ -474,7 +499,7 @@ export class ApiClient {
   }
 
   // Método DELETE
-  async delete<T>(path: string): Promise<T> {
+  async delete<T>(path: string): Promise<T | boolean> {
     this.log(LogLevel.INFO, `DELETE request to ${path}`);
     
     const startTime = Date.now();
@@ -483,7 +508,18 @@ export class ApiClient {
         method: 'DELETE',
         headers: this.headers,
       });
-
+  
+      const contentType = response.headers.get('content-type');
+      const contentLength = response.headers.get('content-length');
+      
+      // If response has no content or empty body
+      if (response.status === 204 || !contentType || contentLength === '0') {
+        const endTime = Date.now();
+        this.log(LogLevel.INFO, `DELETE request to ${path} completed successfully in ${endTime - startTime}ms (no content)`);
+        return true as any;
+      }
+      
+      // Otherwise parse JSON if available
       const data = await response.json();
       const endTime = Date.now();
       this.log(LogLevel.INFO, `DELETE request to ${path} completed in ${endTime - startTime}ms`);

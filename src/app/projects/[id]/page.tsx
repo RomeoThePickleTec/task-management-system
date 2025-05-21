@@ -15,7 +15,7 @@ import {
   SprintStatus,
 } from '@/core/interfaces/models';
 import {
-  Calendar,
+  Calendar as CalendarIcon,
   Clock,
   FileText,
   PenSquare,
@@ -33,6 +33,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import {
   AlertDialog,
@@ -47,12 +48,17 @@ import {
 } from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale/es';
-import { ProjectService, ProjectMemberService } from '@/services/api';
+import { ProjectService, ProjectMemberService, UserService } from '@/services/api';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import ProjectForm from '@/components/projects/ProjectForm';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { toast } from '@/components/ui/use-toast';
 import Link from 'next/link';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 const ProjectDetailsPage = () => {
   const params = useParams();
@@ -68,6 +74,17 @@ const ProjectDetailsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  
+  // Estados para añadir miembros
+  const [isAddMemberDialogOpen, setIsAddMemberDialogOpen] = useState(false);
+  const [availableUsers, setAvailableUsers] = useState<any[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [selectedRole, setSelectedRole] = useState<string>('Member');
+  const [isAddingMember, setIsAddingMember] = useState(false);
+  
+  // Estado para eliminar miembro
+  const [isDeletingMember, setIsDeletingMember] = useState<number | null>(null);
 
   // El usuario por defecto para esta demo
   const demoUser = {
@@ -122,11 +139,113 @@ const ProjectDetailsPage = () => {
     }
   };
 
+  // Cargar usuarios disponibles para añadir al proyecto
+  const fetchAvailableUsers = async () => {
+    setIsLoadingUsers(true);
+    try {
+      // Obtener todos los usuarios
+      const users = await UserService.getUsers();
+      
+      // Filtrar los usuarios que ya son miembros del proyecto
+      const existingMemberIds = members.map(member => member.user_id);
+      const filteredUsers = users.filter(user => !existingMemberIds.includes(user.id));
+      
+      setAvailableUsers(filteredUsers);
+    } catch (err) {
+      console.error('Error al cargar usuarios disponibles:', err);
+      setError('Error al cargar usuarios. Por favor, inténtelo de nuevo.');
+    } finally {
+      setIsLoadingUsers(false);
+    }
+  };
+
+  // Función para añadir un miembro al proyecto
+  const handleAddMember = async () => {
+    if (!selectedUserId) {
+      setError('Por favor, selecciona un usuario.');
+      return;
+    }
+
+    setIsAddingMember(true);
+    setError(null);
+
+    try {
+      const newMember = {
+        project_id: projectId,
+        user_id: parseInt(selectedUserId),
+        role: selectedRole
+      };
+
+      // Llamar al API para añadir el miembro
+      const addedMember = await ProjectMemberService.addProjectMember(newMember);
+      
+      if (addedMember) {
+        // Actualizar la lista de miembros
+        await fetchProjectData(false);
+        
+        // Cerrar el diálogo y mostrar mensaje de éxito
+        setIsAddMemberDialogOpen(false);
+        setSuccessMessage('Miembro añadido correctamente');
+        
+        // Limpiar el formulario
+        setSelectedUserId('');
+        setSelectedRole('Member');
+        
+        setTimeout(() => {
+          setSuccessMessage(null);
+        }, 3000);
+      } else {
+        throw new Error('No se pudo añadir el miembro');
+      }
+    } catch (err) {
+      console.error('Error al añadir miembro:', err);
+      setError('Error al añadir miembro. Por favor, inténtelo de nuevo.');
+    } finally {
+      setIsAddingMember(false);
+    }
+  };
+
+  // Función para eliminar un miembro del proyecto
+  const handleDeleteMember = async (userId: number) => {
+    setIsDeletingMember(userId);
+    setError(null);
+
+    try {
+      // Llamar al API para eliminar el miembro
+      const success = await ProjectMemberService.removeProjectMember(projectId, userId);
+      
+      if (success) {
+        // Actualizar la lista de miembros
+        const updatedMembers = members.filter(member => member.user_id !== userId);
+        setMembers(updatedMembers);
+        
+        setSuccessMessage('Miembro eliminado correctamente');
+        setTimeout(() => {
+          setSuccessMessage(null);
+        }, 3000);
+      } else {
+        throw new Error('No se pudo eliminar el miembro');
+      }
+    } catch (err) {
+      console.error('Error al eliminar miembro:', err);
+      setError('Error al eliminar miembro. Por favor, inténtelo de nuevo.');
+    } finally {
+      setIsDeletingMember(null);
+    }
+  };
+
   useEffect(() => {
     if (projectId) {
       fetchProjectData();
     }
   }, [projectId]);
+  
+  // Cargar usuarios disponibles cuando se abre el diálogo
+  useEffect(() => {
+    if (isAddMemberDialogOpen) {
+      fetchAvailableUsers();
+    }
+  }, [isAddMemberDialogOpen]);
 
   // Función para formatear fechas
   const formatDate = (dateString: string): string => {
@@ -370,14 +489,17 @@ const ProjectDetailsPage = () => {
                       obligatorios.
                     </DialogDescription>
                   </DialogHeader>
-                  {project && (
+                    {project && (
                     <ProjectForm
                       project={project}
-                      onSubmit={handleUpdateProject}
+                      onSubmit={(updatedProject) => {
+                      console.log('Project before update:', project);
+                      handleUpdateProject(updatedProject);
+                      }}
                       onCancel={() => setIsEditDialogOpen(false)}
                       isSubmitting={isUpdating}
                     />
-                  )}
+                    )}
                 </DialogContent>
               </Dialog>
 
@@ -501,7 +623,7 @@ const ProjectDetailsPage = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <h3 className="font-medium flex items-center mb-1">
-                            <Calendar className="h-4 w-4 mr-2" /> Fechas
+                            <CalendarIcon className="h-4 w-4 mr-2" /> Fechas
                           </h3>
                           <div className="space-y-1">
                             <p className="text-sm text-gray-700">
@@ -550,9 +672,76 @@ const ProjectDetailsPage = () => {
                     <CardTitle>Miembros del Proyecto</CardTitle>
                     <CardDescription>Equipo asignado a este proyecto</CardDescription>
                   </div>
-                  <Button variant="outline" size="sm">
-                    <Plus className="h-4 w-4 mr-2" /> Añadir miembro
-                  </Button>
+                  {/* Diálogo para añadir miembros */}
+                  <Dialog open={isAddMemberDialogOpen} onOpenChange={setIsAddMemberDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Plus className="h-4 w-4 mr-2" /> Añadir miembro
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Añadir Miembro al Proyecto</DialogTitle>
+                        <DialogDescription>
+                          Selecciona un usuario y asígnale un rol en el proyecto.
+                        </DialogDescription>
+                      </DialogHeader>
+                      
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="user">Usuario</Label>
+                          <Select 
+                            onValueChange={setSelectedUserId} 
+                            value={selectedUserId}
+                          >
+                            <SelectTrigger id="user" className="w-full">
+                              <SelectValue placeholder="Selecciona un usuario" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {isLoadingUsers ? (
+                                <SelectItem value="loading" disabled>Cargando usuarios...</SelectItem>
+                              ) : availableUsers.length > 0 ? (
+                                availableUsers.map(user => (
+                                  <SelectItem key={user.id} value={String(user.id)}>
+                                    {user.username} ({user.email})
+                                  </SelectItem>
+                                ))
+                              ) : (
+                                <SelectItem value="none" disabled>No hay usuarios disponibles</SelectItem>
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="role">Rol</Label>
+                          <Select 
+                            onValueChange={setSelectedRole} 
+                            value={selectedRole}
+                          >
+                            <SelectTrigger id="role" className="w-full">
+                              <SelectValue placeholder="Selecciona un rol" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Member">Miembro</SelectItem>
+                              <SelectItem value="Developer">Desarrollador</SelectItem>
+                              <SelectItem value="Tester">Tester</SelectItem>
+                              <SelectItem value="Manager">Manager</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsAddMemberDialogOpen(false)}>
+                          Cancelar
+                        </Button>
+                        <Button onClick={handleAddMember} disabled={isAddingMember || !selectedUserId}>
+                          {isAddingMember ? 'Añadiendo...' : 'Añadir Miembro'}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 </CardHeader>
                 <CardContent>
                   {isLoading ? (
@@ -593,9 +782,40 @@ const ProjectDetailsPage = () => {
                                   {member.joined_date ? formatDate(member.joined_date) : 'N/A'}
                                 </td>
                                 <td className="py-2 px-4">
-                                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                    <Trash2 className="h-4 w-4 text-red-500" />
-                                  </Button>
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        className="h-8 w-8 p-0"
+                                        disabled={isDeletingMember === member.user_id}
+                                      >
+                                        {isDeletingMember === member.user_id ? (
+                                          <RefreshCw className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                          <Trash2 className="h-4 w-4 text-red-500" />
+                                        )}
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>¿Eliminar miembro?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          ¿Estás seguro de que deseas eliminar a {member.user?.username || 'este miembro'} del proyecto? 
+                                          Esta acción no se puede deshacer.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                        <AlertDialogAction 
+                                          onClick={() => handleDeleteMember(member.user_id)}
+                                          className="bg-red-600 hover:bg-red-700"
+                                        >
+                                          Eliminar
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
                                 </td>
                               </tr>
                             ))}
@@ -607,7 +827,11 @@ const ProjectDetailsPage = () => {
                     <div className="text-center py-8">
                       <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-500">No hay miembros asignados a este proyecto.</p>
-                      <Button variant="outline" className="mt-4">
+                      <Button 
+                        variant="outline" 
+                        className="mt-4"
+                        onClick={() => setIsAddMemberDialogOpen(true)}
+                      >
                         <Plus className="h-4 w-4 mr-2" /> Añadir miembros
                       </Button>
                     </div>
