@@ -18,6 +18,9 @@ import {
   CheckCircle2,
   XCircle,
   AlarmClock,
+  ArrowRightCircle,
+  RefreshCcw,
+  ArrowLeftCircle,
 } from 'lucide-react';
 import TaskList from '@/components/tasks/TaskList';
 
@@ -52,9 +55,13 @@ export default function SprintDetailPage() {
     percentage: 0,
   });
   
-  // New state for delete confirmation dialog
+  // State for dialogs and actions
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [targetStatus, setTargetStatus] = useState<SprintStatus | null>(null);
+  const [statusUpdateMessage, setStatusUpdateMessage] = useState<string | null>(null);
 
   // El usuario por defecto para esta demo
   const demoUser = {
@@ -146,6 +153,95 @@ export default function SprintDetailPage() {
       setIsDeleting(false);
       // Close the dialog
       setDeleteDialogOpen(false);
+    }
+  };
+
+  // Update sprint status
+  const openStatusChangeDialog = (status: SprintStatus) => {
+    setTargetStatus(status);
+    setStatusDialogOpen(true);
+  };
+
+  // Handle sprint status change
+  const handleStatusChange = async () => {
+    if (!sprint?.id || targetStatus === null) return;
+    
+    setIsUpdatingStatus(true);
+    setStatusUpdateMessage(null);
+    
+    try {
+      // Create update data
+      const updateData = {
+        ...sprint,
+        status: targetStatus
+      };
+      
+      // Call the updateSprint method
+      const updatedSprint = await SprintService.updateSprint(sprint.id, updateData);
+      
+      if (updatedSprint) {
+        // Update the local state
+        setSprint(updatedSprint);
+        setStatusUpdateMessage("Estado actualizado correctamente");
+        
+        // Hide success message after a few seconds
+        setTimeout(() => {
+          setStatusUpdateMessage(null);
+        }, 3000);
+      } else {
+        throw new Error('No se pudo actualizar el estado del sprint');
+      }
+    } catch (error) {
+      console.error(`Error updating sprint status for ${sprint.id}:`, error);
+      setStatusUpdateMessage("Error al actualizar el estado del sprint");
+    } finally {
+      setIsUpdatingStatus(false);
+      setStatusDialogOpen(false);
+    }
+  };
+
+  // Helper to get text for status change button
+  const getStatusChangeOptions = (currentStatus: SprintStatus) => {
+    switch (currentStatus) {
+      case SprintStatus.PLANNING:
+        return [
+          {
+            label: "Iniciar sprint",
+            status: SprintStatus.ACTIVE,
+            icon: <ArrowRightCircle className="h-4 w-4 mr-2" />,
+            description: "Cambiar a estado activo",
+            color: "text-green-600"
+          }
+        ];
+      case SprintStatus.ACTIVE:
+        return [
+          {
+            label: "Completar sprint",
+            status: SprintStatus.COMPLETED,
+            icon: <CheckCircle2 className="h-4 w-4 mr-2" />,
+            description: "Marcar como completado",
+            color: "text-blue-600"
+          },
+          {
+            label: "Volver a planificación",
+            status: SprintStatus.PLANNING,
+            icon: <ArrowLeftCircle className="h-4 w-4 mr-2" />,
+            description: "Retornar a fase de planificación",
+            color: "text-purple-600"
+          }
+        ];
+      case SprintStatus.COMPLETED:
+        return [
+          {
+            label: "Reabrir sprint",
+            status: SprintStatus.ACTIVE,
+            icon: <RefreshCcw className="h-4 w-4 mr-2" />,
+            description: "Reabrir como activo",
+            color: "text-amber-600"
+          }
+        ];
+      default:
+        return [];
     }
   };
 
@@ -272,6 +368,8 @@ export default function SprintDetailPage() {
     );
   }
 
+  const statusOptions = getStatusChangeOptions(sprint.status);
+
   return (
     <ProtectedRoute>
       <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
@@ -302,6 +400,13 @@ export default function SprintDetailPage() {
             </div>
           </div>
 
+          {/* Status Update Message */}
+          {statusUpdateMessage && (
+            <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded">
+              <p>{statusUpdateMessage}</p>
+            </div>
+          )}
+
           {/* Delete Confirmation Dialog */}
           <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
             <AlertDialogContent>
@@ -320,6 +425,33 @@ export default function SprintDetailPage() {
                   className="bg-red-600 hover:bg-red-700"
                 >
                   {isDeleting ? 'Eliminando...' : 'Eliminar'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          {/* Status Change Dialog */}
+          <AlertDialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Cambiar estado del sprint</AlertDialogTitle>
+                <AlertDialogDescription>
+                  ¿Estás seguro que deseas cambiar el estado del sprint 
+                  <strong> {sprint.name}</strong> a {
+                    targetStatus === SprintStatus.PLANNING ? 'Planificación' :
+                    targetStatus === SprintStatus.ACTIVE ? 'Activo' : 
+                    targetStatus === SprintStatus.COMPLETED ? 'Completado' : ''
+                  }?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={isUpdatingStatus}>Cancelar</AlertDialogCancel>
+                <AlertDialogAction 
+                  onClick={handleStatusChange} 
+                  disabled={isUpdatingStatus}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  {isUpdatingStatus ? 'Actualizando...' : 'Confirmar cambio'}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -438,32 +570,22 @@ export default function SprintDetailPage() {
                   </div>
 
                   <div className="pt-4">
-                    <h3 className="text-sm font-medium text-gray-500 mb-2">Acciones rápidas</h3>
+                    <h3 className="text-sm font-medium text-gray-500 mb-2">Cambiar estado</h3>
                     <div className="space-y-2">
-                      {sprint.status !== SprintStatus.ACTIVE && (
+                      {statusOptions.map((option, index) => (
                         <Button
+                          key={index}
                           variant="outline"
                           size="sm"
-                          className="w-full justify-start"
-                          onClick={() => console.log('Iniciar sprint')}
+                          className={`w-full justify-start ${option.color}`}
+                          onClick={() => openStatusChangeDialog(option.status)}
                         >
-                          <CheckCircle2 className="h-4 w-4 mr-2" /> Iniciar sprint
+                          {option.icon} {option.label}
                         </Button>
-                      )}
-
-                      {sprint.status !== SprintStatus.COMPLETED && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full justify-start"
-                          onClick={() => console.log('Finalizar sprint')}
-                        >
-                          <XCircle className="h-4 w-4 mr-2" /> Finalizar sprint
-                        </Button>
-                      )}
-
+                      ))}
+                      
                       <Link href={`/reports/sprint/${sprint.id}`} passHref>
-                        <Button variant="outline" size="sm" className="w-full justify-start">
+                        <Button variant="outline" size="sm" className="w-full justify-start mt-4">
                           <Calendar className="h-4 w-4 mr-2" /> Ver informe
                         </Button>
                       </Link>
