@@ -21,9 +21,21 @@ import {
 } from 'lucide-react';
 import TaskList from '@/components/tasks/TaskList';
 
-// Importamos los servicios reales de API
+// Import services
 import { SprintService, TaskService, ProjectService } from '@/services/api';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
+
+// Import Dialog component for confirmation
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function SprintDetailPage() {
   const params = useParams();
@@ -39,6 +51,10 @@ export default function SprintDetailPage() {
     completed: 0,
     percentage: 0,
   });
+  
+  // New state for delete confirmation dialog
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // El usuario por defecto para esta demo
   const demoUser = {
@@ -52,10 +68,10 @@ export default function SprintDetailPage() {
       try {
         // Obtener el sprint
         const sprintData = await SprintService.getSprintById(sprintId);
-
+  
         if (sprintData) {
           setSprint(sprintData);
-
+  
           // Obtener el nombre del proyecto
           if (sprintData.project_id) {
             const project = await ProjectService.getProjectById(sprintData.project_id);
@@ -63,31 +79,27 @@ export default function SprintDetailPage() {
               setProjectName(project.name);
             }
           }
-
-          // Obtener tareas relacionadas con este sprint
+  
+          // Get tasks directly from the sprint object if they exist
           let sprintTasks: ITask[] = [];
-
-          // Si el sprint tiene tareas incluidas en la respuesta
+          
           if (sprintData.tasks && sprintData.tasks.length > 0) {
+            // If tasks are already included in the sprint response
             sprintTasks = sprintData.tasks;
           } else {
-            // Si no, intentamos obtenerlas mediante una consulta específica
-            try {
-              sprintTasks = await TaskService.getTasks({ sprint_id: sprintId });
-            } catch (error) {
-              console.error('Error fetching tasks for sprint:', error);
-            }
+            // If not, fetch tasks explicitly using the new method
+            sprintTasks = await SprintService.getTasksBySprint(sprintId);
           }
-
+  
           setTasks(sprintTasks);
-
+  
           // Calcular progreso
           const total = sprintTasks.length;
           const completed = sprintTasks.filter(
             (task) => task.status === TaskStatus.COMPLETED
           ).length;
           const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
-
+  
           setTaskProgress({
             total,
             completed,
@@ -103,11 +115,39 @@ export default function SprintDetailPage() {
         setIsLoading(false);
       }
     };
-
+  
     if (sprintId) {
       fetchSprintDetails();
     }
   }, [sprintId, router]);
+  
+  // Handle delete sprint
+  const handleDeleteSprint = async () => {
+    if (!sprint?.id) return;
+    
+    setIsDeleting(true);
+    try {
+      // Call the deleteSprint method from SprintService
+      const success = await SprintService.deleteSprint(sprint.id);
+      
+      if (success) {
+        // Show success message
+        console.log(`Sprint ${sprint.id} deleted successfully`);
+        // Navigate back to sprints list
+        router.push('/sprints');
+      } else {
+        console.error(`Failed to delete sprint ${sprint.id}`);
+        // Close the dialog
+        setDeleteDialogOpen(false);
+      }
+    } catch (error) {
+      console.error(`Error deleting sprint ${sprint.id}:`, error);
+    } finally {
+      setIsDeleting(false);
+      // Close the dialog
+      setDeleteDialogOpen(false);
+    }
+  };
 
   // Cambiar el estado de una tarea
   const handleTaskStatusChange = async (taskId: number | undefined, status: TaskStatus) => {
@@ -251,11 +291,39 @@ export default function SprintDetailPage() {
                   <Edit className="h-4 w-4 mr-1" /> Editar
                 </Button>
               </Link>
-              <Button variant="destructive" size="sm">
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                onClick={() => setDeleteDialogOpen(true)}
+                disabled={isDeleting}
+              >
                 <Trash className="h-4 w-4 mr-1" /> Eliminar
               </Button>
             </div>
           </div>
+
+          {/* Delete Confirmation Dialog */}
+          <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Esta acción no se puede deshacer. Se eliminará permanentemente el sprint 
+                  <strong> {sprint.name}</strong> y todas sus tareas asociadas.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+                <AlertDialogAction 
+                  onClick={handleDeleteSprint} 
+                  disabled={isDeleting}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  {isDeleting ? 'Eliminando...' : 'Eliminar'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Información principal */}

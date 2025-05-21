@@ -1,7 +1,7 @@
 // src/services/api/sprintService.ts
 // Servicios para operaciones con sprints
 import { apiClient } from './apiClient';
-import { ISprint, SprintFilter } from '../../core/interfaces/models';
+import { ISprint, SprintFilter, ITask } from '../../core/interfaces/models';
 
 export class SprintService {
   private static readonly BASE_PATH = '/sprintlist';
@@ -28,6 +28,17 @@ export class SprintService {
     } catch (error) {
       console.error(`Error fetching sprint ${id}:`, error);
       return null;
+    }
+  }
+
+  // Obtener tareas de un sprint específico
+  static async getTasksBySprint(sprintId: number): Promise<ITask[]> {
+    try {
+      const sprint = await this.getSprintById(sprintId);
+      return sprint?.tasks || [];
+    } catch (error) {
+      console.error(`Error fetching tasks for sprint ${sprintId}:`, error);
+      return [];
     }
   }
 
