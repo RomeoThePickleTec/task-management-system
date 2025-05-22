@@ -84,7 +84,7 @@ export default function TaskDetailPage() {
     switch (status) {
       case TaskStatus.TODO:
         return (
-          <Badge variant="outline" className="bg-gray-100">
+          <Badge variant="outline" className="bg-muted">
             Por hacer
           </Badge>
         );
@@ -112,7 +112,7 @@ export default function TaskDetailPage() {
     switch (priority) {
       case 1:
         return (
-          <Badge variant="outline" className="bg-gray-100">
+          <Badge variant="outline" className="bg-muted">
             Baja
           </Badge>
         );
@@ -197,7 +197,7 @@ export default function TaskDetailPage() {
       >
         <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
         </MainLayout>
       </ProtectedRoute>
@@ -211,8 +211,8 @@ export default function TaskDetailPage() {
       >
         <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
           <div className="text-center p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Tarea no encontrada</h2>
-            <p className="text-gray-600 mb-6">
+            <h2 className="text-2xl font-bold text-foreground mb-2">Tarea no encontrada</h2>
+            <p className="text-muted-foreground mb-6">
               La tarea que estás buscando no existe o ha sido eliminada.
             </p>
             <Link href="/tasks" passHref>
@@ -240,7 +240,7 @@ export default function TaskDetailPage() {
                   <ChevronLeft className="h-4 w-4 mr-1" /> Volver
                 </Button>
               </Link>
-              <h1 className="text-2xl font-bold">{task.title}</h1>
+              <h1 className="text-2xl font-bold text-foreground">{task.title}</h1>
             </div>
             <div className="flex items-center space-x-2">
               <Link href={`/tasks/${task.id}/edit`} passHref>
@@ -263,19 +263,19 @@ export default function TaskDetailPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Descripción</h3>
-                    <p className="text-gray-800">{task.description}</p>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-1">Descripción</h3>
+                    <p className="text-foreground">{task.description}</p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <h3 className="text-sm font-medium text-gray-500 mb-1">Estado</h3>
+                      <h3 className="text-sm font-medium text-muted-foreground mb-1">Estado</h3>
                       <div className="flex items-center space-x-2">
                         {getStatusBadge(task.status)}
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-sm font-medium text-gray-500 mb-1">Prioridad</h3>
+                      <h3 className="text-sm font-medium text-muted-foreground mb-1">Prioridad</h3>
                       <div className="flex items-center space-x-2">
                         {getPriorityBadge(task.priority)}
                       </div>
@@ -284,23 +284,23 @@ export default function TaskDetailPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex items-start">
-                      <Calendar className="h-5 w-5 text-gray-500 mr-2 mt-0.5" />
+                      <Calendar className="h-5 w-5 text-muted-foreground mr-2 mt-0.5" />
                       <div>
-                        <h3 className="text-sm font-medium text-gray-500">Fecha de vencimiento</h3>
-                        <p className="text-gray-800">{formatDate(task.due_date)}</p>
+                        <h3 className="text-sm font-medium text-muted-foreground">Fecha de vencimiento</h3>
+                        <p className="text-foreground">{formatDate(task.due_date)}</p>
                       </div>
                     </div>
                     <div className="flex items-start">
-                      <Clock className="h-5 w-5 text-gray-500 mr-2 mt-0.5" />
+                      <Clock className="h-5 w-5 text-muted-foreground mr-2 mt-0.5" />
                       <div>
-                        <h3 className="text-sm font-medium text-gray-500">Horas estimadas</h3>
-                        <p className="text-gray-800">{task.estimated_hours} horas</p>
+                        <h3 className="text-sm font-medium text-muted-foreground">Horas estimadas</h3>
+                        <p className="text-foreground">{task.estimated_hours} horas</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t">
-                    <h3 className="text-sm font-medium text-gray-500 mb-3">Cambiar estado</h3>
+                  <div className="pt-4 border-t border-border">
+                    <h3 className="text-sm font-medium text-muted-foreground mb-3">Cambiar estado</h3>
                     <div className="flex flex-wrap gap-2">
                       <Button
                         variant={task.status === TaskStatus.TODO ? 'default' : 'outline'}
@@ -351,11 +351,11 @@ export default function TaskDetailPage() {
                       {subtasks.map((subtask) => (
                         <div
                           key={subtask.id}
-                          className="flex items-center justify-between p-3 bg-gray-50 rounded-md"
+                          className="flex items-center justify-between p-3 bg-muted/50 rounded-md"
                         >
                           <div className="flex-1">
-                            <h4 className="font-medium">{subtask.title}</h4>
-                            <p className="text-sm text-gray-600">{subtask.description}</p>
+                            <h4 className="font-medium text-foreground">{subtask.title}</h4>
+                            <p className="text-sm text-muted-foreground">{subtask.description}</p>
                           </div>
                           <div className="flex items-center space-x-2">
                             {getStatusBadge(subtask.status)}
@@ -385,7 +385,7 @@ export default function TaskDetailPage() {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-8 text-muted-foreground">
                       No hay subtareas para esta tarea
                     </div>
                   )}
@@ -402,17 +402,17 @@ export default function TaskDetailPage() {
                     {comments && comments.length > 0 ? (
                       <div className="space-y-4">
                         {comments.map((comment) => (
-                          <div key={comment.id} className="bg-gray-50 p-4 rounded-md">
+                          <div key={comment.id} className="bg-muted/50 p-4 rounded-md">
                             <div className="flex items-center justify-between mb-2">
                               <div className="flex items-center">
                                 <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
                                   {comment.user?.username?.charAt(0).toUpperCase() || 'U'}
                                 </div>
                                 <div className="ml-2">
-                                  <p className="font-medium">
+                                  <p className="font-medium text-foreground">
                                     {comment.user?.username || 'Usuario'}
                                   </p>
-                                  <p className="text-xs text-gray-500">
+                                  <p className="text-xs text-muted-foreground">
                                     {comment.created_at
                                       ? new Date(comment.created_at).toLocaleString()
                                       : 'Sin fecha'}
@@ -420,12 +420,12 @@ export default function TaskDetailPage() {
                                 </div>
                               </div>
                             </div>
-                            <p className="text-gray-800">{comment.content}</p>
+                            <p className="text-foreground">{comment.content}</p>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <div className="text-center py-4 text-gray-500">
+                      <div className="text-center py-4 text-muted-foreground">
                         No hay comentarios para esta tarea
                       </div>
                     )}
@@ -458,8 +458,8 @@ export default function TaskDetailPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Proyecto</h3>
-                    <p className="text-gray-800">
+                    <h3 className="text-sm font-medium text-muted-foreground mb-1">Proyecto</h3>
+                    <p className="text-foreground">
                       {task.sprint_id ? (
                         <Link
                           href={`/projects/${task.sprint_id}`}
@@ -474,8 +474,8 @@ export default function TaskDetailPage() {
                   </div>
 
                   <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Sprint</h3>
-                    <p className="text-gray-800">
+                    <h3 className="text-sm font-medium text-muted-foreground mb-1">Sprint</h3>
+                    <p className="text-foreground">
                       {task.sprint_id ? (
                         <Link
                           href={`/sprints/${task.sprint_id}`}
@@ -490,13 +490,13 @@ export default function TaskDetailPage() {
                   </div>
 
                   <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Fecha de creación</h3>
-                    <p className="text-gray-800">{formatDate(task.created_at)}</p>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-1">Fecha de creación</h3>
+                    <p className="text-foreground">{formatDate(task.created_at)}</p>
                   </div>
 
                   <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Última actualización</h3>
-                    <p className="text-gray-800">{formatDate(task.updated_at)}</p>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-1">Última actualización</h3>
+                    <p className="text-foreground">{formatDate(task.updated_at)}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -512,8 +512,8 @@ export default function TaskDetailPage() {
                       D
                     </div>
                     <div>
-                      <p className="font-medium">Diego Villanueva</p>
-                      <p className="text-xs text-gray-500">Responsable principal</p>
+                      <p className="font-medium text-foreground">Diego Villanueva</p>
+                      <p className="text-xs text-muted-foreground">Responsable principal</p>
                     </div>
                   </div>
 

@@ -69,10 +69,12 @@ const Sidebar: React.FC<SidebarProps> = ({ className, userRole = UserRole.DEVELO
   const filteredNavItems = navItems.filter((item) => item.roles.includes(userRole));
 
   return (
-    <div className={cn('pb-12 border-r h-full', className)}>
+    <div className={cn('pb-12 border-r border-border bg-sidebar h-full', className)}>
       <div className="space-y-4 py-4">
         <div className="px-4 py-2">
-          <h2 className="mb-2 px-2 text-lg font-semibold tracking-tight">Navegación</h2>
+          <h2 className="mb-2 px-2 text-lg font-semibold tracking-tight text-sidebar-foreground">
+            Navegación
+          </h2>
           <ScrollArea className="h-[calc(100vh-9rem)]">
             <div className="space-y-1">
               {filteredNavItems.map((item, index) => (
@@ -80,7 +82,12 @@ const Sidebar: React.FC<SidebarProps> = ({ className, userRole = UserRole.DEVELO
                   <Button
                     variant={isActive(item.href) ? 'secondary' : 'ghost'}
                     size="sm"
-                    className="w-full justify-start"
+                    className={cn(
+                      "w-full justify-start",
+                      isActive(item.href)
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    )}
                   >
                     {item.icon}
                     <span className="ml-2">{item.title}</span>

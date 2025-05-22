@@ -10,8 +10,19 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { UserRole } from '@/core/interfaces/models';
+import { useDarkMode } from '@/hooks/useDarkMode';
 import Link from 'next/link';
-import { Layers, Calendar, CheckSquare, LogOut, User, Menu, Plus } from 'lucide-react';
+import { 
+  Layers, 
+  Calendar, 
+  CheckSquare, 
+  LogOut, 
+  User, 
+  Menu, 
+  Plus,
+  Moon,
+  Sun
+} from 'lucide-react';
 
 interface AppHeaderProps {
   username?: string;
@@ -26,20 +37,37 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   onLogout,
   onToggleSidebar,
 }) => {
+  const { isDarkMode, toggleDarkMode } = useDarkMode();
+
   return (
-    <header className="bg-white shadow">
+    <header className="bg-background border-b border-border shadow-sm dark:shadow-none">
       <div className="px-4 sm:px-6 py-3 flex justify-between items-center">
         <div className="flex items-center">
           <Button variant="ghost" size="icon" className="md:hidden mr-2" onClick={onToggleSidebar}>
             <Menu className="h-5 w-5" />
           </Button>
           <div className="flex items-center">
-            <Layers className="h-6 w-6 text-red-600 color-red-600 mr-2" />
-            <h1 className="text-xl font-bold text-gray-900">JAI-VIER TASK MANAGEMENT SYSTEM</h1>
+            <Layers className="h-6 w-6 text-red-600 mr-2" />
+            <h1 className="text-xl font-bold text-foreground">JAI-VIER TASK MANAGEMENT SYSTEM</h1>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
+          {/* Dark Mode Toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleDarkMode}
+            className="h-9 w-9"
+            title={isDarkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+          >
+            {isDarkMode ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
+          </Button>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
@@ -77,7 +105,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Mi cuenta</DropdownMenuLabel>
-              <DropdownMenuLabel className="font-normal text-xs text-gray-500">
+              <DropdownMenuLabel className="font-normal text-xs text-muted-foreground">
                 {username} {userRole && `(${userRole})`}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />

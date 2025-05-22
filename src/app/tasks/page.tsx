@@ -170,7 +170,7 @@ export default function TasksPage() {
       <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
         <div className="container mx-auto py-8">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-semibold">Tareas</h1>
+            <h1 className="text-2xl font-semibold text-foreground">Tareas</h1>
             <Link href="/tasks/new" className="inline-flex items-center">
               <Button>
                 <PlusCircle className="h-4 w-4 mr-2" />

@@ -1,180 +1,334 @@
-// src/app/tasks/[id]/edit/page.tsx
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import MainLayout from '@/components/layout/MainLayout';
-import TaskForm from '@/components/tasks/TaskForm';
-import { Button } from '@/components/ui/button';
-import { IProject, ISprint, ITask, UserRole } from '@/core/interfaces/models';
-import Link from 'next/link';
-import { ChevronLeft } from 'lucide-react';
-
-// Importamos los servicios reales de API
-import { ProjectService, SprintService, TaskService } from '@/services/api';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ChevronLeft, Loader2, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { IUser, UserRole, WorkMode } from '@/core/interfaces/models';
+import { UserService } from '@/services/api/userService';
+import { useAuth } from '@/contexts/BackendAuthContext';
+import Link from 'next/link';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { toast } from '@/components/ui/use-toast';
 
-export default function EditTaskPage() {
+export default function UserEditPage() {
+  return (
+    <ProtectedRoute requiredRoles={[UserRole.ADMIN, UserRole.MANAGER, UserRole.DEVELOPER, UserRole.TESTER]}>
+      <UserEditContent />
+    </ProtectedRoute>
+  );
+}
+
+function UserEditContent() {
   const params = useParams();
+  const userId = Number(params.id);
   const router = useRouter();
-  const taskId = Number(params.id);
+  const { userRole } = useAuth();
+  console.log('userRole', userRole);
 
-  const [task, setTask] = useState<ITask | null>(null);
-  const [projects, setProjects] = useState<IProject[]>([]);
-  const [sprints, setSprints] = useState<ISprint[]>([]);
+  // Form state
+  const [userData, setUserData] = useState<IUser | null>(null);
+  console.log('userData', userData);
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
+  const [role, setRole] = useState<UserRole>(UserRole.DEVELOPER);
+  const [workMode, setWorkMode] = useState<WorkMode>(WorkMode.REMOTE);
+  const [active, setActive] = useState(true);
+
+  // UI state
   const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
 
-  // El usuario por defecto para esta demo
-  const demoUser = {
-    username: 'djeison',
-    userRole: UserRole.MANAGER,
-  };
-
+  // Load user data
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchUserData = async () => {
       setIsLoading(true);
-      setMessage(null);
+      setIsCreating(false);
+      setError(null);
+
       try {
-        // Obtener la tarea existente
-        const taskData = await TaskService.getTaskById(taskId);
-        if (!taskData) {
-          setMessage({
-            type: 'error',
-            text: 'No se pudo encontrar la tarea solicitada',
-          });
-          setTimeout(() => {
-            router.push('/tasks');
-          }, 2000);
-          return;
+        const user = await UserService.getUserById(userId);
+
+        if (user) {
+          setUserData(user);
+          setFullName(user.full_name || '');
+          setEmail(user.email || '');
+          setUsername(user.username || '');
+          setRole((user.role as UserRole) || UserRole.DEVELOPER);
+          setWorkMode((user.work_mode as WorkMode) || WorkMode.REMOTE);
+          setActive(user.active !== false); // Default to true if not specified
+        } else {
+          // User not found, but we'll prepare for create mode
+          setIsCreating(true);
+          setError('Usuario no encontrado. Puedes crear uno nuevo.');
+
+          // Default values for new user
+          setFullName('');
+          setEmail('');
+          setUsername(`user_${userId}`);
+          setRole(UserRole.DEVELOPER);
+          setWorkMode(WorkMode.REMOTE);
+          setActive(true);
         }
-        setTask(taskData);
-
-        // Obtener proyectos
-        const projectsData = await ProjectService.getProjects();
-        setProjects(projectsData);
-
-        // Obtener sprints
-        const sprintsData = await SprintService.getSprints();
-        setSprints(sprintsData);
       } catch (error) {
-        console.error('Error fetching data:', error);
-        setMessage({
-          type: 'error',
-          text: 'No se pudieron cargar los datos. Por favor, intenta de nuevo.',
-        });
+        console.error('Error fetching user:', error);
+        setError('Error al cargar los datos del usuario. Puedes intentar crear uno nuevo.');
+        setIsCreating(true);
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (taskId) {
-      fetchData();
+    if (userId) {
+      fetchUserData();
     }
-  }, [taskId, router]);
+  }, [userId, router]);
 
-  const handleSubmit = async (taskData: Omit<ITask, 'id' | 'created_at' | 'updated_at'>) => {
-    setIsSubmitting(true);
-    setMessage(null);
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+    setError(null);
+    setSuccess(null);
 
     try {
-      // Asegurarnos de que los datos tienen el formato correcto
-      const formattedTaskData = {
-        ...taskData,
-        priority: Number(taskData.priority),
-        status: Number(taskData.status),
-        estimated_hours: Number(taskData.estimated_hours),
-        sprint_id: taskData.sprint_id ? Number(taskData.sprint_id) : undefined,
-        project_id: taskData.project_id ? Number(taskData.project_id) : undefined,
+      const userData: Partial<IUser> = {
+        full_name: fullName,
+        email,
+        username,
+        role,
+        work_mode: workMode,
+        active,
+        updated_at: new Date().toISOString(),
       };
 
-      console.log('Formatted task data to update:', formattedTaskData);
+      let result: IUser | null;
 
-      const updatedTask = await TaskService.updateTask(taskId, formattedTaskData);
+      if (isCreating) {
+        // Create new user
+        result = await UserService.createUser(
+          userData as Omit<IUser, 'id' | 'created_at' | 'updated_at'>
+        );
 
-      if (updatedTask) {
-        setMessage({
-          type: 'success',
-          text: '¡Tarea actualizada correctamente! Redirigiendo...',
-        });
+        if (result) {
+          toast({
+            title: 'Usuario creado',
+            description: 'El usuario ha sido creado correctamente.',
+            variant: 'default',
+          });
 
-        // Esperar un momento para que el usuario vea el mensaje de éxito
-        setTimeout(() => {
-          router.push(`/tasks/${taskId}`);
-        }, 2000);
+          setSuccess('Usuario creado correctamente');
+          setTimeout(() => {
+            router.push(`/users/${result?.id || ''}`);
+          }, 1500);
+        }
       } else {
-        throw new Error('No se pudo actualizar la tarea');
+        // Update existing user
+        result = await UserService.updateUser(userId, userData);
+
+        if (result) {
+          toast({
+            title: 'Usuario actualizado',
+            description: 'El usuario ha sido actualizado correctamente.',
+            variant: 'default',
+          });
+
+          setSuccess('Usuario actualizado correctamente');
+          setTimeout(() => {
+            router.push(`/users/${userId}`);
+          }, 1500);
+        }
       }
     } catch (error) {
-      console.error('Error updating task:', error);
-      setMessage({
-        type: 'error',
-        text: 'Hubo un error al actualizar la tarea.',
+      console.error('Error saving user:', error);
+      setError('Error al guardar los datos del usuario');
+
+      toast({
+        title: 'Error',
+        description: 'Ocurrió un error al guardar los datos del usuario.',
+        variant: 'destructive',
       });
     } finally {
-      setIsSubmitting(false);
+      setIsSaving(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <ProtectedRoute
       requiredRoles={[UserRole.DEVELOPER, UserRole.MANAGER, UserRole.DEVELOPER, UserRole.TESTER]}
     >
-      <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
-        <div className="space-y-6">
-          <div className="flex items-center space-x-4">
-            <Link href={`/tasks/${taskId}`} passHref>
-              <Button variant="outline" size="sm">
+      <MainLayout>
+        <div className="max-w-3xl mx-auto">
+          <div className="flex items-center mb-6">
+            <Link href={isCreating ? '/users' : `/users/${userId}`} passHref>
+              <Button variant="outline" size="sm" className="mr-4">
                 <ChevronLeft className="h-4 w-4 mr-1" /> Volver
               </Button>
             </Link>
-            <h1 className="text-2xl font-bold">Editar tarea</h1>
+            <h1 className="text-2xl font-bold">
+              {isCreating ? 'Crear Usuario' : 'Editar Usuario'}
+            </h1>
           </div>
 
-          {message && (
-            <div
-              className={`${
-                message.type === 'success'
-                  ? 'bg-green-100 border-green-400 text-green-700'
-                  : 'bg-red-100 border-red-400 text-red-700'
-              } px-4 py-3 rounded relative border`}
-              role="alert"
-            >
-              <strong className="font-bold">
-                {message.type === 'success' ? 'Éxito: ' : 'Aviso: '}
-              </strong>
-              <span className="block sm:inline">{message.text}</span>
-            </div>
-          )}
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                {isCreating ? 'Información del nuevo usuario' : 'Información del usuario'}
+              </CardTitle>
+              {isCreating && (
+                <Alert variant="warning" className="mt-2 bg-amber-50 border-amber-200">
+                  <AlertCircle className="h-4 w-4 text-amber-500" />
+                  <AlertDescription className="text-amber-800">
+                    Se está creando un nuevo usuario porque el solicitado no existe.
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardHeader>
+            <CardContent>
+              {error && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
 
-          {isLoading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-            </div>
-          ) : task ? (
-            <TaskForm
-              task={task}
-              projects={projects}
-              sprints={sprints}
-              onSubmit={handleSubmit}
-              onCancel={() => router.push(`/tasks/${taskId}`)}
-              isSubmitting={isSubmitting}
-            />
-          ) : (
-            <div className="text-center p-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Tarea no encontrada</h2>
-              <p className="text-gray-600 mb-6">
-                La tarea que estás buscando no existe o ha sido eliminada.
-              </p>
-              <Link href="/tasks" passHref>
-                <Button>
-                  <ChevronLeft className="h-4 w-4 mr-2" />
-                  Volver a la lista de tareas
-                </Button>
-              </Link>
-            </div>
-          )}
+              {success && (
+                <Alert className="mb-4 bg-green-50 border-green-200">
+                  <AlertDescription className="text-green-800">{success}</AlertDescription>
+                </Alert>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName">Nombre completo</Label>
+                    <Input
+                      id="fullName"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="username">Nombre de usuario</Label>
+                    <Input
+                      id="username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="role">Rol</Label>
+                    <Select value={role} onValueChange={(value) => setRole(value as UserRole)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar rol" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={UserRole.ADMIN}>Administrador</SelectItem>
+                        <SelectItem value={UserRole.MANAGER}>Manager</SelectItem>
+                        <SelectItem value={UserRole.DEVELOPER}>Desarrollador</SelectItem>
+                        <SelectItem value={UserRole.TESTER}>Tester</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="workMode">Modo de trabajo</Label>
+                  <Select
+                    value={workMode}
+                    onValueChange={(value) => setWorkMode(value as WorkMode)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar modo de trabajo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={WorkMode.REMOTE}>Remoto</SelectItem>
+                      <SelectItem value={WorkMode.OFFICE}>Oficina</SelectItem>
+                      <SelectItem value={WorkMode.HYBRID}>Híbrido</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center space-x-2 pt-2">
+                  <input
+                    type="checkbox"
+                    id="active"
+                    checked={active}
+                    onChange={(e) => setActive(e.target.checked)}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <Label htmlFor="active" className="text-sm font-medium text-gray-700">
+                    Usuario activo
+                  </Label>
+                </div>
+
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => router.push(isCreating ? '/users' : `/users/${userId}`)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button type="submit" disabled={isSaving}>
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {isCreating ? 'Creando...' : 'Guardando...'}
+                      </>
+                    ) : isCreating ? (
+                      'Crear usuario'
+                    ) : (
+                      'Guardar cambios'
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
         </div>
       </MainLayout>
     </ProtectedRoute>

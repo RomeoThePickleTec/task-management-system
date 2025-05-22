@@ -332,7 +332,7 @@ export default function SprintReportsPage() {
     switch (status) {
       case SprintStatus.PLANNING:
         return (
-          <Badge variant="outline" className="bg-purple-100 text-purple-800">
+          <Badge variant="outline" className="bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">
             Planificación
           </Badge>
         );
@@ -366,7 +366,7 @@ export default function SprintReportsPage() {
                   <ChevronLeft className="h-4 w-4 mr-1" /> Volver
                 </Button>
               </Link>
-              <h1 className="text-2xl font-bold">Informe de Sprints</h1>
+              <h1 className="text-2xl font-bold text-foreground">Informe de Sprints</h1>
             </div>
             <Button variant="outline" size="sm">
               <Download className="h-4 w-4 mr-1" /> Exportar
@@ -379,27 +379,12 @@ export default function SprintReportsPage() {
               <CardContent className="p-4">
                 <div className="flex justify-between items-center">
                   <div>
-                    <p className="text-sm text-gray-500">Velocidad promedio</p>
-                    <h3 className="text-xl font-bold">{sprintMetrics.avgVelocity}</h3>
-                    <p className="text-xs text-gray-500">tareas/día</p>
+                    <p className="text-sm text-muted-foreground">Velocidad promedio</p>
+                    <h3 className="text-xl font-bold text-foreground">{sprintMetrics.avgVelocity}</h3>
+                    <p className="text-xs text-muted-foreground">tareas/día</p>
                   </div>
-                  <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                    <TrendingUp className="h-5 w-5 text-blue-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-sm text-gray-500">Completado promedio</p>
-                    <h3 className="text-xl font-bold">{sprintMetrics.avgCompletionRate}%</h3>
-                    <p className="text-xs text-gray-500">de tareas por sprint</p>
-                  </div>
-                  <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                    <BarChart className="h-5 w-5 text-green-600" />
+                  <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                    <TrendingUp className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   </div>
                 </div>
               </CardContent>
@@ -409,12 +394,12 @@ export default function SprintReportsPage() {
               <CardContent className="p-4">
                 <div className="flex justify-between items-center">
                   <div>
-                    <p className="text-sm text-gray-500">Tareas promedio</p>
-                    <h3 className="text-xl font-bold">{sprintMetrics.avgTasksPerSprint}</h3>
-                    <p className="text-xs text-gray-500">por sprint</p>
+                    <p className="text-sm text-muted-foreground">Completado promedio</p>
+                    <h3 className="text-xl font-bold text-foreground">{sprintMetrics.avgCompletionRate}%</h3>
+                    <p className="text-xs text-muted-foreground">de tareas por sprint</p>
                   </div>
-                  <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
-                    <LineChart className="h-5 w-5 text-purple-600" />
+                  <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <BarChart className="h-5 w-5 text-green-600 dark:text-green-400" />
                   </div>
                 </div>
               </CardContent>
@@ -424,14 +409,29 @@ export default function SprintReportsPage() {
               <CardContent className="p-4">
                 <div className="flex justify-between items-center">
                   <div>
-                    <p className="text-sm text-gray-500">Sprints en riesgo</p>
-                    <h3 className="text-xl font-bold">{sprintMetrics.sprintsAtRisk}</h3>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-sm text-muted-foreground">Tareas promedio</p>
+                    <h3 className="text-xl font-bold text-foreground">{sprintMetrics.avgTasksPerSprint}</h3>
+                    <p className="text-xs text-muted-foreground">por sprint</p>
+                  </div>
+                  <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                    <LineChart className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Sprints en riesgo</p>
+                    <h3 className="text-xl font-bold text-foreground">{sprintMetrics.sprintsAtRisk}</h3>
+                    <p className="text-xs text-muted-foreground">
                       de {sprintMetrics.activeSprints} activos
                     </p>
                   </div>
-                  <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
-                    <Clock className="h-5 w-5 text-red-600" />
+                  <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                    <Clock className="h-5 w-5 text-red-600 dark:text-red-400" />
                   </div>
                 </div>
               </CardContent>
@@ -441,7 +441,7 @@ export default function SprintReportsPage() {
           {/* Filtros */}
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative w-full sm:w-64">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar sprints..."
                 className="pl-8"
@@ -492,47 +492,47 @@ export default function SprintReportsPage() {
           {/* Lista de sprints */}
           {isLoading ? (
             <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
             </div>
           ) : filteredSprints.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
-                  <tr className="bg-gray-100">
-                    <th className="py-2 px-4 text-left">Nombre</th>
-                    <th className="py-2 px-4 text-left">Proyecto</th>
-                    <th className="py-2 px-4 text-left">Estado</th>
-                    <th className="py-2 px-4 text-left">Período</th>
-                    <th className="py-2 px-4 text-left">Progreso</th>
-                    <th className="py-2 px-4 text-left">Velocidad</th>
-                    <th className="py-2 px-4 text-left">Predicción</th>
-                    <th className="py-2 px-4 text-left">Acciones</th>
+                  <tr className="bg-muted/50">
+                    <th className="py-2 px-4 text-left text-foreground">Nombre</th>
+                    <th className="py-2 px-4 text-left text-foreground">Proyecto</th>
+                    <th className="py-2 px-4 text-left text-foreground">Estado</th>
+                    <th className="py-2 px-4 text-left text-foreground">Período</th>
+                    <th className="py-2 px-4 text-left text-foreground">Progreso</th>
+                    <th className="py-2 px-4 text-left text-foreground">Velocidad</th>
+                    <th className="py-2 px-4 text-left text-foreground">Predicción</th>
+                    <th className="py-2 px-4 text-left text-foreground">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredSprints.map((sprint) => (
-                    <tr key={sprint.id} className="border-b hover:bg-gray-50">
+                    <tr key={sprint.id} className="border-b border-border hover:bg-muted/30">
                       <td className="py-2 px-4">
                         <div className="flex flex-col">
-                          <span className="font-medium">{sprint.name}</span>
-                          <span className="text-xs text-gray-500 truncate max-w-xs">
+                          <span className="font-medium text-foreground">{sprint.name}</span>
+                          <span className="text-xs text-muted-foreground truncate max-w-xs">
                             {sprint.description?.substring(0, 50)}
                             {sprint.description && sprint.description.length > 50 ? '...' : ''}
                           </span>
                         </div>
                       </td>
-                      <td className="py-2 px-4">{sprint.projectName}</td>
+                      <td className="py-2 px-4 text-foreground">{sprint.projectName}</td>
                       <td className="py-2 px-4">{getSprintStatusBadge(sprint.status)}</td>
-                      <td className="py-2 px-4">
+                      <td className="py-2 px-4 text-foreground">
                         {formatDate(sprint.start_date)} - {formatDate(sprint.end_date)}
                         {sprint.status === SprintStatus.ACTIVE && (
                           <div className="text-xs mt-1">
                             {sprint.daysRemaining && sprint.daysRemaining > 0 ? (
-                              <span className="text-blue-600">
+                              <span className="text-blue-600 dark:text-blue-400">
                                 {sprint.daysRemaining} días restantes
                               </span>
                             ) : (
-                              <span className="text-red-600">
+                              <span className="text-red-600 dark:text-red-400">
                                 Vencido ({Math.abs(sprint.daysRemaining || 0)} días)
                               </span>
                             )}
@@ -541,7 +541,7 @@ export default function SprintReportsPage() {
                       </td>
                       <td className="py-2 px-4">
                         <div className="flex items-center">
-                          <div className="w-full bg-gray-200 h-2 rounded-full mr-2">
+                          <div className="w-full bg-muted h-2 rounded-full mr-2">
                             <div
                               className={`h-full rounded-full ${
                                 (sprint.completionRate || 0) < 50
@@ -553,28 +553,28 @@ export default function SprintReportsPage() {
                               style={{ width: `${sprint.completionRate || 0}%` }}
                             ></div>
                           </div>
-                          <span className="text-sm font-medium">{sprint.completionRate || 0}%</span>
+                          <span className="text-sm font-medium text-foreground">{sprint.completionRate || 0}%</span>
                         </div>
-                        <div className="text-xs text-gray-500 mt-1">
+                        <div className="text-xs text-muted-foreground mt-1">
                           {sprint.completedTaskCount || 0}/{sprint.taskCount || 0} tareas
                         </div>
                       </td>
                       <td className="py-2 px-4">
                         <div className="flex items-center">
-                          <span className="font-medium">{sprint.velocity || 0}</span>
-                          <span className="text-xs text-gray-500 ml-1">tareas/día</span>
+                          <span className="font-medium text-foreground">{sprint.velocity || 0}</span>
+                          <span className="text-xs text-muted-foreground ml-1">tareas/día</span>
                         </div>
-                        <div className="text-xs text-gray-500 mt-1">
+                        <div className="text-xs text-muted-foreground mt-1">
                           {sprint.avgTasksPerDay || 0} tareas planificadas/día
                         </div>
                       </td>
                       <td className="py-2 px-4">
                         {sprint.status === SprintStatus.COMPLETED ? (
-                          <span className="text-green-600 font-medium">Completado</span>
+                          <span className="text-green-600 dark:text-green-400 font-medium">Completado</span>
                         ) : (
                           <>
                             <div className="flex items-center">
-                              <div className="w-full bg-gray-200 h-2 rounded-full mr-2">
+                              <div className="w-full bg-muted h-2 rounded-full mr-2">
                                 <div
                                   className={`h-full rounded-full ${
                                     (sprint.predictedCompletion || 0) < 70
@@ -586,17 +586,17 @@ export default function SprintReportsPage() {
                                   style={{ width: `${sprint.predictedCompletion || 0}%` }}
                                 ></div>
                               </div>
-                              <span className="text-sm font-medium">
+                              <span className="text-sm font-medium text-foreground">
                                 {sprint.predictedCompletion || 0}%
                               </span>
                             </div>
                             <div className="text-xs mt-1">
                               {(sprint.predictedCompletion || 0) < 85 ? (
-                                <span className="text-red-600 flex items-center">
+                                <span className="text-red-600 dark:text-red-400 flex items-center">
                                   <ArrowDownRight className="h-3 w-3 mr-1" /> En riesgo
                                 </span>
                               ) : (
-                                <span className="text-green-600 flex items-center">
+                                <span className="text-green-600 dark:text-green-400 flex items-center">
                                   <ArrowUpRight className="h-3 w-3 mr-1" /> En buen camino
                                 </span>
                               )}
@@ -619,8 +619,8 @@ export default function SprintReportsPage() {
               </table>
             </div>
           ) : (
-            <div className="flex justify-center items-center h-40 border border-dashed border-gray-300 rounded-lg">
-              <p className="text-gray-500">
+            <div className="flex justify-center items-center h-40 border border-dashed border-border rounded-lg">
+              <p className="text-muted-foreground">
                 {searchQuery || selectedProject !== 'all' || statusFilter !== 'all'
                   ? 'No hay sprints que coincidan con los filtros'
                   : 'No hay sprints disponibles'}
