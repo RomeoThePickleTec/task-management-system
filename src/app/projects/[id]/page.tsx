@@ -895,7 +895,7 @@ const ProjectDetailsPage = () => {
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <CalendarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-500">No hay sprints definidos para este proyecto.</p>
                       <Button variant="outline" className="mt-4">
                         <Plus className="h-4 w-4 mr-2" /> Crear sprint
