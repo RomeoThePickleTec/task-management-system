@@ -28,14 +28,12 @@ export default function HomePage() {
   const { currentUser, loading } = useAuth();
   const router = useRouter();
 
-  // If no user and not loading, redirect to login
   useEffect(() => {
     if (!loading && !currentUser) {
       router.push('/auth/login');
     }
   }, [loading, currentUser, router]);
 
-  // If still loading, show loading spinner
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-background">
@@ -44,12 +42,10 @@ export default function HomePage() {
     );
   }
 
-  // If not authenticated, don't render the page content
   if (!currentUser) {
     return null;
   }
 
-  // Render the dashboard with authentication protection
   return (
     <ProtectedRoute>
       <DashboardContent />
@@ -57,7 +53,6 @@ export default function HomePage() {
   );
 }
 
-// Separate component for the dashboard content
 function DashboardContent() {
   const [recentTasks, setRecentTasks] = useState<ITask[]>([]);
   const [activeProjects, setActiveProjects] = useState<IProject[]>([]);
@@ -69,7 +64,6 @@ function DashboardContent() {
   });
   const [loadingTaskId, setLoadingTaskId] = useState<number | null>(null);
 
-  // Refs for GSAP animations
   const headerRef = useRef<HTMLDivElement>(null);
   const cardsContainerRef = useRef<HTMLDivElement>(null);
   const tasksHeaderRef = useRef<HTMLDivElement>(null);
@@ -79,30 +73,25 @@ function DashboardContent() {
   const router = useRouter();
 
   useEffect(() => {
-    // Initial page animations
     const tl = gsap.timeline();
     
-    // Animate header
     tl.fromTo(headerRef.current, 
       { opacity: 0, y: -30 },
-      { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }
+      { opacity: 1, y: 0, duration: 0.8, ease: "back.out(1.7)" }
     );
 
-    // Animate cards container
     tl.fromTo(cardsContainerRef.current,
-      { opacity: 0, y: 20 },
-      { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" },
+      { opacity: 0, y: 30 },
+      { opacity: 1, y: 0, duration: 1, ease: "elastic.out(1, 0.3)" },
       "-=0.4"
     );
 
-    // Animate tasks header
     tl.fromTo(tasksHeaderRef.current,
-      { opacity: 0, x: -20 },
-      { opacity: 1, x: 0, duration: 0.6, ease: "power2.out" },
-      "-=0.3"
+      { opacity: 0, x: -30 },
+      { opacity: 1, x: 0, duration: 0.8, ease: "power2.out" },
+      "-=0.5"
     );
 
-    // Load data with staggered animations
     fetchAllData();
   }, []);
 
@@ -120,11 +109,10 @@ function DashboardContent() {
           .slice(0, 3);
         setRecentTasks(sortedTasks);
         
-        // Animate task cards when loaded
         setTimeout(() => {
           gsap.fromTo(tasksSectionRef.current,
-            { opacity: 0, y: 30 },
-            { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }
+            { opacity: 0, y: 30, scale: 0.95 },
+            { opacity: 1, y: 0, scale: 1, duration: 1, ease: "back.out(1.7)" }
           );
         }, 100);
       } catch (error) {
@@ -159,24 +147,22 @@ function DashboardContent() {
     await Promise.all([fetchTasks(), fetchProjects(), fetchSprints()]);
   };
 
-  // Animate task cards when they're added
   useEffect(() => {
     if (recentTasks.length > 0 && !isLoading.tasks) {
       gsap.fromTo(taskCardsRef.current,
-        { opacity: 0, y: 20, scale: 0.95 },
+        { opacity: 0, y: 30, scale: 0.9 },
         { 
           opacity: 1, 
           y: 0, 
           scale: 1,
-          duration: 0.6,
-          stagger: 0.1,
+          duration: 0.8,
+          stagger: 0.15,
           ease: "back.out(1.7)"
         }
       );
     }
   }, [recentTasks, isLoading.tasks]);
 
-  // Change task status with animation
   const handleTaskStatusChange = async (taskId: number | undefined, status: TaskStatus) => {
     if (!taskId) return;
 
@@ -204,22 +190,20 @@ function DashboardContent() {
       const updatedTask = await TaskService.updateTask(taskId, updatedTaskData);
 
       if (updatedTask) {
-        // Animate the update
         const taskElement = taskCardsRef.current.find(el => 
           el?.dataset.taskId === taskId.toString()
         );
         
         if (taskElement) {
           gsap.to(taskElement, {
-            scale: 1.05,
-            duration: 0.2,
+            scale: 1.1,
+            duration: 0.3,
             yoyo: true,
             repeat: 1,
-            ease: "power2.inOut"
+            ease: "elastic.out(1, 0.3)"
           });
         }
 
-        // Refresh task list
         const allTasks = await TaskService.getTasks();
         const sortedTasks = allTasks
           .filter((task) => task.created_at)
@@ -247,54 +231,61 @@ function DashboardContent() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        {/* Header with animation */}
         <div 
           ref={headerRef}
-          className="flex justify-between items-center"
+          className="flex justify-between items-center group"
         >
-          <h1 className="text-2xl font-bold text-foreground">Panel de Control</h1>
+          <h1 className="text-2xl font-bold text-foreground transition-all duration-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:scale-105">
+            Panel de Control
+          </h1>
           <div className="flex space-x-2">
             <Link href="/tasks/new" passHref>
-              <Button className="hover:scale-105 transition-transform duration-200">
-                <PlusCircle className="h-4 w-4 mr-2" /> Nueva tarea
+              <Button className="transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-blue-500/25 group/btn">
+                <PlusCircle className="h-4 w-4 mr-2 transition-all duration-300 group-hover/btn:rotate-180" /> 
+                Nueva tarea
               </Button>
             </Link>
           </div>
         </div>
 
-        {/* Cards grid with animation */}
         <div 
           ref={cardsContainerRef}
           className="grid grid-cols-1 md:grid-cols-3 gap-4"
         >
-          {/* Active Projects */}
-          <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium flex items-center">
-                <Layers className="h-5 w-5 mr-2 text-red-500" />
-                Proyectos activos
+          {/* Active Projects Card */}
+          <Card className="group relative overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-red-500/10 hover:-translate-y-3 hover:scale-[1.02]">
+            <div className="absolute inset-0 bg-gradient-to-br from-red-50/0 to-orange-50/0 group-hover:from-red-50/30 group-hover:to-orange-50/30 dark:group-hover:from-red-950/20 dark:group-hover:to-orange-950/20 transition-all duration-700"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-red-200/0 to-transparent group-hover:via-red-200/50 dark:group-hover:via-red-700/30 animate-shimmer opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+            
+            <CardHeader className="pb-2 relative z-10">
+              <CardTitle className="text-lg font-medium flex items-center transition-all duration-300 group-hover:scale-105">
+                <Layers className="h-5 w-5 mr-2 text-red-500 transition-all duration-300 group-hover:scale-110 group-hover:rotate-12" />
+                <span className="transition-all duration-300 group-hover:text-red-600 dark:group-hover:text-red-400">
+                  Proyectos activos
+                </span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="relative z-10">
               {isLoading.projects ? (
                 <div className="h-24 flex justify-center items-center">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-500"></div>
                 </div>
               ) : activeProjects.length > 0 ? (
                 <div className="space-y-3">
-                  {activeProjects.map((project) => (
+                  {activeProjects.map((project, index) => (
                     <div
                       key={project.id}
-                      className="flex justify-between items-center border-b border-border pb-2 last:border-0 hover:bg-muted/50 rounded px-2 py-1 transition-colors duration-200"
+                      className="flex justify-between items-center border-b border-border pb-2 last:border-0 hover:bg-red-50/50 dark:hover:bg-red-950/20 rounded px-2 py-1 transition-all duration-300 hover:translate-x-2 hover:shadow-md"
+                      style={{ animationDelay: `${index * 100}ms` }}
                     >
-                      <div>
+                      <div className="transition-all duration-300 hover:scale-105">
                         <p className="font-medium text-foreground">{project.name}</p>
                         <p className="text-sm text-muted-foreground">
                           {new Date(project.end_date).toLocaleDateString()}
                         </p>
                       </div>
                       <Link href={`/projects/${project.id}`} passHref>
-                        <Button variant="ghost" size="sm" className="hover:scale-110 transition-transform">
+                        <Button variant="ghost" size="sm" className="transition-all duration-300 hover:scale-125 hover:shadow-lg hover:bg-red-100 dark:hover:bg-red-900/30">
                           <ArrowRight className="h-4 w-4" />
                         </Button>
                       </Link>
@@ -308,7 +299,7 @@ function DashboardContent() {
               )}
               <div className="mt-4">
                 <Link href="/projects" passHref>
-                  <Button variant="outline" size="sm" className="w-full hover:scale-105 transition-transform">
+                  <Button variant="outline" size="sm" className="w-full transition-all duration-300 hover:scale-105 hover:shadow-lg hover:border-red-300 hover:bg-red-50 dark:hover:bg-red-950/20">
                     Ver todos los proyectos
                   </Button>
                 </Link>
@@ -316,34 +307,40 @@ function DashboardContent() {
             </CardContent>
           </Card>
 
-          {/* Active Sprints */}
-          <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium flex items-center">
-                <Calendar className="h-5 w-5 mr-2 text-green-500" />
-                Sprints activos
+          {/* Active Sprints Card */}
+          <Card className="group relative overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-green-500/10 hover:-translate-y-3 hover:scale-[1.02]">
+            <div className="absolute inset-0 bg-gradient-to-br from-green-50/0 to-emerald-50/0 group-hover:from-green-50/30 group-hover:to-emerald-50/30 dark:group-hover:from-green-950/20 dark:group-hover:to-emerald-950/20 transition-all duration-700"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-green-200/0 to-transparent group-hover:via-green-200/50 dark:group-hover:via-green-700/30 animate-shimmer opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+            
+            <CardHeader className="pb-2 relative z-10">
+              <CardTitle className="text-lg font-medium flex items-center transition-all duration-300 group-hover:scale-105">
+                <Calendar className="h-5 w-5 mr-2 text-green-500 transition-all duration-300 group-hover:scale-110 group-hover:rotate-12" />
+                <span className="transition-all duration-300 group-hover:text-green-600 dark:group-hover:text-green-400">
+                  Sprints activos
+                </span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="relative z-10">
               {isLoading.sprints ? (
                 <div className="h-24 flex justify-center items-center">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500"></div>
                 </div>
               ) : activeSprints.length > 0 ? (
                 <div className="space-y-3">
-                  {activeSprints.map((sprint) => (
+                  {activeSprints.map((sprint, index) => (
                     <div
                       key={sprint.id}
-                      className="flex justify-between items-center border-b border-border pb-2 last:border-0 hover:bg-muted/50 rounded px-2 py-1 transition-colors duration-200"
+                      className="flex justify-between items-center border-b border-border pb-2 last:border-0 hover:bg-green-50/50 dark:hover:bg-green-950/20 rounded px-2 py-1 transition-all duration-300 hover:translate-x-2 hover:shadow-md"
+                      style={{ animationDelay: `${index * 100}ms` }}
                     >
-                      <div>
+                      <div className="transition-all duration-300 hover:scale-105">
                         <p className="font-medium text-foreground">{sprint.name}</p>
                         <p className="text-sm text-muted-foreground">
                           Termina: {new Date(sprint.end_date).toLocaleDateString()}
                         </p>
                       </div>
                       <Link href={`/sprints/${sprint.id}`} passHref>
-                        <Button variant="ghost" size="sm" className="hover:scale-110 transition-transform">
+                        <Button variant="ghost" size="sm" className="transition-all duration-300 hover:scale-125 hover:shadow-lg hover:bg-green-100 dark:hover:bg-green-900/30">
                           <ArrowRight className="h-4 w-4" />
                         </Button>
                       </Link>
@@ -357,7 +354,7 @@ function DashboardContent() {
               )}
               <div className="mt-4">
                 <Link href="/sprints" passHref>
-                  <Button variant="outline" size="sm" className="w-full hover:scale-105 transition-transform">
+                  <Button variant="outline" size="sm" className="w-full transition-all duration-300 hover:scale-105 hover:shadow-lg hover:border-green-300 hover:bg-green-50 dark:hover:bg-green-950/20">
                     Ver todos los sprints
                   </Button>
                 </Link>
@@ -365,27 +362,33 @@ function DashboardContent() {
             </CardContent>
           </Card>
 
-          {/* Recent Tasks */}
-          <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium flex items-center">
-                <CheckSquare className="h-5 w-5 mr-2 text-amber-500" />
-                Mis tareas recientes
+          {/* Recent Tasks Card */}
+          <Card className="group relative overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-amber-500/10 hover:-translate-y-3 hover:scale-[1.02]">
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-50/0 to-yellow-50/0 group-hover:from-amber-50/30 group-hover:to-yellow-50/30 dark:group-hover:from-amber-950/20 dark:group-hover:to-yellow-950/20 transition-all duration-700"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-200/0 to-transparent group-hover:via-amber-200/50 dark:group-hover:via-amber-700/30 animate-shimmer opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+            
+            <CardHeader className="pb-2 relative z-10">
+              <CardTitle className="text-lg font-medium flex items-center transition-all duration-300 group-hover:scale-105">
+                <CheckSquare className="h-5 w-5 mr-2 text-amber-500 transition-all duration-300 group-hover:scale-110 group-hover:rotate-12" />
+                <span className="transition-all duration-300 group-hover:text-amber-600 dark:group-hover:text-amber-400">
+                  Mis tareas recientes
+                </span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="relative z-10">
               {isLoading.tasks ? (
                 <div className="h-24 flex justify-center items-center">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-500"></div>
                 </div>
               ) : recentTasks.length > 0 ? (
                 <div className="space-y-3">
-                  {recentTasks.map((task) => (
+                  {recentTasks.map((task, index) => (
                     <div
                       key={task.id}
-                      className="flex justify-between items-center border-b border-border pb-2 last:border-0 hover:bg-muted/50 rounded px-2 py-1 transition-colors duration-200"
+                      className="flex justify-between items-center border-b border-border pb-2 last:border-0 hover:bg-amber-50/50 dark:hover:bg-amber-950/20 rounded px-2 py-1 transition-all duration-300 hover:translate-x-2 hover:shadow-md"
+                      style={{ animationDelay: `${index * 100}ms` }}
                     >
-                      <div>
+                      <div className="transition-all duration-300 hover:scale-105">
                         <p className="font-medium text-foreground">{task.title}</p>
                         <p className="text-sm text-muted-foreground">
                           {task.due_date
@@ -394,7 +397,7 @@ function DashboardContent() {
                         </p>
                       </div>
                       <Link href={`/tasks/${task.id}`} passHref>
-                        <Button variant="ghost" size="sm" className="hover:scale-110 transition-transform">
+                        <Button variant="ghost" size="sm" className="transition-all duration-300 hover:scale-125 hover:shadow-lg hover:bg-amber-100 dark:hover:bg-amber-900/30">
                           <ArrowRight className="h-4 w-4" />
                         </Button>
                       </Link>
@@ -408,7 +411,7 @@ function DashboardContent() {
               )}
               <div className="mt-4">
                 <Link href="/tasks" passHref>
-                  <Button variant="outline" size="sm" className="w-full hover:scale-105 transition-transform">
+                  <Button variant="outline" size="sm" className="w-full transition-all duration-300 hover:scale-105 hover:shadow-lg hover:border-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/20">
                     Ver todas las tareas
                   </Button>
                 </Link>
@@ -421,20 +424,24 @@ function DashboardContent() {
         <div>
           <div 
             ref={tasksHeaderRef}
-            className="flex justify-between items-center mb-4"
+            className="flex justify-between items-center mb-4 group"
           >
-            <h2 className="text-xl font-semibold text-foreground">Tareas recientes</h2>
+            <h2 className="text-xl font-semibold text-foreground transition-all duration-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:scale-105">
+              Tareas recientes
+            </h2>
             <Link href="/tasks" passHref>
-              <Button variant="outline" size="sm" className="hover:scale-105 transition-transform">
+              <Button variant="outline" size="sm" className="transition-all duration-300 hover:scale-110 hover:shadow-lg hover:border-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/20">
                 Ver todas
               </Button>
             </Link>
           </div>
           <Card 
             ref={tasksSectionRef}
-            className="w-full hover:shadow-lg transition-shadow duration-300"
+            className="w-full group relative overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/10"
           >
-            <CardContent className="pt-6">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50/0 to-indigo-50/0 group-hover:from-blue-50/20 group-hover:to-indigo-50/20 dark:group-hover:from-blue-950/10 dark:group-hover:to-indigo-950/10 transition-all duration-700"></div>
+            
+            <CardContent className="pt-6 relative z-10">
               {isLoading.tasks ? (
                 <div className="flex justify-center items-center h-40">
                   <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
@@ -446,47 +453,53 @@ function DashboardContent() {
                       key={task.id}
                       ref={(el) => addTaskCardRef(el, index)}
                       data-task-id={task.id}
-                      className="cursor-pointer hover:shadow-md transition-all duration-300 hover:-translate-y-1"
+                      className="cursor-pointer group/task relative overflow-hidden transition-all duration-500 hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-2 hover:scale-[1.02]"
                       onClick={() => router.push(`/tasks/${task.id}`)}
                     >
-                      <CardContent className="p-4">
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-50/0 to-purple-50/0 group-hover/task:from-blue-50/30 group-hover/task:to-purple-50/30 dark:group-hover/task:from-blue-950/20 dark:group-hover/task:to-purple-950/20 transition-all duration-500"></div>
+                      
+                      <CardContent className="p-4 relative z-10">
                         <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="font-medium text-foreground">{task.title}</h3>
-                            <p className="text-sm text-muted-foreground line-clamp-1 mt-1">
+                          <div className="transition-all duration-300 group-hover/task:translate-x-2">
+                            <h3 className="font-medium text-foreground transition-all duration-300 group-hover/task:text-blue-600 dark:group-hover/task:text-blue-400 group-hover/task:scale-105">
+                              {task.title}
+                            </h3>
+                            <p className="text-sm text-muted-foreground line-clamp-1 mt-1 transition-all duration-300 group-hover/task:text-foreground/80">
                               {task.description}
                             </p>
                           </div>
-                          <div>
+                          <div className="transition-all duration-300 group-hover/task:scale-105">
                             {task.status === TaskStatus.TODO && (
-                              <Badge variant="outline" className="bg-muted">
+                              <Badge variant="outline" className="bg-muted transition-all duration-300 group-hover/task:shadow-md">
                                 Por hacer
                               </Badge>
                             )}
                             {task.status === TaskStatus.IN_PROGRESS && (
-                              <Badge variant="default" className="bg-blue-500">
+                              <Badge variant="default" className="bg-blue-500 transition-all duration-300 group-hover/task:shadow-lg">
                                 En progreso
                               </Badge>
                             )}
                             {task.status === TaskStatus.COMPLETED && (
-                              <Badge variant="default" className="bg-green-500">
+                              <Badge variant="default" className="bg-green-500 transition-all duration-300 group-hover/task:shadow-lg">
                                 Completado
                               </Badge>
                             )}
                           </div>
                         </div>
                         <div className="flex justify-between items-center mt-3 text-xs text-muted-foreground">
-                          <div className="flex items-center">
-                            <CalendarIcon className="h-3 w-3 mr-1" />
-                            {task.due_date
-                              ? new Date(task.due_date).toLocaleDateString()
-                              : 'Sin fecha'}
+                          <div className="flex items-center transition-all duration-300 group-hover/task:translate-x-1">
+                            <CalendarIcon className="h-3 w-3 mr-1 transition-all duration-300 group-hover/task:scale-110 group-hover/task:text-blue-500" />
+                            <span className="transition-all duration-300 group-hover/task:text-foreground/80">
+                              {task.due_date
+                                ? new Date(task.due_date).toLocaleDateString()
+                                : 'Sin fecha'}
+                            </span>
                           </div>
                           {task.status !== TaskStatus.COMPLETED && (
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-7 text-xs hover:scale-110 transition-transform"
+                              className="h-7 text-xs transition-all duration-300 hover:scale-125 hover:shadow-lg hover:bg-green-100 dark:hover:bg-green-900/30 group/complete"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleTaskStatusChange(task.id, TaskStatus.COMPLETED);
@@ -496,7 +509,7 @@ function DashboardContent() {
                               {loadingTaskId === task.id ? (
                                 <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary mr-1"></div>
                               ) : (
-                                <CheckCircle2 className="h-3 w-3 mr-1" />
+                                <CheckCircle2 className="h-3 w-3 mr-1 transition-all duration-300 group-hover/complete:rotate-180 group-hover/complete:text-green-600" />
                               )}
                               Completar
                             </Button>
@@ -515,6 +528,16 @@ function DashboardContent() {
           </Card>
         </div>
       </div>
+      
+      <style jsx>{`
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        .animate-shimmer {
+          animation: shimmer 2s infinite;
+        }
+      `}</style>
     </MainLayout>
   );
 }

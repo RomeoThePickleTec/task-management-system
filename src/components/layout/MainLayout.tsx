@@ -28,33 +28,34 @@ export default function MainLayout({ children }: MainLayoutProps) {
     // Initial page load animations
     const tl = gsap.timeline();
     
-    // Animate header sliding down
+    // Animate header sliding down with bounce
     tl.fromTo(headerRef.current,
       { y: -100, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }
+      { y: 0, opacity: 1, duration: 0.8, ease: "back.out(1.7)" }
     );
 
-    // Animate sidebar sliding in from left (desktop only)
+    // Animate sidebar sliding in from left with elastic ease
     tl.fromTo(sidebarRef.current,
       { x: -280, opacity: 0 },
-      { x: 0, opacity: 1, duration: 0.7, ease: "power2.out" },
-      "-=0.4"
+      { x: 0, opacity: 1, duration: 1, ease: "elastic.out(1, 0.3)" },
+      "-=0.5"
     );
 
-    // Animate main content fading in
+    // Animate main content with staggered fade-in
     tl.fromTo(mainContentRef.current,
-      { opacity: 0, y: 20 },
-      { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" },
-      "-=0.5"
+      { opacity: 0, y: 30, scale: 0.95 },
+      { opacity: 1, y: 0, scale: 1, duration: 0.9, ease: "power2.out" },
+      "-=0.6"
     );
   }, []);
 
   const handleLogout = async () => {
-    // Animate logout
+    // Enhanced logout animation
     gsap.to([headerRef.current, sidebarRef.current, mainContentRef.current], {
       opacity: 0,
-      y: -20,
-      duration: 0.4,
+      y: -30,
+      scale: 0.95,
+      duration: 0.5,
       stagger: 0.1,
       ease: "power2.in",
       onComplete: async () => {
@@ -70,26 +71,29 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
     
-    // Add a subtle animation when toggling mobile sidebar
+    // Enhanced mobile sidebar animation
     if (!sidebarOpen) {
       gsap.fromTo('.sheet-content',
-        { x: -280 },
-        { x: 0, duration: 0.3, ease: "power2.out" }
+        { x: -280, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.4, ease: "back.out(1.7)" }
       );
     }
   };
 
   return (
     <div className="min-h-screen bg-background flex flex-col overflow-hidden">
-      {/* Mobile sidebar */}
+      {/* Mobile sidebar with enhanced animations */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <SheetContent side="left" className="p-0 w-64 sheet-content">
           <Sidebar userRole={userRole} />
         </SheetContent>
       </Sheet>
 
-      {/* App Header */}
-      <div ref={headerRef}>
+      {/* App Header with hover effects */}
+      <div 
+        ref={headerRef}
+        className="transition-all duration-300 hover:shadow-lg"
+      >
         <AppHeader
           username={username}
           userRole={userRole}
@@ -99,27 +103,32 @@ export default function MainLayout({ children }: MainLayoutProps) {
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Desktop sidebar */}
+        {/* Desktop sidebar with hover effects */}
         <div 
           ref={sidebarRef}
-          className="hidden md:block w-64 flex-shrink-0"
+          className="hidden md:block w-64 flex-shrink-0 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/5"
         >
           <Sidebar userRole={userRole} className="h-full" />
         </div>
 
-        {/* Main content */}
-        <div className="flex-1 overflow-auto">
+        {/* Main content with subtle hover effects */}
+        <div className="flex-1 overflow-auto relative">
+          {/* Subtle animated background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/20 via-transparent to-purple-50/20 dark:from-blue-950/10 dark:to-purple-950/10 opacity-0 hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+          
           <main 
             ref={mainContentRef}
-            className="py-6 px-4 sm:px-6 lg:px-8"
+            className="py-6 px-4 sm:px-6 lg:px-8 relative z-10"
           >
             {children}
           </main>
         </div>
       </div>
 
-      {/* Backend status notification */}
-      <BackendStatus />
+      {/* Backend status with animation */}
+      <div className="transition-all duration-300 hover:scale-105">
+        <BackendStatus />
+      </div>
     </div>
   );
 }

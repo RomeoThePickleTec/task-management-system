@@ -69,10 +69,13 @@ const Sidebar: React.FC<SidebarProps> = ({ className, userRole = UserRole.DEVELO
   const filteredNavItems = navItems.filter((item) => item.roles.includes(userRole));
 
   return (
-    <div className={cn('pb-12 border-r border-border bg-sidebar h-full', className)}>
-      <div className="space-y-4 py-4">
+    <div className={cn('pb-12 border-r border-border bg-sidebar h-full relative group', className)}>
+      {/* Animated background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-blue-50/0 via-purple-50/0 to-indigo-50/0 group-hover:from-blue-50/30 group-hover:via-purple-50/20 group-hover:to-indigo-50/30 dark:group-hover:from-blue-950/20 dark:group-hover:via-purple-950/10 dark:group-hover:to-indigo-950/20 transition-all duration-700 ease-out"></div>
+      
+      <div className="space-y-4 py-4 relative z-10">
         <div className="px-4 py-2">
-          <h2 className="mb-2 px-2 text-lg font-semibold tracking-tight text-sidebar-foreground">
+          <h2 className="mb-2 px-2 text-lg font-semibold tracking-tight text-sidebar-foreground transition-all duration-300 group-hover:text-blue-700 dark:group-hover:text-blue-300 group-hover:scale-105">
             Navegación
           </h2>
           <ScrollArea className="h-[calc(100vh-9rem)]">
@@ -83,14 +86,30 @@ const Sidebar: React.FC<SidebarProps> = ({ className, userRole = UserRole.DEVELO
                     variant={isActive(item.href) ? 'secondary' : 'ghost'}
                     size="sm"
                     className={cn(
-                      "w-full justify-start",
+                      "w-full justify-start group/item relative overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-lg transform-gpu",
                       isActive(item.href)
-                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-md scale-105"
                         : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                     )}
+                    style={{ 
+                      animationDelay: `${index * 100}ms`,
+                      transform: isActive(item.href) ? 'scale(1.05)' : undefined
+                    }}
                   >
-                    {item.icon}
-                    <span className="ml-2">{item.title}</span>
+                    {/* Hover shimmer effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover/item:translate-x-[100%] transition-transform duration-500 ease-in-out"></div>
+                    
+                    <div className="transition-all duration-300 group-hover/item:scale-110 group-hover/item:rotate-12">
+                      {item.icon}
+                    </div>
+                    <span className="ml-2 transition-all duration-300 group-hover/item:translate-x-1">
+                      {item.title}
+                    </span>
+                    
+                    {/* Active indicator */}
+                    {isActive(item.href) && (
+                      <div className="absolute right-2 w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    )}
                   </Button>
                 </Link>
               ))}
@@ -98,6 +117,9 @@ const Sidebar: React.FC<SidebarProps> = ({ className, userRole = UserRole.DEVELO
           </ScrollArea>
         </div>
       </div>
+      
+      {/* Subtle border shimmer */}
+      <div className="absolute right-0 top-0 w-0.5 h-full bg-gradient-to-b from-transparent via-blue-200/0 to-transparent group-hover:via-blue-200/50 dark:group-hover:via-blue-700/30 transition-all duration-700"></div>
     </div>
   );
 };
