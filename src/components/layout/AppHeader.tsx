@@ -44,25 +44,26 @@ const AppHeader: React.FC<AppHeaderProps> = ({
       {/* Animated background gradient */}
       <div className="absolute inset-0 bg-gradient-to-r from-red-50/0 via-blue-50/0 to-purple-50/0 group-hover:from-red-50/20 group-hover:via-blue-50/20 group-hover:to-purple-50/20 dark:group-hover:from-red-950/10 dark:group-hover:via-blue-950/10 dark:group-hover:to-purple-950/10 transition-all duration-700 ease-out"></div>
       
-      <div className="px-4 sm:px-6 py-3 flex justify-between items-center relative z-10">
-        <div className="flex items-center">
+      <div className="px-3 sm:px-6 py-3 flex justify-between items-center relative z-10">
+        <div className="flex items-center min-w-0 flex-1">
           <Button 
             variant="ghost" 
             size="icon" 
-            className="md:hidden mr-2 transition-all duration-300 hover:scale-110 hover:rotate-180" 
+            className="md:hidden mr-2 transition-all duration-300 hover:scale-110 hover:rotate-180 flex-shrink-0" 
             onClick={onToggleSidebar}
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <div className="flex items-center group/logo">
-            <Layers className="h-6 w-6 text-red-600 mr-2 transition-all duration-300 group-hover/logo:scale-110 group-hover/logo:rotate-12" />
-            <h1 className="text-xl font-bold text-foreground transition-all duration-300 group-hover/logo:text-red-600 dark:group-hover/logo:text-red-400 group-hover/logo:scale-105">
-              JAI-VIER TASK MANAGEMENT SYSTEM
+          <div className="flex items-center group/logo min-w-0">
+            <Layers className="h-5 w-5 sm:h-6 sm:w-6 text-red-600 mr-2 transition-all duration-300 group-hover/logo:scale-110 group-hover/logo:rotate-12 flex-shrink-0" />
+            <h1 className="text-sm sm:text-xl font-bold text-foreground transition-all duration-300 group-hover/logo:text-red-600 dark:group-hover/logo:text-red-400 group-hover/logo:scale-105 truncate">
+              <span className="hidden sm:inline">JAI-VIER TASK MANAGEMENT SYSTEM</span>
+              <span className="sm:hidden">JAI-VIER TMS</span>
             </h1>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
           {/* Dark Mode Toggle with enhanced animations */}
           <Button
             variant="ghost"

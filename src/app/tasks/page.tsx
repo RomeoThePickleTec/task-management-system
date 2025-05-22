@@ -180,36 +180,39 @@ export default function TasksPage() {
           </div>
 
           <div className="grid gap-4 mb-6">
-            <div className="flex items-center gap-4">
+            {/* Layout responsivo para los filtros */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
               <Input
                 placeholder="Buscar tareas..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="flex-1"
               />
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Estado" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="0">Pendiente</SelectItem>
-                  <SelectItem value="1">En progreso</SelectItem>
-                  <SelectItem value="2">Completado</SelectItem>
-                  <SelectItem value="3">Bloqueado</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Prioridad" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="3">Alta</SelectItem>
-                  <SelectItem value="2">Media</SelectItem>
-                  <SelectItem value="1">Baja</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex gap-2 sm:gap-4">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-full sm:w-[140px]">
+                    <SelectValue placeholder="Estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="0">Pendiente</SelectItem>
+                    <SelectItem value="1">En progreso</SelectItem>
+                    <SelectItem value="2">Completado</SelectItem>
+                    <SelectItem value="3">Bloqueado</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                  <SelectTrigger className="w-full sm:w-[140px]">
+                    <SelectValue placeholder="Prioridad" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="3">Alta</SelectItem>
+                    <SelectItem value="2">Media</SelectItem>
+                    <SelectItem value="1">Baja</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
@@ -222,6 +225,7 @@ export default function TasksPage() {
             }}
             onStatusChange={handleTaskStatusChange}
             isLoading={isLoading}
+            loadingTaskId={loadingTaskId}
             emptyMessage={
               searchQuery || statusFilter !== 'all' || priorityFilter !== 'all'
                 ? 'No hay tareas que coincidan con los filtros'
