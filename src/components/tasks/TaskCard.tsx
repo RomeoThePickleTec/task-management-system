@@ -21,7 +21,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, onStatusChange }) =>
     switch (status) {
       case TaskStatus.TODO:
         return (
-          <Badge variant="outline" className="bg-gray-100">
+          <Badge variant="outline" className="bg-muted">
             Por hacer
           </Badge>
         );
@@ -49,7 +49,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, onStatusChange }) =>
     switch (priority) {
       case 1:
         return (
-          <Badge variant="outline" className="bg-gray-100">
+          <Badge variant="outline" className="bg-muted">
             Baja
           </Badge>
         );
@@ -75,7 +75,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, onStatusChange }) =>
 
   // Calcular si la fecha de vencimiento está próxima o ya pasó
   const getDueDateClass = () => {
-    if (!task.due_date) return 'text-gray-600';
+    if (!task.due_date) return 'text-muted-foreground';
 
     const dueDate = new Date(task.due_date);
     const today = new Date();
@@ -83,11 +83,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, onStatusChange }) =>
     threeDaysLater.setDate(today.getDate() + 3);
 
     if (dueDate < today) {
-      return 'text-red-600';
+      return 'text-red-600 dark:text-red-400';
     } else if (dueDate < threeDaysLater) {
-      return 'text-amber-600';
+      return 'text-amber-600 dark:text-amber-400';
     }
-    return 'text-gray-600';
+    return 'text-muted-foreground';
   };
 
   // Manejar click en completar tarea
@@ -113,24 +113,24 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, onStatusChange }) =>
     <Card className="w-full h-full hover:shadow-md transition-shadow">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
-          <CardTitle className="text-lg font-medium line-clamp-2">{task.title}</CardTitle>
+          <CardTitle className="text-lg font-medium line-clamp-2 text-foreground">{task.title}</CardTitle>
           {getPriorityBadge(task.priority)}
         </div>
       </CardHeader>
       <CardContent className="pb-2">
-        <p className="text-sm text-gray-600 line-clamp-3 mb-3">{task.description}</p>
+        <p className="text-sm text-muted-foreground line-clamp-3 mb-3">{task.description}</p>
         <div className="space-y-2 text-sm">
           <div className="flex items-center gap-2">
             <CalendarIcon className={`h-4 w-4 ${getDueDateClass()}`} />
             <span className={`${getDueDateClass()}`}>Vence: {formatDate(task.due_date)}</span>
           </div>
           <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-gray-600" />
-            <span>{task.estimated_hours} horas estimadas</span>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+            <span className="text-muted-foreground">{task.estimated_hours} horas estimadas</span>
           </div>
           <div className="flex items-center gap-2">
-            <BarChart2 className="h-4 w-4 text-gray-600" />
-            <span>
+            <BarChart2 className="h-4 w-4 text-muted-foreground" />
+            <span className="text-muted-foreground">
               {task.subtasks?.length ? `${task.subtasks.length} subtareas` : 'Sin subtareas'}
             </span>
           </div>
