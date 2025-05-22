@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
+import { apiClient } from '@/services/api/apiClient';
 import {
   Select,
   SelectContent,
@@ -121,97 +122,82 @@ export default function SprintReportsPage() {
         // Obtener proyectos para el filtro
         const projectsData = await ProjectService.getProjects();
         setProjects(projectsData);
-
-        // Obtener todos los sprints
-        const sprintsData = await SprintService.getSprints();
-
+  
+        // Obtener todos los sprints desde el endpoint /sprintlist
+        const sprintsData = await apiClient.get<ISprint[]>('/sprintlist');
+  
         // Procesar sprints con metadatos adicionales
-        const sprintsWithMetadata: SprintWithMetadata[] = await Promise.all(
-          sprintsData.map(async (sprint) => {
-            // Obtener tareas del sprint
-            let tasks: ITask[] = [];
-            if (sprint.tasks && sprint.tasks.length > 0) {
-              tasks = sprint.tasks;
-            } else {
-              // Intentar obtener tareas por sprint_id
-              try {
-                tasks = await TaskService.getTasks({ sprint_id: sprint.id });
-              } catch (error) {
-                console.error(`Error fetching tasks for sprint ${sprint.id}:`, error);
-              }
+        const sprintsWithMetadata: SprintWithMetadata[] = sprintsData.map((sprint) => {
+          // Usamos SOLO las tareas que vienen dentro del objeto sprint
+          // No intentamos obtener tareas usando TaskService
+          const tasks = sprint.tasks || [];
+          
+          const taskCount = tasks.length;
+          const completedTaskCount = tasks.filter(
+            (t) => t.status === TaskStatus.COMPLETED
+          ).length;
+  
+          // Calcular días restantes
+          let daysRemaining = 0;
+  
+          if (sprint.status !== SprintStatus.COMPLETED) {
+            daysRemaining = getDaysRemaining(sprint.end_date);
+          }
+  
+          // Calcular tasa de completado
+          let completionRate = 0;
+          if (taskCount > 0) {
+            completionRate = Math.round((completedTaskCount / taskCount) * 100);
+          }
+  
+          // Calcular velocidad (tareas completadas por día)
+          const endDateOrNow =
+            sprint.status === SprintStatus.COMPLETED ? sprint.end_date : new Date().toISOString();
+  
+          const velocity = calculateVelocity(sprint.start_date, endDateOrNow, completedTaskCount);
+  
+          // Calcular promedio de tareas por día
+          const totalDays =
+            getDaysRemaining(sprint.end_date) * -1 + getDaysRemaining(sprint.start_date);
+          const avgTasksPerDay =
+            totalDays > 0 ? parseFloat((taskCount / totalDays).toFixed(2)) : 0;
+  
+          // Predecir porcentaje de completado al final del sprint
+          let predictedCompletion = completionRate;
+          if (sprint.status !== SprintStatus.COMPLETED && daysRemaining > 0 && velocity > 0) {
+            const potentialAdditionalCompleted = velocity * daysRemaining;
+            const predictedCompleted = completedTaskCount + potentialAdditionalCompleted;
+            predictedCompletion = Math.min(
+              100,
+              Math.round((predictedCompleted / taskCount) * 100)
+            );
+          }
+  
+          // Obtener nombre del proyecto
+          let projectName = 'Sin proyecto';
+          if (sprint.project_id) {
+            const project = projectsData.find((p) => p.id === sprint.project_id);
+            if (project) {
+              projectName = project.name;
             }
-
-            const taskCount = tasks.length;
-            const completedTaskCount = tasks.filter(
-              (t) => t.status === TaskStatus.COMPLETED
-            ).length;
-
-            // Calcular días restantes
-            let daysRemaining = 0;
-
-            if (sprint.status !== SprintStatus.COMPLETED) {
-              daysRemaining = getDaysRemaining(sprint.end_date);
-            }
-
-            // Calcular tasa de completado
-            let completionRate = 0;
-            if (taskCount > 0) {
-              completionRate = Math.round((completedTaskCount / taskCount) * 100);
-            }
-
-            // Calcular velocidad (tareas completadas por día)
-            const endDateOrNow =
-              sprint.status === SprintStatus.COMPLETED ? sprint.end_date : new Date().toISOString();
-
-            const velocity = calculateVelocity(sprint.start_date, endDateOrNow, completedTaskCount);
-
-            // Calcular promedio de tareas por día
-            const totalDays =
-              getDaysRemaining(sprint.end_date) * -1 + getDaysRemaining(sprint.start_date);
-            const avgTasksPerDay =
-              totalDays > 0 ? parseFloat((taskCount / totalDays).toFixed(2)) : 0;
-
-            // Predecir porcentaje de completado al final del sprint
-            let predictedCompletion = completionRate;
-            if (sprint.status !== SprintStatus.COMPLETED && daysRemaining > 0 && velocity > 0) {
-              const potentialAdditionalCompleted = velocity * daysRemaining;
-              const predictedCompleted = completedTaskCount + potentialAdditionalCompleted;
-              predictedCompletion = Math.min(
-                100,
-                Math.round((predictedCompleted / taskCount) * 100)
-              );
-            }
-
-            // Obtener nombre del proyecto
-            let projectName = 'Sin proyecto';
-            if (sprint.project_id) {
-              try {
-                const project = projectsData.find((p) => p.id === sprint.project_id);
-                if (project) {
-                  projectName = project.name;
-                }
-              } catch (error) {
-                console.error(`Error getting project name for sprint ${sprint.id}:`, error);
-              }
-            }
-
-            return {
-              ...sprint,
-              daysRemaining,
-              completionRate,
-              taskCount,
-              completedTaskCount,
-              velocity,
-              projectName,
-              avgTasksPerDay,
-              predictedCompletion,
-            };
-          })
-        );
-
+          }
+  
+          return {
+            ...sprint,
+            daysRemaining,
+            completionRate,
+            taskCount,
+            completedTaskCount,
+            velocity,
+            projectName,
+            avgTasksPerDay,
+            predictedCompletion,
+          };
+        });
+  
         setSprints(sprintsWithMetadata);
         setFilteredSprints(sprintsWithMetadata);
-
+  
         // Calcular métricas de sprints
         if (sprintsWithMetadata.length > 0) {
           const metrics = {
@@ -242,7 +228,7 @@ export default function SprintReportsPage() {
                 s.predictedCompletion! < 85
             ).length,
           };
-
+  
           setSprintMetrics(metrics);
         }
       } catch (error) {
@@ -251,10 +237,9 @@ export default function SprintReportsPage() {
         setIsLoading(false);
       }
     };
-
+  
     fetchData();
   }, []);
-
   // Filtrar sprints cuando cambian los filtros
   useEffect(() => {
     let filtered = [...sprints];

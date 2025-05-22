@@ -7,7 +7,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { IUser, IProject, IProjectMember, UserRole, WorkMode } from '@/core/interfaces/models';
+import { IUser, IProject, IProjectMember, UserRole, WorkMode, ProjectStatus } from '@/core/interfaces/models';
 import Link from 'next/link';
 import {
   ChevronLeft,
@@ -20,11 +20,36 @@ import {
   Trash,
   CheckCircle2,
   PlusCircle,
+  AlertTriangle,
 } from 'lucide-react';
 
 // Importamos los servicios reales de API
 import { UserService, ProjectService, ProjectMemberService } from '@/services/api';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { toast } from '@/components/ui/use-toast';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function UserDetailPage() {
   const params = useParams();
@@ -35,6 +60,24 @@ export default function UserDetailPage() {
   const [projects, setProjects] = useState<IProject[]>([]);
   const [memberships, setMemberships] = useState<IProjectMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Estados para el diálogo de asignar a proyecto
+  const [isAssignProjectDialogOpen, setIsAssignProjectDialogOpen] = useState(false);
+  const [availableProjects, setAvailableProjects] = useState<IProject[]>([]);
+  const [isLoadingProjects, setIsLoadingProjects] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+  const [selectedRole, setSelectedRole] = useState<string>('Member');
+  const [isAssigningProject, setIsAssigningProject] = useState(false);
+  
+  // Estado para eliminar usuario
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Estado para eliminar membresía
+  const [isDeletingMembership, setIsDeletingMembership] = useState<number | null>(null);
+  
+  // Estado para mensajes
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // El usuario actual para esta demo
   const currentUser = {
@@ -42,49 +85,200 @@ export default function UserDetailPage() {
     userRole: UserRole.MANAGER,
   };
 
-  useEffect(() => {
-    const fetchUserDetails = async () => {
-      setIsLoading(true);
-      try {
-        // Obtener el usuario
-        const userData = await UserService.getUserById(userId);
+  // Función para cargar datos del usuario
+  const fetchUserDetails = async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // Obtener el usuario
+      const userData = await UserService.getUserById(userId);
 
-        if (userData) {
-          setUser(userData);
+      if (userData) {
+        setUser(userData);
 
-          // Obtener membresías de proyectos del usuario
-          if (userData.id) {
-            const userMemberships = await ProjectMemberService.getProjectMembersByUser(userData.id);
-            setMemberships(userMemberships);
+        // Obtener membresías de proyectos del usuario
+        if (userData.id) {
+          const userMemberships = await ProjectMemberService.getProjectMembersByUser(userData.id);
+          setMemberships(userMemberships);
 
-            // Para cada membresía, obtener el proyecto completo
-            if (userMemberships && userMemberships.length > 0) {
-              const projectsData = await Promise.all(
-                userMemberships.map(async (membership) => {
-                  return await ProjectService.getProjectById(membership.project_id);
-                })
-              );
+          // Para cada membresía, obtener el proyecto completo
+          if (userMemberships && userMemberships.length > 0) {
+            const projectsData = await Promise.all(
+              userMemberships.map(async (membership) => {
+                return await ProjectService.getProjectById(membership.project_id);
+              })
+            );
 
-              // Filtrar los proyectos null (por si alguno falló)
-              const validProjects = projectsData.filter((p) => p !== null) as IProject[];
-              setProjects(validProjects);
-            }
+            // Filtrar los proyectos null (por si alguno falló)
+            const validProjects = projectsData.filter((p) => p !== null) as IProject[];
+            setProjects(validProjects);
+          } else {
+            setProjects([]);
           }
-        } else {
-          console.error(`User with ID ${userId} not found`);
-          router.push('/users');
         }
-      } catch (error) {
-        console.error(`Error fetching user ${userId}:`, error);
-      } finally {
-        setIsLoading(false);
+      } else {
+        console.error(`User with ID ${userId} not found`);
+        router.push('/users');
       }
-    };
+    } catch (error) {
+      console.error(`Error fetching user ${userId}:`, error);
+      setError(`Error al cargar datos del usuario. ${error instanceof Error ? error.message : ''}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  // Cargar datos iniciales
+  useEffect(() => {
     if (userId) {
       fetchUserDetails();
     }
   }, [userId, router]);
+
+  // Cargar proyectos disponibles cuando se abre el diálogo
+  useEffect(() => {
+    if (isAssignProjectDialogOpen) {
+      fetchAvailableProjects();
+    }
+  }, [isAssignProjectDialogOpen]);
+
+  // Función para cargar proyectos disponibles
+  const fetchAvailableProjects = async () => {
+    setIsLoadingProjects(true);
+    try {
+      // Obtener todos los proyectos
+      const allProjects = await ProjectService.getProjects();
+      
+      // Filtrar los proyectos a los que ya pertenece el usuario
+      const existingProjectIds = memberships.map(member => member.project_id);
+      const filteredProjects = allProjects.filter(
+        project => !existingProjectIds.includes(project.id!)
+      );
+      
+      setAvailableProjects(filteredProjects);
+    } catch (err) {
+      console.error('Error al cargar proyectos disponibles:', err);
+      setError('Error al cargar proyectos. Por favor, inténtelo de nuevo.');
+    } finally {
+      setIsLoadingProjects(false);
+    }
+  };
+
+  // Función para asignar usuario a un proyecto
+// Función para asignar usuario a un proyecto
+const handleAssignProject = async () => {
+  if (!selectedProjectId) {
+    setError('Por favor, selecciona un proyecto.');
+    return;
+  }
+
+  setIsAssigningProject(true);
+  setError(null);
+
+  try {
+    const projectId = parseInt(selectedProjectId);
+    const newMembership = {
+      project_id: projectId,
+      user_id: userId,
+      role: selectedRole,
+      joined_date: new Date().toISOString(),
+    };
+
+    // Llamar al API para añadir el miembro
+    const addedMember = await ProjectMemberService.addProjectMember(newMembership);
+    
+    if (addedMember) {
+      // Buscar el proyecto completo para añadirlo a la lista
+      const project = await ProjectService.getProjectById(projectId);
+      
+      if (project) {
+        // Actualizar el estado directamente sin esperar a recargar todo
+        setMemberships(prev => [...prev, newMembership]);
+        setProjects(prev => [...prev, project]);
+        
+        // Cerrar el diálogo y mostrar mensaje de éxito
+        setIsAssignProjectDialogOpen(false);
+        setSuccessMessage('Usuario asignado al proyecto correctamente');
+        
+        // Limpiar el formulario
+        setSelectedProjectId('');
+        setSelectedRole('Member');
+        
+        setTimeout(() => {
+          setSuccessMessage(null);
+        }, 3000);
+      } else {
+        throw new Error('No se pudo obtener la información del proyecto asignado');
+      }
+    } else {
+      throw new Error('No se pudo asignar el usuario al proyecto');
+    }
+  } catch (err) {
+    console.error('Error al asignar proyecto:', err);
+    setError('Error al asignar proyecto. Por favor, inténtelo de nuevo.');
+  } finally {
+    setIsAssigningProject(false);
+  }
+};
+
+  // Función para eliminar usuario de un proyecto
+  const handleRemoveProjectMembership = async (projectId: number) => {
+    setIsDeletingMembership(projectId);
+    setError(null);
+
+    try {
+      // Llamar al API para eliminar el miembro
+      const success = await ProjectMemberService.removeProjectMember(projectId, userId);
+      
+      if (success) {
+        // Actualizar la lista de proyectos y membresías
+        const updatedMemberships = memberships.filter(m => m.project_id !== projectId);
+        setMemberships(updatedMemberships);
+        
+        const updatedProjects = projects.filter(p => p.id !== projectId);
+        setProjects(updatedProjects);
+        
+        setSuccessMessage('Usuario eliminado del proyecto correctamente');
+        setTimeout(() => {
+          setSuccessMessage(null);
+        }, 3000);
+      } else {
+        throw new Error('No se pudo eliminar el usuario del proyecto');
+      }
+    } catch (err) {
+      console.error(`Error al eliminar usuario del proyecto ${projectId}:`, err);
+      setError('Error al eliminar usuario del proyecto. Por favor, inténtelo de nuevo.');
+    } finally {
+      setIsDeletingMembership(null);
+    }
+  };
+
+  // Función para eliminar usuario
+  const handleDeleteUser = async () => {
+    setIsDeleting(true);
+    setError(null);
+
+    try {
+      const success = await UserService.deleteUser(userId);
+      
+      if (success) {
+        toast({
+          title: 'Usuario eliminado',
+          description: 'El usuario ha sido eliminado correctamente.',
+        });
+        
+        // Redireccionar a la lista de usuarios
+        router.push('/users');
+      } else {
+        throw new Error('No se pudo eliminar el usuario');
+      }
+    } catch (err) {
+      console.error('Error al eliminar usuario:', err);
+      setError('Error al eliminar usuario. Por favor, inténtelo de nuevo.');
+      setIsDeleting(false);
+    }
+  };
 
   // Función para obtener el badge de rol
   const getRoleBadge = (role: string) => {
@@ -239,12 +433,48 @@ export default function UserDetailPage() {
                     <Edit className="h-4 w-4 mr-1" /> Editar
                   </Button>
                 </Link>
-                <Button variant="destructive" size="sm">
-                  <Trash className="h-4 w-4 mr-1" /> Eliminar
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm">
+                      <Trash className="h-4 w-4 mr-1" /> Eliminar
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Esta acción eliminará permanentemente al usuario {user.full_name} y todas sus asignaciones a proyectos. Esta acción no se puede deshacer.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDeleteUser}
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        {isDeleting ? 'Eliminando...' : 'Eliminar usuario'}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             )}
           </div>
+
+          {/* Mensajes de error/éxito */}
+          {error && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {successMessage && (
+            <Alert variant="default" className="bg-green-50 border-green-200">
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-600">{successMessage}</AlertDescription>
+            </Alert>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Información principal */}
@@ -336,9 +566,75 @@ export default function UserDetailPage() {
                     currentUser.userRole === UserRole.MANAGER ||
                     currentUser.userRole === UserRole.DEVELOPER ||
                     currentUser.userRole === UserRole.TESTER) && (
-                    <Button variant="outline" size="sm">
-                      <PlusCircle className="h-4 w-4 mr-1" /> Asignar a proyecto
-                    </Button>
+                    <Dialog open={isAssignProjectDialogOpen} onOpenChange={setIsAssignProjectDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <PlusCircle className="h-4 w-4 mr-1" /> Asignar a proyecto
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Asignar a Proyecto</DialogTitle>
+                          <DialogDescription>
+                            Selecciona un proyecto y asigna un rol a este usuario.
+                          </DialogDescription>
+                        </DialogHeader>
+                        
+                        <div className="space-y-4 py-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="project">Proyecto</Label>
+                            <Select 
+                              onValueChange={setSelectedProjectId} 
+                              value={selectedProjectId}
+                            >
+                              <SelectTrigger id="project" className="w-full">
+                                <SelectValue placeholder="Selecciona un proyecto" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {isLoadingProjects ? (
+                                  <SelectItem value="loading" disabled>Cargando proyectos...</SelectItem>
+                                ) : availableProjects.length > 0 ? (
+                                  availableProjects.map(project => (
+                                    <SelectItem key={project.id} value={String(project.id)}>
+                                      {project.name}
+                                    </SelectItem>
+                                  ))
+                                ) : (
+                                  <SelectItem value="none" disabled>No hay proyectos disponibles</SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="role">Rol en el proyecto</Label>
+                            <Select 
+                              onValueChange={setSelectedRole} 
+                              value={selectedRole}
+                            >
+                              <SelectTrigger id="role">
+                                <SelectValue placeholder="Selecciona un rol" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Member">Miembro</SelectItem>
+                                <SelectItem value="Developer">Desarrollador</SelectItem>
+                                <SelectItem value="Tester">Tester</SelectItem>
+                                <SelectItem value="Manager">Manager</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        
+                        <DialogFooter>
+                          <Button variant="outline" onClick={() => setIsAssignProjectDialogOpen(false)}>
+                            Cancelar
+                          </Button>
+                          <Button onClick={handleAssignProject} disabled={isAssigningProject || !selectedProjectId}>
+                            {isAssigningProject ? 'Asignando...' : 'Asignar a Proyecto'}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                   )}
                 </div>
 
@@ -358,17 +654,17 @@ export default function UserDetailPage() {
                               <p className="text-sm text-gray-600 mt-1">{project.description}</p>
                               <div className="flex items-center mt-2 space-x-2">
                                 <Badge variant="outline">{getProjectRole(project.id!)}</Badge>
-                                {project.status === ProjectStatus.ACTIVE && (
+                                {project.status === 'ACTIVE' && (
                                   <Badge variant="default" className="bg-green-500">
                                     Activo
                                   </Badge>
                                 )}
-                                {project.status === ProjectStatus.COMPLETED && (
+                                {project.status === 'COMPLETED' && (
                                   <Badge variant="default" className="bg-blue-500">
                                     Completado
                                   </Badge>
                                 )}
-                                {project.status === ProjectStatus.PLANNING && (
+                                {project.status === 'PLANNING' && (
                                   <Badge
                                     variant="outline"
                                     className="bg-purple-100 text-purple-800"
@@ -376,16 +672,59 @@ export default function UserDetailPage() {
                                     Planificación
                                   </Badge>
                                 )}
-                                {project.status === ProjectStatus.ON_HOLD && (
+                                {project.status === 'ON_HOLD' && (
                                   <Badge variant="default" className="bg-yellow-500">
                                     En pausa
                                   </Badge>
                                 )}
                               </div>
                             </div>
-                            <div className="text-sm text-gray-500">
-                              <div>Inicio: {formatDate(project.start_date)}</div>
-                              <div>Fin: {formatDate(project.end_date)}</div>
+                            <div className="flex flex-col items-end space-y-2">
+                              <div className="text-sm text-gray-500">
+                                <div>Inicio: {formatDate(project.start_date)}</div>
+                                <div>Fin: {formatDate(project.end_date)}</div>
+                              </div>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="text-red-600 border-red-200 hover:bg-red-50"
+                                    disabled={isDeletingMembership === project.id}
+                                  >
+                                    {isDeletingMembership === project.id ? (
+                                      <span className="flex items-center">
+                                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Eliminando...
+                                      </span>
+                                    ) : (
+                                      <>
+                                        <Trash className="h-4 w-4 mr-1" /> Remover
+                                      </>
+                                    )}
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>¿Eliminar de este proyecto?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      ¿Estás seguro de que deseas eliminar a {user.full_name} del proyecto {project.name}? Esta acción no se puede deshacer.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleRemoveProjectMembership(project.id!)}
+                                      className="bg-red-600 hover:bg-red-700"
+                                    >
+                                      Eliminar del proyecto
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
                             </div>
                           </div>
                         </CardContent>
@@ -410,7 +749,7 @@ export default function UserDetailPage() {
                   <div>
                     <h3 className="text-sm font-medium text-gray-500 mb-1">Proyectos activos</h3>
                     <p className="text-2xl font-bold">
-                      {projects.filter((p) => p.status === ProjectStatus.ACTIVE).length}
+                    {projects.filter((p) => p.status === 'ACTIVE').length}
                     </p>
                   </div>
 

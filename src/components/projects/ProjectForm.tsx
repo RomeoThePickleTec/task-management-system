@@ -1,4 +1,3 @@
-// src/components/projects/ProjectForm.tsx
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,10 +10,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { IProject, ProjectStatus } from '@/core/interfaces/models';
-import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { es } from 'date-fns/locale';
 
 interface ProjectFormProps {
   project?: IProject;
@@ -37,10 +34,9 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
     status: ProjectStatus.PLANNING,
   });
 
-  // Inicializar formulario con datos de proyecto si existe
+  // Initialize form with project data if it exists
   useEffect(() => {
     if (project) {
-      // Extract only the fields we need for the form data
       const projectData = {
         name: project.name,
         description: project.description,
@@ -52,27 +48,50 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
     }
   }, [project]);
 
-  // Manejador de cambio para inputs y textareas
+  // Handle changes for inputs and textareas
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Manejador para selects
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  // Handle date changes using the native date input
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    // Convert the date string from the input to ISO format and fix timezone issue
+    // by creating a date at noon to avoid timezone shifting the day
+    const date = new Date(`${value}T12:00:00`);
+    setFormData((prev) => ({ ...prev, [name]: date.toISOString() }));
   };
 
-  // Manejador para fechas
-  const handleDateChange = (name: 'start_date' | 'end_date') => (date: Date | undefined) => {
-    if (date) {
-      setFormData((prev) => ({ ...prev, [name]: date.toISOString() }));
-    }
+  // Handle select changes
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [name]: parseInt(value) }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(formData);
+  };
+
+  // Format date for the date input (YYYY-MM-DD) with timezone correction
+  const formatDateForInput = (dateString: string) => {
+    const date = new Date(dateString);
+    // Extract the year, month, and day directly to avoid timezone issues
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Get status label based on status value
+  const getStatusLabel = (status: number): string => {
+    switch (status) {
+      case 0: return "Planificación";
+      case 1: return "Activo";
+      case 2: return "Completado";
+      case 3: return "En pausa";
+      default: return "Selecciona el estado";
+    }
   };
 
   return (
@@ -108,56 +127,40 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="start_date" className="block text-sm font-medium text-gray-700 mb-1">
             Fecha de inicio <span className="text-red-500">*</span>
           </label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant={'outline'} className="w-full justify-start text-left font-normal">
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {formData.start_date ? (
-                  format(new Date(formData.start_date), 'PP')
-                ) : (
-                  <span>Selecciona una fecha</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={new Date(formData.start_date)}
-                onSelect={handleDateChange('start_date')}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
+          <Input
+            type="date"
+            id="start_date"
+            name="start_date"
+            value={formatDateForInput(formData.start_date)}
+            onChange={handleDateChange}
+            className="w-full"
+            required
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            {formData.start_date && format(new Date(formData.start_date), 'PPP', { locale: es })}
+          </p>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="end_date" className="block text-sm font-medium text-gray-700 mb-1">
             Fecha de fin <span className="text-red-500">*</span>
           </label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant={'outline'} className="w-full justify-start text-left font-normal">
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {formData.end_date ? (
-                  format(new Date(formData.end_date), 'PP')
-                ) : (
-                  <span>Selecciona una fecha</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={new Date(formData.end_date)}
-                onSelect={handleDateChange('end_date')}
-                initialFocus
-                disabled={(date) => date < new Date(formData.start_date)}
-              />
-            </PopoverContent>
-          </Popover>
+          <Input
+            type="date"
+            id="end_date"
+            name="end_date"
+            value={formatDateForInput(formData.end_date)}
+            onChange={handleDateChange}
+            className="w-full"
+            min={formatDateForInput(formData.start_date)}
+            required
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            {formData.end_date && format(new Date(formData.end_date), 'PPP', { locale: es })}
+          </p>
         </div>
       </div>
 
@@ -169,14 +172,14 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
           value={formData.status.toString()}
           onValueChange={(value) => handleSelectChange('status', value)}
         >
-          <SelectTrigger>
-            <SelectValue placeholder="Selecciona el estado" />
+          <SelectTrigger className="w-full">
+            <SelectValue>{getStatusLabel(formData.status)}</SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={ProjectStatus.PLANNING.toString()}>Planificación</SelectItem>
-            <SelectItem value={ProjectStatus.ACTIVE.toString()}>Activo</SelectItem>
-            <SelectItem value={ProjectStatus.COMPLETED.toString()}>Completado</SelectItem>
-            <SelectItem value={ProjectStatus.ON_HOLD.toString()}>En pausa</SelectItem>
+            <SelectItem value="0">Planificación</SelectItem>
+            <SelectItem value="1">Activo</SelectItem>
+            <SelectItem value="2">Completado</SelectItem>
+            <SelectItem value="3">En pausa</SelectItem>
           </SelectContent>
         </Select>
       </div>
