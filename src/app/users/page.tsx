@@ -5,11 +5,9 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { IUser, IProject, UserRole, WorkMode } from '@/core/interfaces/models';
 import Link from 'next/link';
-import { PlusCircle, Search, User, Briefcase, Mail, MapPin } from 'lucide-react';
+import { PlusCircle, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -18,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import UserCard from '@/components/users/UserCard';
 
 // Importamos los servicios reales de API
 import { UserService, ProjectService, ProjectMemberService } from '@/services/api';
@@ -127,90 +126,11 @@ export default function TeamPage() {
     setFilteredUsers(filtered);
   }, [roleFilter, workModeFilter, searchQuery, users]);
 
-  // Función para obtener el badge de rol
-  const getRoleBadge = (role: string) => {
-    switch (role) {
-      case UserRole.ADMIN:
-        return (
-          <Badge variant="default" className="bg-purple-500">
-            Admin
-          </Badge>
-        );
-      case UserRole.MANAGER:
-        return (
-          <Badge variant="default" className="bg-blue-500">
-            Manager
-          </Badge>
-        );
-      case UserRole.DEVELOPER:
-        return (
-          <Badge variant="default" className="bg-green-500">
-            Developer
-          </Badge>
-        );
-      case UserRole.TESTER:
-        return (
-          <Badge variant="default" className="bg-yellow-500">
-            Tester
-          </Badge>
-        );
-      default:
-        return <Badge variant="outline">Desconocido</Badge>;
+  // Handler para navegar a detalles del usuario
+  const handleViewUserDetails = (userId: number | undefined) => {
+    if (userId) {
+      router.push(`/users/${userId}`);
     }
-  };
-
-  // Función para obtener el badge de modo de trabajo
-  const getWorkModeBadge = (workMode: string) => {
-    switch (workMode) {
-      case WorkMode.OFFICE:
-        return (
-          <Badge variant="outline" className="bg-gray-100">
-            Oficina
-          </Badge>
-        );
-      case WorkMode.REMOTE:
-        return (
-          <Badge variant="outline" className="bg-blue-100 text-blue-800">
-            Remoto
-          </Badge>
-        );
-      case WorkMode.HYBRID:
-        return (
-          <Badge variant="outline" className="bg-green-100 text-green-800">
-            Híbrido
-          </Badge>
-        );
-      default:
-        return <Badge variant="outline">Desconocido</Badge>;
-    }
-  };
-
-  // Función para obtener las iniciales del nombre
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((part) => part.charAt(0))
-      .join('')
-      .toUpperCase()
-      .substring(0, 2);
-  };
-
-  // Función para obtener un color basado en el nombre (para avatares)
-  const getColorFromName = (name: string) => {
-    const colors = [
-      'bg-blue-500',
-      'bg-green-500',
-      'bg-purple-500',
-      'bg-yellow-500',
-      'bg-pink-500',
-      'bg-indigo-500',
-      'bg-red-500',
-      'bg-teal-500',
-    ];
-
-    // Usar el código ASCII de las letras del nombre para determinar un índice
-    const sum = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return colors[sum % colors.length];
   };
 
   return (
@@ -280,53 +200,12 @@ export default function TeamPage() {
           ) : filteredUsers.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredUsers.map((user) => (
-                <Card
+                <UserCard
                   key={user.id}
-                  className="hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => router.push(`/users/${user.id}`)}
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-start space-x-4">
-                      <div
-                        className={`h-12 w-12 rounded-full flex items-center justify-center text-white font-bold ${getColorFromName(user.full_name)}`}
-                      >
-                        {getInitials(user.full_name)}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-medium text-lg">{user.full_name}</h3>
-                        <div className="flex items-center space-x-2 mt-1">
-                          {getRoleBadge(user.role)}
-                          {getWorkModeBadge(user.work_mode)}
-                        </div>
-
-                        <div className="mt-4 space-y-2 text-sm text-gray-600">
-                          <div className="flex items-center">
-                            <User className="h-4 w-4 mr-2" />
-                            <span>{user.username}</span>
-                          </div>
-                          <div className="flex items-center">
-                            <Mail className="h-4 w-4 mr-2" />
-                            <span>{user.email}</span>
-                          </div>
-                          <div className="flex items-center">
-                            <Briefcase className="h-4 w-4 mr-2" />
-                            <span>{user.projectCount} proyectos</span>
-                          </div>
-                          <div className="flex items-center">
-                            <MapPin className="h-4 w-4 mr-2" />
-                            <span>
-                              {user.work_mode === WorkMode.OFFICE
-                                ? 'Trabaja en oficina'
-                                : user.work_mode === WorkMode.REMOTE
-                                  ? 'Trabaja remoto'
-                                  : 'Modo híbrido'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                  user={user}
+                  projectCount={user.projectCount}
+                  onClick={() => handleViewUserDetails(user.id)}
+                />
               ))}
             </div>
           ) : (

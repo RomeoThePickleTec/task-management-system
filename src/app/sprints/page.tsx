@@ -14,10 +14,9 @@ import {
 } from '@/components/ui/select';
 import { ISprint, IProject, SprintStatus, UserRole } from '@/core/interfaces/models';
 import Link from 'next/link';
-import { PlusCircle, Search, Calendar } from 'lucide-react';
+import { PlusCircle, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import SprintCard from '@/components/sprints/SprintCard';
 
 // Importamos los servicios reales de API
 import { SprintService, ProjectService } from '@/services/api';
@@ -130,66 +129,11 @@ export default function SprintsPage() {
     setFilteredSprints(filtered);
   }, [statusFilter, projectFilter, searchQuery, sprints]);
 
-  // Función para obtener el badge de estado
-  const getStatusBadge = (status: SprintStatus) => {
-    switch (status) {
-      case SprintStatus.PLANNING:
-        return (
-          <Badge variant="outline" className="bg-purple-100 text-purple-800">
-            Planificación
-          </Badge>
-        );
-      case SprintStatus.ACTIVE:
-        return (
-          <Badge variant="default" className="bg-green-500">
-            Activo
-          </Badge>
-        );
-      case SprintStatus.COMPLETED:
-        return (
-          <Badge variant="default" className="bg-blue-500">
-            Completado
-          </Badge>
-        );
-      default:
-        return <Badge variant="outline">Desconocido</Badge>;
+  // Handler para navegar a detalles del sprint
+  const handleViewSprintDetails = (sprintId: number | undefined) => {
+    if (sprintId) {
+      router.push(`/sprints/${sprintId}`);
     }
-  };
-
-  // Función para obtener el progreso
-  const getProgress = (taskCount: number, completedTaskCount: number) => {
-    if (taskCount === 0) return 0;
-    return Math.round((completedTaskCount / taskCount) * 100);
-  };
-
-  // Formatear fecha
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString();
-  };
-
-  // Calcular días restantes
-  const getRemainingDays = (endDate: string) => {
-    const end = new Date(endDate);
-    const today = new Date();
-    const diffTime = end.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays < 0) return 'Terminado';
-    if (diffDays === 0) return 'Termina hoy';
-    return `${diffDays} días restantes`;
-  };
-
-  // Calcular la clase para los días restantes
-  const getRemainingDaysClass = (endDate: string) => {
-    const end = new Date(endDate);
-    const today = new Date();
-    const diffTime = end.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays < 0) return 'text-red-600';
-    if (diffDays <= 3) return 'text-amber-600';
-    return 'text-gray-600';
   };
 
   return (
@@ -255,65 +199,13 @@ export default function SprintsPage() {
           ) : filteredSprints.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredSprints.map((sprint) => (
-                <Card
+                <SprintCard
                   key={sprint.id}
-                  className="hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => router.push(`/sprints/${sprint.id}`)}
-                >
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="text-lg font-medium">{sprint.name}</CardTitle>
-                      {getStatusBadge(sprint.status)}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-gray-600 line-clamp-2 mb-3">
-                      {sprint.description || 'Sin descripción'}
-                    </p>
-
-                    <div className="space-y-2 text-sm">
-                      {sprint.project && (
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">Proyecto:</span>
-                          <span>{sprint.project.name}</span>
-                        </div>
-                      )}
-
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-gray-600" />
-                        <span>
-                          {formatDate(sprint.start_date)} - {formatDate(sprint.end_date)}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <Calendar className={`h-4 w-4 ${getRemainingDaysClass(sprint.end_date)}`} />
-                        <span className={getRemainingDaysClass(sprint.end_date)}>
-                          {getRemainingDays(sprint.end_date)}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <span>
-                          {sprint.completedTaskCount}/{sprint.taskCount} tareas completadas
-                        </span>
-                      </div>
-
-                      <div className="w-full bg-gray-200 h-2 rounded-full mt-2">
-                        <div
-                          className="h-full bg-blue-500 rounded-full"
-                          style={{
-                            width: `${getProgress(sprint.taskCount, sprint.completedTaskCount)}%`,
-                          }}
-                        ></div>
-                      </div>
-
-                      <div className="text-right text-sm text-gray-600">
-                        {getProgress(sprint.taskCount, sprint.completedTaskCount)}% completado
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                  sprint={sprint}
+                  taskCount={sprint.taskCount}
+                  completedTaskCount={sprint.completedTaskCount}
+                  onViewDetails={() => handleViewSprintDetails(sprint.id)}
+                />
               ))}
             </div>
           ) : (

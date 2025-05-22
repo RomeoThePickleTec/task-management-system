@@ -166,7 +166,7 @@ export default function ProjectsPage() {
 
           {/* Lista de proyectos */}
           <ProjectList
-            projects={filteredProjects}
+            projects={filteredProjects || []} // Add || [] fallback
             onProjectClick={handleProjectClick}
             isLoading={isLoading}
             emptyMessage={

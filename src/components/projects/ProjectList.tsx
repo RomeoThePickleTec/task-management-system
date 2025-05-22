@@ -16,7 +16,7 @@ interface ProjectListProps {
 }
 
 const ProjectList: React.FC<ProjectListProps> = ({
-  projects,
+  projects = [], // Add default empty array
   onProjectClick,
   isLoading = false,
   emptyMessage = 'No hay proyectos disponibles',
@@ -25,17 +25,17 @@ const ProjectList: React.FC<ProjectListProps> = ({
     return (
       <div className="flex justify-center items-center h-40">
         <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
-          <span className="mt-2 text-gray-500">Cargando proyectos...</span>
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+          <span className="mt-2 text-muted-foreground">Cargando proyectos...</span>
         </div>
       </div>
     );
   }
 
-  if (projects.length === 0) {
+  if (!projects || projects.length === 0) { // Add null check
     return (
-      <div className="flex justify-center items-center h-40 border border-dashed border-gray-300 rounded-lg">
-        <p className="text-gray-500">{emptyMessage}</p>
+      <div className="flex justify-center items-center h-40 border border-dashed border-border rounded-lg">
+        <p className="text-muted-foreground">{emptyMessage}</p>
       </div>
     );
   }
@@ -54,5 +54,4 @@ const ProjectList: React.FC<ProjectListProps> = ({
     </div>
   );
 };
-
 export default ProjectList;
