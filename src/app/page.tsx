@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useAuth } from '@/contexts/BackendAuthContext';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import MainLayout from '@/components/layout/MainLayout';
@@ -19,6 +19,7 @@ import {
 import { ITask, IProject, ISprint, TaskStatus, ProjectStatus } from '@/core/interfaces/models';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { gsap } from 'gsap';
 
 // Import API services
 import { TaskService, ProjectService, SprintService } from '@/services/api';
@@ -68,14 +69,47 @@ function DashboardContent() {
   });
   const [loadingTaskId, setLoadingTaskId] = useState<number | null>(null);
 
+  // Refs for GSAP animations
+  const headerRef = useRef<HTMLDivElement>(null);
+  const cardsContainerRef = useRef<HTMLDivElement>(null);
+  const tasksHeaderRef = useRef<HTMLDivElement>(null);
+  const tasksSectionRef = useRef<HTMLDivElement>(null);
+  const taskCardsRef = useRef<HTMLDivElement[]>([]);
+
   const router = useRouter();
 
   useEffect(() => {
-    // Load recent tasks
+    // Initial page animations
+    const tl = gsap.timeline();
+    
+    // Animate header
+    tl.fromTo(headerRef.current, 
+      { opacity: 0, y: -30 },
+      { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }
+    );
+
+    // Animate cards container
+    tl.fromTo(cardsContainerRef.current,
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" },
+      "-=0.4"
+    );
+
+    // Animate tasks header
+    tl.fromTo(tasksHeaderRef.current,
+      { opacity: 0, x: -20 },
+      { opacity: 1, x: 0, duration: 0.6, ease: "power2.out" },
+      "-=0.3"
+    );
+
+    // Load data with staggered animations
+    fetchAllData();
+  }, []);
+
+  const fetchAllData = async () => {
     const fetchTasks = async () => {
       try {
         const tasks = await TaskService.getTasks();
-        // Sort by creation date (most recent first) and take the first 3
         const sortedTasks = tasks
           .filter((task) => task.created_at)
           .sort((a, b) => {
@@ -85,6 +119,14 @@ function DashboardContent() {
           })
           .slice(0, 3);
         setRecentTasks(sortedTasks);
+        
+        // Animate task cards when loaded
+        setTimeout(() => {
+          gsap.fromTo(tasksSectionRef.current,
+            { opacity: 0, y: 30 },
+            { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }
+          );
+        }, 100);
       } catch (error) {
         console.error('Error fetching tasks:', error);
       } finally {
@@ -92,11 +134,10 @@ function DashboardContent() {
       }
     };
 
-    // Load active projects
     const fetchProjects = async () => {
       try {
         const projects = await ProjectService.getProjects({ status: ProjectStatus.ACTIVE });
-        setActiveProjects(projects.slice(0, 3)); // Show only first 3
+        setActiveProjects(projects.slice(0, 3));
       } catch (error) {
         console.error('Error fetching projects:', error);
       } finally {
@@ -104,12 +145,10 @@ function DashboardContent() {
       }
     };
 
-    // Load active sprints
     const fetchSprints = async () => {
       try {
-        // Get sprints with status ACTIVE (1)
         const sprints = await SprintService.getSprints({ status: 1 });
-        setActiveSprints(sprints.slice(0, 3)); // Show only first 3
+        setActiveSprints(sprints.slice(0, 3));
       } catch (error) {
         console.error('Error fetching sprints:', error);
       } finally {
@@ -117,12 +156,27 @@ function DashboardContent() {
       }
     };
 
-    fetchTasks();
-    fetchProjects();
-    fetchSprints();
-  }, []);
+    await Promise.all([fetchTasks(), fetchProjects(), fetchSprints()]);
+  };
 
-  // Change task status
+  // Animate task cards when they're added
+  useEffect(() => {
+    if (recentTasks.length > 0 && !isLoading.tasks) {
+      gsap.fromTo(taskCardsRef.current,
+        { opacity: 0, y: 20, scale: 0.95 },
+        { 
+          opacity: 1, 
+          y: 0, 
+          scale: 1,
+          duration: 0.6,
+          stagger: 0.1,
+          ease: "back.out(1.7)"
+        }
+      );
+    }
+  }, [recentTasks, isLoading.tasks]);
+
+  // Change task status with animation
   const handleTaskStatusChange = async (taskId: number | undefined, status: TaskStatus) => {
     if (!taskId) return;
 
@@ -150,6 +204,21 @@ function DashboardContent() {
       const updatedTask = await TaskService.updateTask(taskId, updatedTaskData);
 
       if (updatedTask) {
+        // Animate the update
+        const taskElement = taskCardsRef.current.find(el => 
+          el?.dataset.taskId === taskId.toString()
+        );
+        
+        if (taskElement) {
+          gsap.to(taskElement, {
+            scale: 1.05,
+            duration: 0.2,
+            yoyo: true,
+            repeat: 1,
+            ease: "power2.inOut"
+          });
+        }
+
         // Refresh task list
         const allTasks = await TaskService.getTasks();
         const sortedTasks = allTasks
@@ -160,7 +229,6 @@ function DashboardContent() {
             return dateB - dateA;
           });
 
-        // Update recent tasks
         setRecentTasks(sortedTasks.slice(0, 3));
       }
     } catch (error) {
@@ -170,23 +238,37 @@ function DashboardContent() {
     }
   };
 
+  const addTaskCardRef = (el: HTMLDivElement | null, index: number) => {
+    if (el) {
+      taskCardsRef.current[index] = el;
+    }
+  };
+
   return (
     <MainLayout>
-      <div className="space-y-6 ">
-        <div className="flex justify-between items-center">
+      <div className="space-y-6">
+        {/* Header with animation */}
+        <div 
+          ref={headerRef}
+          className="flex justify-between items-center"
+        >
           <h1 className="text-2xl font-bold text-foreground">Panel de Control</h1>
           <div className="flex space-x-2">
             <Link href="/tasks/new" passHref>
-              <Button>
+              <Button className="hover:scale-105 transition-transform duration-200">
                 <PlusCircle className="h-4 w-4 mr-2" /> Nueva tarea
               </Button>
             </Link>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Cards grid with animation */}
+        <div 
+          ref={cardsContainerRef}
+          className="grid grid-cols-1 md:grid-cols-3 gap-4"
+        >
           {/* Active Projects */}
-          <Card>
+          <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg font-medium flex items-center">
                 <Layers className="h-5 w-5 mr-2 text-red-500" />
@@ -203,7 +285,7 @@ function DashboardContent() {
                   {activeProjects.map((project) => (
                     <div
                       key={project.id}
-                      className="flex justify-between items-center border-b border-border pb-2 last:border-0"
+                      className="flex justify-between items-center border-b border-border pb-2 last:border-0 hover:bg-muted/50 rounded px-2 py-1 transition-colors duration-200"
                     >
                       <div>
                         <p className="font-medium text-foreground">{project.name}</p>
@@ -212,7 +294,7 @@ function DashboardContent() {
                         </p>
                       </div>
                       <Link href={`/projects/${project.id}`} passHref>
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" className="hover:scale-110 transition-transform">
                           <ArrowRight className="h-4 w-4" />
                         </Button>
                       </Link>
@@ -226,7 +308,7 @@ function DashboardContent() {
               )}
               <div className="mt-4">
                 <Link href="/projects" passHref>
-                  <Button variant="outline" size="sm" className="w-full">
+                  <Button variant="outline" size="sm" className="w-full hover:scale-105 transition-transform">
                     Ver todos los proyectos
                   </Button>
                 </Link>
@@ -235,7 +317,7 @@ function DashboardContent() {
           </Card>
 
           {/* Active Sprints */}
-          <Card>
+          <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg font-medium flex items-center">
                 <Calendar className="h-5 w-5 mr-2 text-green-500" />
@@ -252,7 +334,7 @@ function DashboardContent() {
                   {activeSprints.map((sprint) => (
                     <div
                       key={sprint.id}
-                      className="flex justify-between items-center border-b border-border pb-2 last:border-0"
+                      className="flex justify-between items-center border-b border-border pb-2 last:border-0 hover:bg-muted/50 rounded px-2 py-1 transition-colors duration-200"
                     >
                       <div>
                         <p className="font-medium text-foreground">{sprint.name}</p>
@@ -261,7 +343,7 @@ function DashboardContent() {
                         </p>
                       </div>
                       <Link href={`/sprints/${sprint.id}`} passHref>
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" className="hover:scale-110 transition-transform">
                           <ArrowRight className="h-4 w-4" />
                         </Button>
                       </Link>
@@ -275,7 +357,7 @@ function DashboardContent() {
               )}
               <div className="mt-4">
                 <Link href="/sprints" passHref>
-                  <Button variant="outline" size="sm" className="w-full">
+                  <Button variant="outline" size="sm" className="w-full hover:scale-105 transition-transform">
                     Ver todos los sprints
                   </Button>
                 </Link>
@@ -284,7 +366,7 @@ function DashboardContent() {
           </Card>
 
           {/* Recent Tasks */}
-          <Card>
+          <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg font-medium flex items-center">
                 <CheckSquare className="h-5 w-5 mr-2 text-amber-500" />
@@ -301,7 +383,7 @@ function DashboardContent() {
                   {recentTasks.map((task) => (
                     <div
                       key={task.id}
-                      className="flex justify-between items-center border-b border-border pb-2 last:border-0"
+                      className="flex justify-between items-center border-b border-border pb-2 last:border-0 hover:bg-muted/50 rounded px-2 py-1 transition-colors duration-200"
                     >
                       <div>
                         <p className="font-medium text-foreground">{task.title}</p>
@@ -312,7 +394,7 @@ function DashboardContent() {
                         </p>
                       </div>
                       <Link href={`/tasks/${task.id}`} passHref>
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" className="hover:scale-110 transition-transform">
                           <ArrowRight className="h-4 w-4" />
                         </Button>
                       </Link>
@@ -326,7 +408,7 @@ function DashboardContent() {
               )}
               <div className="mt-4">
                 <Link href="/tasks" passHref>
-                  <Button variant="outline" size="sm" className="w-full">
+                  <Button variant="outline" size="sm" className="w-full hover:scale-105 transition-transform">
                     Ver todas las tareas
                   </Button>
                 </Link>
@@ -337,15 +419,21 @@ function DashboardContent() {
 
         {/* Recent Tasks Section */}
         <div>
-          <div className="flex justify-between items-center mb-4">
+          <div 
+            ref={tasksHeaderRef}
+            className="flex justify-between items-center mb-4"
+          >
             <h2 className="text-xl font-semibold text-foreground">Tareas recientes</h2>
             <Link href="/tasks" passHref>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="hover:scale-105 transition-transform">
                 Ver todas
               </Button>
             </Link>
           </div>
-          <Card className="w-full">
+          <Card 
+            ref={tasksSectionRef}
+            className="w-full hover:shadow-lg transition-shadow duration-300"
+          >
             <CardContent className="pt-6">
               {isLoading.tasks ? (
                 <div className="flex justify-center items-center h-40">
@@ -353,10 +441,12 @@ function DashboardContent() {
                 </div>
               ) : recentTasks.length > 0 ? (
                 <div className="space-y-4">
-                  {recentTasks.map((task) => (
+                  {recentTasks.map((task, index) => (
                     <Card
                       key={task.id}
-                      className="cursor-pointer hover:shadow-md transition-shadow"
+                      ref={(el) => addTaskCardRef(el, index)}
+                      data-task-id={task.id}
+                      className="cursor-pointer hover:shadow-md transition-all duration-300 hover:-translate-y-1"
                       onClick={() => router.push(`/tasks/${task.id}`)}
                     >
                       <CardContent className="p-4">
@@ -396,7 +486,7 @@ function DashboardContent() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-7 text-xs"
+                              className="h-7 text-xs hover:scale-110 transition-transform"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleTaskStatusChange(task.id, TaskStatus.COMPLETED);
