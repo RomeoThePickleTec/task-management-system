@@ -37,8 +37,8 @@ export default function HomePage() {
   // If still loading, show loading spinner
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
+      <div className="flex items-center justify-center h-screen bg-background">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -172,9 +172,9 @@ function DashboardContent() {
 
   return (
     <MainLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 ">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Panel de Control</h1>
+          <h1 className="text-2xl font-bold text-foreground">Panel de Control</h1>
           <div className="flex space-x-2">
             <Link href="/tasks/new" passHref>
               <Button>
@@ -196,18 +196,18 @@ function DashboardContent() {
             <CardContent>
               {isLoading.projects ? (
                 <div className="h-24 flex justify-center items-center">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                 </div>
               ) : activeProjects.length > 0 ? (
                 <div className="space-y-3">
                   {activeProjects.map((project) => (
                     <div
                       key={project.id}
-                      className="flex justify-between items-center border-b pb-2 last:border-0"
+                      className="flex justify-between items-center border-b border-border pb-2 last:border-0"
                     >
                       <div>
-                        <p className="font-medium">{project.name}</p>
-                        <p className="text-sm text-gray-500">
+                        <p className="font-medium text-foreground">{project.name}</p>
+                        <p className="text-sm text-muted-foreground">
                           {new Date(project.end_date).toLocaleDateString()}
                         </p>
                       </div>
@@ -220,7 +220,7 @@ function DashboardContent() {
                   ))}
                 </div>
               ) : (
-                <div className="h-24 flex justify-center items-center text-gray-500">
+                <div className="h-24 flex justify-center items-center text-muted-foreground">
                   No hay proyectos activos
                 </div>
               )}
@@ -252,11 +252,11 @@ function DashboardContent() {
                   {activeSprints.map((sprint) => (
                     <div
                       key={sprint.id}
-                      className="flex justify-between items-center border-b pb-2 last:border-0"
+                      className="flex justify-between items-center border-b border-border pb-2 last:border-0"
                     >
                       <div>
-                        <p className="font-medium">{sprint.name}</p>
-                        <p className="text-sm text-gray-500">
+                        <p className="font-medium text-foreground">{sprint.name}</p>
+                        <p className="text-sm text-muted-foreground">
                           Termina: {new Date(sprint.end_date).toLocaleDateString()}
                         </p>
                       </div>
@@ -269,7 +269,7 @@ function DashboardContent() {
                   ))}
                 </div>
               ) : (
-                <div className="h-24 flex justify-center items-center text-gray-500">
+                <div className="h-24 flex justify-center items-center text-muted-foreground">
                   No hay sprints activos
                 </div>
               )}
@@ -301,11 +301,11 @@ function DashboardContent() {
                   {recentTasks.map((task) => (
                     <div
                       key={task.id}
-                      className="flex justify-between items-center border-b pb-2 last:border-0"
+                      className="flex justify-between items-center border-b border-border pb-2 last:border-0"
                     >
                       <div>
-                        <p className="font-medium">{task.title}</p>
-                        <p className="text-sm text-gray-500">
+                        <p className="font-medium text-foreground">{task.title}</p>
+                        <p className="text-sm text-muted-foreground">
                           {task.due_date
                             ? `Vence: ${new Date(task.due_date).toLocaleDateString()}`
                             : 'Sin fecha'}
@@ -320,7 +320,7 @@ function DashboardContent() {
                   ))}
                 </div>
               ) : (
-                <div className="h-24 flex justify-center items-center text-gray-500">
+                <div className="h-24 flex justify-center items-center text-muted-foreground">
                   No hay tareas recientes
                 </div>
               )}
@@ -338,7 +338,7 @@ function DashboardContent() {
         {/* Recent Tasks Section */}
         <div>
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Tareas recientes</h2>
+            <h2 className="text-xl font-semibold text-foreground">Tareas recientes</h2>
             <Link href="/tasks" passHref>
               <Button variant="outline" size="sm">
                 Ver todas
@@ -349,7 +349,7 @@ function DashboardContent() {
             <CardContent className="pt-6">
               {isLoading.tasks ? (
                 <div className="flex justify-center items-center h-40">
-                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
+                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
                 </div>
               ) : recentTasks.length > 0 ? (
                 <div className="space-y-4">
@@ -362,14 +362,14 @@ function DashboardContent() {
                       <CardContent className="p-4">
                         <div className="flex justify-between items-start">
                           <div>
-                            <h3 className="font-medium">{task.title}</h3>
-                            <p className="text-sm text-gray-500 line-clamp-1 mt-1">
+                            <h3 className="font-medium text-foreground">{task.title}</h3>
+                            <p className="text-sm text-muted-foreground line-clamp-1 mt-1">
                               {task.description}
                             </p>
                           </div>
                           <div>
                             {task.status === TaskStatus.TODO && (
-                              <Badge variant="outline" className="bg-gray-100">
+                              <Badge variant="outline" className="bg-muted">
                                 Por hacer
                               </Badge>
                             )}
@@ -385,7 +385,7 @@ function DashboardContent() {
                             )}
                           </div>
                         </div>
-                        <div className="flex justify-between items-center mt-3 text-xs text-gray-500">
+                        <div className="flex justify-between items-center mt-3 text-xs text-muted-foreground">
                           <div className="flex items-center">
                             <CalendarIcon className="h-3 w-3 mr-1" />
                             {task.due_date
@@ -404,7 +404,7 @@ function DashboardContent() {
                               disabled={loadingTaskId === task.id}
                             >
                               {loadingTaskId === task.id ? (
-                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500 mr-1"></div>
+                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary mr-1"></div>
                               ) : (
                                 <CheckCircle2 className="h-3 w-3 mr-1" />
                               )}
@@ -417,8 +417,8 @@ function DashboardContent() {
                   ))}
                 </div>
               ) : (
-                <div className="flex justify-center items-center h-40 border border-dashed border-gray-300 rounded-lg">
-                  <p className="text-gray-500">No hay tareas recientes para mostrar</p>
+                <div className="flex justify-center items-center h-40 border border-dashed border-border rounded-lg">
+                  <p className="text-muted-foreground">No hay tareas recientes para mostrar</p>
                 </div>
               )}
             </CardContent>

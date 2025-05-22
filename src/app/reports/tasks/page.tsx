@@ -91,7 +91,7 @@ export default function TaskReportsPage() {
     switch (status) {
       case TaskStatus.TODO:
         return (
-          <Badge variant="outline" className="bg-gray-100">
+          <Badge variant="outline" className="bg-muted">
             Por hacer
           </Badge>
         );
@@ -119,7 +119,7 @@ export default function TaskReportsPage() {
     switch (priority) {
       case 1:
         return (
-          <Badge variant="outline" className="bg-gray-100">
+          <Badge variant="outline" className="bg-muted">
             Baja
           </Badge>
         );
@@ -308,7 +308,7 @@ export default function TaskReportsPage() {
                   <ChevronLeft className="h-4 w-4 mr-1" /> Volver
                 </Button>
               </Link>
-              <h1 className="text-2xl font-bold">Informe de Tareas</h1>
+              <h1 className="text-2xl font-bold text-foreground">Informe de Tareas</h1>
             </div>
             <Button variant="outline" size="sm">
               <Download className="h-4 w-4 mr-1" /> Exportar
@@ -319,42 +319,42 @@ export default function TaskReportsPage() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <Card>
               <CardContent className="p-4 text-center">
-                <p className="text-xs text-gray-500 uppercase">Total</p>
-                <h3 className="text-2xl font-bold">{statistics.totalTasks}</h3>
+                <p className="text-xs text-muted-foreground uppercase">Total</p>
+                <h3 className="text-2xl font-bold text-foreground">{statistics.totalTasks}</h3>
               </CardContent>
             </Card>
 
             <Card>
               <CardContent className="p-4 text-center">
-                <p className="text-xs text-gray-500 uppercase">Completadas</p>
+                <p className="text-xs text-muted-foreground uppercase">Completadas</p>
                 <h3 className="text-2xl font-bold text-green-600">{statistics.completedTasks}</h3>
               </CardContent>
             </Card>
 
             <Card>
               <CardContent className="p-4 text-center">
-                <p className="text-xs text-gray-500 uppercase">Pendientes</p>
+                <p className="text-xs text-muted-foreground uppercase">Pendientes</p>
                 <h3 className="text-2xl font-bold text-blue-600">{statistics.pendingTasks}</h3>
               </CardContent>
             </Card>
 
             <Card>
               <CardContent className="p-4 text-center">
-                <p className="text-xs text-gray-500 uppercase">Bloqueadas</p>
+                <p className="text-xs text-muted-foreground uppercase">Bloqueadas</p>
                 <h3 className="text-2xl font-bold text-red-600">{statistics.blockedTasks}</h3>
               </CardContent>
             </Card>
 
             <Card>
               <CardContent className="p-4 text-center">
-                <p className="text-xs text-gray-500 uppercase">Vencidas</p>
+                <p className="text-xs text-muted-foreground uppercase">Vencidas</p>
                 <h3 className="text-2xl font-bold text-red-600">{statistics.overdueTasks}</h3>
               </CardContent>
             </Card>
 
             <Card>
               <CardContent className="p-4 text-center">
-                <p className="text-xs text-gray-500 uppercase">Completado</p>
+                <p className="text-xs text-muted-foreground uppercase">Completado</p>
                 <h3 className="text-2xl font-bold text-purple-600">{statistics.completionRate}%</h3>
               </CardContent>
             </Card>
@@ -363,7 +363,7 @@ export default function TaskReportsPage() {
           {/* Filtros */}
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative w-full sm:w-64">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar tareas..."
                 className="pl-8"
@@ -415,39 +415,39 @@ export default function TaskReportsPage() {
           {/* Lista de tareas */}
           {isLoading ? (
             <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
             </div>
           ) : filteredTasks.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
-                  <tr className="bg-gray-100">
-                    <th className="py-2 px-4 text-left">Título</th>
-                    <th className="py-2 px-4 text-left">Proyecto</th>
-                    <th className="py-2 px-4 text-left">Estado</th>
-                    <th className="py-2 px-4 text-left">Prioridad</th>
-                    <th className="py-2 px-4 text-left">Fecha de vencimiento</th>
-                    <th className="py-2 px-4 text-left">Tiempo restante</th>
-                    <th className="py-2 px-4 text-left">Horas estimadas</th>
-                    <th className="py-2 px-4 text-left">Acciones</th>
+                  <tr className="bg-muted">
+                    <th className="py-2 px-4 text-left text-foreground">Título</th>
+                    <th className="py-2 px-4 text-left text-foreground">Proyecto</th>
+                    <th className="py-2 px-4 text-left text-foreground">Estado</th>
+                    <th className="py-2 px-4 text-left text-foreground">Prioridad</th>
+                    <th className="py-2 px-4 text-left text-foreground">Fecha de vencimiento</th>
+                    <th className="py-2 px-4 text-left text-foreground">Tiempo restante</th>
+                    <th className="py-2 px-4 text-left text-foreground">Horas estimadas</th>
+                    <th className="py-2 px-4 text-left text-foreground">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredTasks.map((task) => (
-                    <tr key={task.id} className="border-b hover:bg-gray-50">
+                    <tr key={task.id} className="border-b border-border hover:bg-muted/50">
                       <td className="py-2 px-4">
                         <div className="flex flex-col">
-                          <span className="font-medium">{task.title}</span>
-                          <span className="text-xs text-gray-500 truncate max-w-xs">
+                          <span className="font-medium text-foreground">{task.title}</span>
+                          <span className="text-xs text-muted-foreground truncate max-w-xs">
                             {task.description?.substring(0, 50)}
                             {task.description && task.description.length > 50 ? '...' : ''}
                           </span>
                         </div>
                       </td>
-                      <td className="py-2 px-4">{task.projectName}</td>
+                      <td className="py-2 px-4 text-foreground">{task.projectName}</td>
                       <td className="py-2 px-4">{getTaskStatusBadge(task.status)}</td>
                       <td className="py-2 px-4">{getTaskPriorityBadge(task.priority)}</td>
-                      <td className="py-2 px-4">{formatDate(task.due_date)}</td>
+                      <td className="py-2 px-4 text-foreground">{formatDate(task.due_date)}</td>
                       <td className="py-2 px-4">
                         {task.status === TaskStatus.COMPLETED ? (
                           <span className="text-green-600 flex items-center">
@@ -461,7 +461,7 @@ export default function TaskReportsPage() {
                         ) : (
                           <span
                             className={`
-                    ${task.daysUntilDue !== undefined && task.daysUntilDue <= 3 ? 'text-amber-600' : 'text-gray-600'}
+                    ${task.daysUntilDue !== undefined && task.daysUntilDue <= 3 ? 'text-amber-600' : 'text-muted-foreground'}
                     flex items-center
                   `}
                           >
@@ -469,7 +469,7 @@ export default function TaskReportsPage() {
                           </span>
                         )}
                       </td>
-                      <td className="py-2 px-4">{task.estimated_hours}h</td>
+                      <td className="py-2 px-4 text-foreground">{task.estimated_hours}h</td>
                       <td className="py-2 px-4">
                         <Button
                           variant="ghost"
@@ -485,8 +485,8 @@ export default function TaskReportsPage() {
               </table>
             </div>
           ) : (
-            <div className="flex justify-center items-center h-40 border border-dashed border-gray-300 rounded-lg">
-              <p className="text-gray-500">
+            <div className="flex justify-center items-center h-40 border border-dashed border-border rounded-lg">
+              <p className="text-muted-foreground">
                 {searchQuery || selectedProject !== 'all' || statusFilter !== 'all'
                   ? 'No hay tareas que coincidan con los filtros'
                   : 'No hay tareas disponibles'}

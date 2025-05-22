@@ -370,7 +370,7 @@ export default function ProjectReportsPage() {
     switch (status) {
       case ProjectStatus.PLANNING:
         return (
-          <Badge variant="outline" className="bg-purple-100 text-purple-800">
+          <Badge variant="outline" className="bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">
             Planificación
           </Badge>
         );
@@ -432,7 +432,7 @@ export default function ProjectReportsPage() {
                   <ChevronLeft className="h-4 w-4 mr-1" /> Volver
                 </Button>
               </Link>
-              <h1 className="text-2xl font-bold">Informe de Proyectos</h1>
+              <h1 className="text-2xl font-bold text-foreground">Informe de Proyectos</h1>
             </div>
             <Button variant="outline" size="sm">
               <Download className="h-4 w-4 mr-1" /> Exportar
@@ -445,16 +445,16 @@ export default function ProjectReportsPage() {
               <CardContent className="p-4">
                 <div className="flex justify-between items-center">
                   <div>
-                    <p className="text-sm text-gray-500">Proyectos activos</p>
-                    <h3 className="text-xl font-bold">
+                    <p className="text-sm text-muted-foreground">Proyectos activos</p>
+                    <h3 className="text-xl font-bold text-foreground">
                       {projectMetrics.activeProjects} de {projectMetrics.totalProjects}
                     </h3>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
                       {projectMetrics.completedProjects} completados
                     </p>
                   </div>
-                  <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                    <Layers className="h-5 w-5 text-green-600" />
+                  <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <Layers className="h-5 w-5 text-green-600 dark:text-green-400" />
                   </div>
                 </div>
               </CardContent>
@@ -464,27 +464,12 @@ export default function ProjectReportsPage() {
               <CardContent className="p-4">
                 <div className="flex justify-between items-center">
                   <div>
-                    <p className="text-sm text-gray-500">Completado promedio</p>
-                    <h3 className="text-xl font-bold">{projectMetrics.avgCompletionRate}%</h3>
-                    <p className="text-xs text-gray-500">por proyecto</p>
+                    <p className="text-sm text-muted-foreground">Completado promedio</p>
+                    <h3 className="text-xl font-bold text-foreground">{projectMetrics.avgCompletionRate}%</h3>
+                    <p className="text-xs text-muted-foreground">por proyecto</p>
                   </div>
-                  <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                    <BarChart className="h-5 w-5 text-blue-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-sm text-gray-500">Proyectos en riesgo</p>
-                    <h3 className="text-xl font-bold">{projectMetrics.projectsAtRisk}</h3>
-                    <p className="text-xs text-gray-500">alto riesgo de retraso</p>
-                  </div>
-                  <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
-                    <AlertTriangle className="h-5 w-5 text-red-600" />
+                  <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                    <BarChart className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   </div>
                 </div>
               </CardContent>
@@ -494,12 +479,27 @@ export default function ProjectReportsPage() {
               <CardContent className="p-4">
                 <div className="flex justify-between items-center">
                   <div>
-                    <p className="text-sm text-gray-500">Proyectos retrasados</p>
-                    <h3 className="text-xl font-bold">{projectMetrics.delayedProjects}</h3>
-                    <p className="text-xs text-gray-500">progreso menor al esperado</p>
+                    <p className="text-sm text-muted-foreground">Proyectos en riesgo</p>
+                    <h3 className="text-xl font-bold text-foreground">{projectMetrics.projectsAtRisk}</h3>
+                    <p className="text-xs text-muted-foreground">alto riesgo de retraso</p>
                   </div>
-                  <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center">
-                    <Clock className="h-5 w-5 text-amber-600" />
+                  <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                    <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Proyectos retrasados</p>
+                    <h3 className="text-xl font-bold text-foreground">{projectMetrics.delayedProjects}</h3>
+                    <p className="text-xs text-muted-foreground">progreso menor al esperado</p>
+                  </div>
+                  <div className="h-10 w-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                    <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                   </div>
                 </div>
               </CardContent>
@@ -509,7 +509,7 @@ export default function ProjectReportsPage() {
           {/* Filtros */}
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative w-full sm:w-64">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar proyectos..."
                 className="pl-8"
@@ -559,65 +559,65 @@ export default function ProjectReportsPage() {
           {/* Lista de proyectos */}
           {isLoading ? (
             <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
             </div>
           ) : filteredProjects.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
-                  <tr className="bg-gray-100">
-                    <th className="py-2 px-4 text-left">Nombre</th>
-                    <th className="py-2 px-4 text-left">Estado</th>
-                    <th className="py-2 px-4 text-left">Período</th>
-                    <th className="py-2 px-4 text-left">Tareas</th>
-                    <th className="py-2 px-4 text-left">Progreso</th>
-                    <th className="py-2 px-4 text-left">Equipo</th>
-                    <th className="py-2 px-4 text-left">Riesgo</th>
-                    <th className="py-2 px-4 text-left">Acciones</th>
+                  <tr className="bg-muted/50">
+                    <th className="py-2 px-4 text-left text-foreground">Nombre</th>
+                    <th className="py-2 px-4 text-left text-foreground">Estado</th>
+                    <th className="py-2 px-4 text-left text-foreground">Período</th>
+                    <th className="py-2 px-4 text-left text-foreground">Tareas</th>
+                    <th className="py-2 px-4 text-left text-foreground">Progreso</th>
+                    <th className="py-2 px-4 text-left text-foreground">Equipo</th>
+                    <th className="py-2 px-4 text-left text-foreground">Riesgo</th>
+                    <th className="py-2 px-4 text-left text-foreground">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredProjects.map((project) => (
-                    <tr key={project.id} className="border-b hover:bg-gray-50">
+                    <tr key={project.id} className="border-b border-border hover:bg-muted/30">
                       <td className="py-2 px-4">
                         <div className="flex flex-col">
-                          <span className="font-medium">{project.name}</span>
-                          <span className="text-xs text-gray-500 truncate max-w-xs">
+                          <span className="font-medium text-foreground">{project.name}</span>
+                          <span className="text-xs text-muted-foreground truncate max-w-xs">
                             {project.description?.substring(0, 50)}
                             {project.description && project.description.length > 50 ? '...' : ''}
                           </span>
                         </div>
                       </td>
                       <td className="py-2 px-4">{getProjectStatusBadge(project.status)}</td>
-                      <td className="py-2 px-4">
+                      <td className="py-2 px-4 text-foreground">
                         {formatDate(project.start_date)} - {formatDate(project.end_date)}
                         {project.status !== ProjectStatus.COMPLETED && (
                           <div className="text-xs mt-1">
                             {project.daysRemaining && project.daysRemaining > 0 ? (
-                              <span className="text-blue-600">
+                              <span className="text-blue-600 dark:text-blue-400">
                                 {project.daysRemaining} días restantes
                               </span>
                             ) : (
-                              <span className="text-red-600">
+                              <span className="text-red-600 dark:text-red-400">
                                 Vencido ({Math.abs(project.daysRemaining || 0)} días)
                               </span>
                             )}
                           </div>
                         )}
                       </td>
-                      <td className="py-2 px-4">
+                      <td className="py-2 px-4 text-foreground">
                         <div className="flex flex-col">
                           <span>
                             {project.completedTaskCount || 0}/{project.taskCount || 0} completadas
                           </span>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-muted-foreground">
                             {project.sprintCount} sprints
                           </span>
                         </div>
                       </td>
                       <td className="py-2 px-4">
                         <div className="flex items-center">
-                          <div className="w-full bg-gray-200 h-2 rounded-full mr-2">
+                          <div className="w-full bg-muted h-2 rounded-full mr-2">
                             <div
                               className={`h-full rounded-full ${
                                 (project.completionRate || 0) < 30
@@ -629,19 +629,19 @@ export default function ProjectReportsPage() {
                               style={{ width: `${project.completionRate || 0}%` }}
                             ></div>
                           </div>
-                          <span className="text-sm font-medium">
+                          <span className="text-sm font-medium text-foreground">
                             {project.completionRate || 0}%
                           </span>
                         </div>
                         {project.isDelayed && project.status !== ProjectStatus.COMPLETED && (
-                          <div className="text-xs text-red-600 mt-1">
+                          <div className="text-xs text-red-600 dark:text-red-400 mt-1">
                             {project.delayDays} días de retraso estimado
                           </div>
                         )}
                       </td>
                       <td className="py-2 px-4">
-                        <div className="flex items-center">
-                          <Users className="h-4 w-4 text-gray-500 mr-1" />
+                        <div className="flex items-center text-foreground">
+                          <Users className="h-4 w-4 text-muted-foreground mr-1" />
                           <span>{project.memberCount || 0} miembros</span>
                         </div>
                       </td>
@@ -650,11 +650,11 @@ export default function ProjectReportsPage() {
                           {getRiskBadge(project.riskLevel || 'low')}
                           <div className="text-xs mt-1">
                             {project.progressIndex && project.progressIndex < 70 ? (
-                              <span className="text-red-600 flex items-center text-xs">
+                              <span className="text-red-600 dark:text-red-400 flex items-center text-xs">
                                 <XCircle className="h-3 w-3 mr-1" /> Progreso lento
                               </span>
                             ) : (
-                              <span className="text-green-600 flex items-center text-xs">
+                              <span className="text-green-600 dark:text-green-400 flex items-center text-xs">
                                 <CheckCircle className="h-3 w-3 mr-1" /> Progreso adecuado
                               </span>
                             )}
@@ -676,8 +676,8 @@ export default function ProjectReportsPage() {
               </table>
             </div>
           ) : (
-            <div className="flex justify-center items-center h-40 border border-dashed border-gray-300 rounded-lg">
-              <p className="text-gray-500">
+            <div className="flex justify-center items-center h-40 border border-dashed border-border rounded-lg">
+              <p className="text-muted-foreground">
                 {searchQuery || statusFilter !== 'all' || riskFilter !== 'all'
                   ? 'No hay proyectos que coincidan con los filtros'
                   : 'No hay proyectos disponibles'}
