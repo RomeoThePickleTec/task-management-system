@@ -40,6 +40,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
     priority: 2,
     status: TaskStatus.TODO,
     estimated_hours: 1,
+    real_hours: null,
     project_id: undefined,
     sprint_id: undefined,
   });
@@ -55,6 +56,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
         priority: task.priority,
         status: task.status,
         estimated_hours: task.estimated_hours,
+        real_hours: task.real_hours,
         project_id: task.project_id,
         sprint_id: task.sprint_id,
       };
@@ -97,7 +99,8 @@ const TaskForm: React.FC<TaskFormProps> = ({
   // Manejador para números
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: Number(value) }));
+    const numValue = value === '' ? null : Number(value);
+    setFormData((prev) => ({ ...prev, [name]: numValue }));
   };
 
   // Filtrar sprints por proyecto seleccionado
@@ -116,6 +119,12 @@ const TaskForm: React.FC<TaskFormProps> = ({
 
     if (!formData.description.trim()) {
       alert('La descripción es obligatoria');
+      return;
+    }
+
+    // Validar que las horas reales no sean negativas
+    if (formData.real_hours !== null && formData.real_hours < 0) {
+      alert('Las horas reales no pueden ser negativas');
       return;
     }
 
@@ -258,6 +267,25 @@ const TaskForm: React.FC<TaskFormProps> = ({
             required
           />
         </div>
+      </div>
+
+      <div>
+        <label htmlFor="real_hours" className="block text-sm font-medium text-gray-700 mb-1">
+          Horas reales trabajadas
+        </label>
+        <Input
+          id="real_hours"
+          name="real_hours"
+          type="number"
+          min="0"
+          step="0.5"
+          value={formData.real_hours || ''}
+          onChange={handleNumberChange}
+          placeholder="Horas trabajadas (opcional)"
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          Ingresa las horas realmente trabajadas en esta tarea
+        </p>
       </div>
 
       <div>

@@ -4,7 +4,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ITask, TaskStatus } from '@/core/interfaces/models';
-import { CalendarIcon, Clock, CheckCircle2, BarChart2 } from 'lucide-react';
+import { CalendarIcon, Clock, CheckCircle2, BarChart2, Timer } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface TaskCardProps {
@@ -90,6 +90,16 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, onStatusChange }) =>
     return 'text-muted-foreground';
   };
 
+  // Calcular eficiencia de tiempo (horas reales vs estimadas)
+  const getTimeEfficiencyColor = () => {
+    if (!task.real_hours || !task.estimated_hours) return 'text-muted-foreground';
+    
+    const efficiency = task.real_hours / task.estimated_hours;
+    if (efficiency <= 1) return 'text-green-600 dark:text-green-400'; // Eficiente
+    if (efficiency <= 1.5) return 'text-yellow-600 dark:text-yellow-400'; // Aceptable
+    return 'text-red-600 dark:text-red-400'; // Ineficiente
+  };
+
   // Manejar click en completar tarea
   const handleCompleteTask = (e: React.MouseEvent) => {
     e.stopPropagation(); // Evitar que el click se propague a la tarjeta
@@ -139,6 +149,14 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, onStatusChange }) =>
             <Clock className="h-4 w-4 text-muted-foreground transition-all duration-300 group-hover:scale-110 group-hover:rotate-12" />
             <span className="text-muted-foreground transition-all duration-300 group-hover:text-foreground/70">{task.estimated_hours} horas estimadas</span>
           </div>
+          {task.real_hours && (
+            <div className="flex items-center gap-2 transition-all duration-300 group-hover:translate-x-2 transform-gpu delay-100">
+              <Timer className={`h-4 w-4 ${getTimeEfficiencyColor()} transition-all duration-300 group-hover:scale-110 group-hover:rotate-12`} />
+              <span className={`${getTimeEfficiencyColor()} transition-all duration-300`}>
+                {task.real_hours} horas trabajadas
+              </span>
+            </div>
+          )}
           <div className="flex items-center gap-2 transition-all duration-300 group-hover:translate-x-2 transform-gpu delay-150">
             <BarChart2 className="h-4 w-4 text-muted-foreground transition-all duration-300 group-hover:scale-110 group-hover:rotate-12" />
             <span className="text-muted-foreground transition-all duration-300 group-hover:text-foreground/70">
@@ -160,7 +178,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, onStatusChange }) =>
               onClick={handleCompleteTask}
               className="transition-all duration-300 hover:scale-110 hover:shadow-lg hover:bg-green-50 hover:border-green-300 hover:text-green-700 dark:hover:bg-green-950 dark:hover:border-green-700 dark:hover:text-green-300 transform-gpu"
             >
-              <CheckCircle2 className="h-4 w-4 mr-1 transition-all duration-300 hover:rotate-180" /> Completar
+<CheckCircle2 className="h-4 w-4 mr-1 transition-all duration-300 hover:rotate-180" /> Completar
             </Button>
           )}
           <Button 

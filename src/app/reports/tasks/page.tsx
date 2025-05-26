@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ITask, IProject, TaskStatus, UserRole } from '@/core/interfaces/models';
 import {
@@ -22,6 +22,10 @@ import {
   AlertTriangle,
   Check,
   Search,
+  Timer,
+  TrendingUp,
+  Target,
+  Zap,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
@@ -35,7 +39,20 @@ type TaskWithMetadata = ITask & {
   daysUntilDue?: number;
   isOverdue?: boolean;
   projectName?: string;
+  efficiency?: number;
+  timeVariance?: number;
 };
+
+interface TimeKPIs {
+  averageEfficiency: number;
+  onTimeDelivery: number;
+  totalHoursEstimated: number;
+  totalHoursReal: number;
+  productivityIndex: number;
+  tasksWithTimeData: number;
+  timeOverruns: number;
+  averageTimeVariance: number;
+}
 
 export default function TaskReportsPage() {
   const router = useRouter();
@@ -55,6 +72,16 @@ export default function TaskReportsPage() {
     overdueTasks: 0,
     dueSoonTasks: 0,
     completionRate: 0,
+  });
+  const [timeKPIs, setTimeKPIs] = useState<TimeKPIs>({
+    averageEfficiency: 0,
+    onTimeDelivery: 0,
+    totalHoursEstimated: 0,
+    totalHoursReal: 0,
+    productivityIndex: 0,
+    tasksWithTimeData: 0,
+    timeOverruns: 0,
+    averageTimeVariance: 0,
   });
 
   // El usuario por defecto para esta demo
@@ -77,6 +104,57 @@ export default function TaskReportsPage() {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     return diffDays;
+  };
+
+  // Función para calcular KPIs de tiempo
+  const calculateTimeKPIs = (tasks: TaskWithMetadata[]): TimeKPIs => {
+    const tasksWithTimeData = tasks.filter(
+      (task) => task.real_hours && task.estimated_hours && task.status === TaskStatus.COMPLETED
+    );
+
+    if (tasksWithTimeData.length === 0) {
+      return {
+        averageEfficiency: 0,
+        onTimeDelivery: 0,
+        totalHoursEstimated: 0,
+        totalHoursReal: 0,
+        productivityIndex: 0,
+        tasksWithTimeData: 0,
+        timeOverruns: 0,
+        averageTimeVariance: 0,
+      };
+    }
+
+    const totalEstimated = tasksWithTimeData.reduce((acc, task) => acc + task.estimated_hours, 0);
+    const totalReal = tasksWithTimeData.reduce((acc, task) => acc + (task.real_hours || 0), 0);
+    
+    const efficiencies = tasksWithTimeData.map((task) => 
+      task.estimated_hours / (task.real_hours || 1)
+    );
+    const averageEfficiency = efficiencies.reduce((acc, eff) => acc + eff, 0) / efficiencies.length;
+
+    const onTimeDeliveries = tasksWithTimeData.filter((task) => (task.real_hours || 0) <= task.estimated_hours);
+    const onTimeDeliveryRate = (onTimeDeliveries.length / tasksWithTimeData.length) * 100;
+
+    const timeOverruns = tasksWithTimeData.filter((task) => (task.real_hours || 0) > task.estimated_hours).length;
+
+    const timeVariances = tasksWithTimeData.map((task) => 
+      ((task.real_hours || 0) - task.estimated_hours) / task.estimated_hours * 100
+    );
+    const averageTimeVariance = timeVariances.reduce((acc, variance) => acc + variance, 0) / timeVariances.length;
+
+    const productivityIndex = totalEstimated / totalReal;
+
+    return {
+      averageEfficiency: averageEfficiency * 100,
+      onTimeDelivery: onTimeDeliveryRate,
+      totalHoursEstimated: totalEstimated,
+      totalHoursReal: totalReal,
+      productivityIndex: productivityIndex * 100,
+      tasksWithTimeData: tasksWithTimeData.length,
+      timeOverruns,
+      averageTimeVariance,
+    };
   };
 
   // Función para formatear fecha
@@ -136,6 +214,17 @@ export default function TaskReportsPage() {
     }
   };
 
+  // Función para obtener badge de eficiencia
+  const getEfficiencyBadge = (efficiency: number) => {
+    if (efficiency >= 100) {
+      return <Badge className="bg-green-500">Eficiente ({efficiency.toFixed(0)}%)</Badge>;
+    } else if (efficiency >= 67) {
+      return <Badge className="bg-yellow-500">Aceptable ({efficiency.toFixed(0)}%)</Badge>;
+    } else {
+      return <Badge variant="destructive">Ineficiente ({efficiency.toFixed(0)}%)</Badge>;
+    }
+  };
+
   // Cargar datos iniciales
   useEffect(() => {
     const fetchData = async () => {
@@ -158,6 +247,14 @@ export default function TaskReportsPage() {
             const isOverdue =
               daysUntilDue !== null && daysUntilDue < 0 && task.status !== TaskStatus.COMPLETED;
 
+            // Calcular eficiencia si tiene datos de tiempo
+            let efficiency = 0;
+            let timeVariance = 0;
+            if (task.real_hours && task.estimated_hours && task.real_hours > 0) {
+              efficiency = (task.estimated_hours / task.real_hours) * 100;
+              timeVariance = ((task.real_hours - task.estimated_hours) / task.estimated_hours) * 100;
+            }
+
             // Obtener nombre del proyecto
             let projectName = 'Sin proyecto';
             if (task.project_id) {
@@ -176,6 +273,8 @@ export default function TaskReportsPage() {
               daysUntilDue,
               isOverdue,
               projectName,
+              efficiency,
+              timeVariance,
             };
           })
         );
@@ -183,7 +282,7 @@ export default function TaskReportsPage() {
         setTasks(tasksWithMetadata);
         setFilteredTasks(tasksWithMetadata);
 
-        // Calcular estadísticas
+        // Calcular estadísticas básicas
         const stats = {
           totalTasks: tasksWithMetadata.length,
           completedTasks: tasksWithMetadata.filter((t) => t.status === TaskStatus.COMPLETED).length,
@@ -209,6 +308,10 @@ export default function TaskReportsPage() {
         }
 
         setStatistics(stats);
+
+        // Calcular KPIs de tiempo
+        const kpis = calculateTimeKPIs(tasksWithMetadata);
+        setTimeKPIs(kpis);
       } catch (error) {
         console.error('Error fetching task report data:', error);
       } finally {
@@ -262,6 +365,9 @@ export default function TaskReportsPage() {
       case 'title':
         filtered.sort((a, b) => a.title.localeCompare(b.title));
         break;
+      case 'efficiency':
+        filtered.sort((a, b) => (b.efficiency || 0) - (a.efficiency || 0));
+        break;
     }
 
     setFilteredTasks(filtered);
@@ -292,6 +398,10 @@ export default function TaskReportsPage() {
       }
 
       setStatistics(stats);
+      
+      // Recalcular KPIs de tiempo para tareas filtradas
+      const kpis = calculateTimeKPIs(filtered);
+      setTimeKPIs(kpis);
     }
   }, [tasks, selectedProject, statusFilter, searchQuery, sortBy]);
 
@@ -360,6 +470,80 @@ export default function TaskReportsPage() {
             </Card>
           </div>
 
+          {/* KPIs de Tiempo */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4 text-foreground">KPIs de Tiempo y Productividad</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/30">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Eficiencia Promedio</p>
+                      <h3 className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                        {timeKPIs.averageEfficiency.toFixed(0)}%
+                      </h3>
+                    </div>
+                    <Target className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <p className="text-xs text-blue-800 dark:text-blue-200 mt-1">
+                    Estimado vs Real
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/30">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-green-600 dark:text-green-400">Entrega a Tiempo</p>
+                      <h3 className="text-2xl font-bold text-green-900 dark:text-green-100">
+                        {timeKPIs.onTimeDelivery.toFixed(0)}%
+                      </h3>
+                    </div>
+                    <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
+                  </div>
+                  <p className="text-xs text-green-800 dark:text-green-200 mt-1">
+                    Dentro del tiempo estimado
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/30">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-purple-600 dark:text-purple-400">Índice de Productividad</p>
+                      <h3 className="text-2xl font-bold text-purple-900 dark:text-purple-100">
+                        {timeKPIs.productivityIndex.toFixed(0)}%
+                      </h3>
+                    </div>
+                    <TrendingUp className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <p className="text-xs text-purple-800 dark:text-purple-200 mt-1">
+                    Eficiencia general
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/20 dark:to-amber-900/30">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-amber-600 dark:text-amber-400">Horas Totales</p>
+                      <h3 className="text-2xl font-bold text-amber-900 dark:text-amber-100">
+                        {timeKPIs.totalHoursReal}h
+                      </h3>
+                    </div>
+                    <Timer className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+                  </div>
+                  <p className="text-xs text-amber-800 dark:text-amber-200 mt-1">
+                    Est: {timeKPIs.totalHoursEstimated}h
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
           {/* Filtros */}
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative w-full sm:w-64">
@@ -408,6 +592,7 @@ export default function TaskReportsPage() {
                 <SelectItem value="priority">Prioridad</SelectItem>
                 <SelectItem value="status">Estado</SelectItem>
                 <SelectItem value="title">Título</SelectItem>
+                <SelectItem value="efficiency">Eficiencia</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -428,7 +613,9 @@ export default function TaskReportsPage() {
                     <th className="py-2 px-4 text-left text-foreground">Prioridad</th>
                     <th className="py-2 px-4 text-left text-foreground">Fecha de vencimiento</th>
                     <th className="py-2 px-4 text-left text-foreground">Tiempo restante</th>
-                    <th className="py-2 px-4 text-left text-foreground">Horas estimadas</th>
+                    <th className="py-2 px-4 text-left text-foreground">Horas Est.</th>
+                    <th className="py-2 px-4 text-left text-foreground">Horas Real</th>
+                    <th className="py-2 px-4 text-left text-foreground">Eficiencia</th>
                     <th className="py-2 px-4 text-left text-foreground">Acciones</th>
                   </tr>
                 </thead>
@@ -470,6 +657,15 @@ export default function TaskReportsPage() {
                         )}
                       </td>
                       <td className="py-2 px-4 text-foreground">{task.estimated_hours}h</td>
+                      <td className="py-2 px-4 text-foreground">
+                        {task.real_hours ? `${task.real_hours}h` : '-'}
+                      </td>
+                      <td className="py-2 px-4">
+                        {task.efficiency && task.real_hours ? 
+                          getEfficiencyBadge(task.efficiency) : 
+                          <span className="text-muted-foreground">-</span>
+                        }
+                      </td>
                       <td className="py-2 px-4">
                         <Button
                           variant="ghost"
@@ -485,7 +681,7 @@ export default function TaskReportsPage() {
               </table>
             </div>
           ) : (
-            <div className="flex justify-center items-center h-40 border border-dashed border-border rounded-lg">
+<div className="flex justify-center items-center h-40 border border-dashed border-border rounded-lg">
               <p className="text-muted-foreground">
                 {searchQuery || selectedProject !== 'all' || statusFilter !== 'all'
                   ? 'No hay tareas que coincidan con los filtros'

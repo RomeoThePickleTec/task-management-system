@@ -106,9 +106,9 @@ const Sidebar: React.FC<SidebarProps> = ({ className, userRole = UserRole.DEVELO
                       {item.title}
                     </span>
                     
-                    {/* Active indicator */}
+                    {/* Active indicator - Corregido el posicionamiento */}
                     {isActive(item.href) && (
-                      <div className="absolute right-2 w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                      <div className="absolute right-4 w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                     )}
                   </Button>
                 </Link>
