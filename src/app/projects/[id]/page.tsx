@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
+import SprintCard from '@/components/sprints/SprintCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -841,70 +842,55 @@ const ProjectDetailsPage = () => {
             </TabsContent>
 
             {/* Pestaña de Sprints */}
-            <TabsContent value="sprints">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <div>
-                    <CardTitle>Sprints</CardTitle>
-                    <CardDescription>Ciclos de desarrollo del proyecto</CardDescription>
-                  </div>
-                  <Button variant="outline" size="sm">
-                    <Plus className="h-4 w-4 mr-2" /> Nuevo sprint
-                  </Button>
-                </CardHeader>
-                <CardContent>
-                  {isLoading ? (
-                    <div className="space-y-4">
-                      {[1, 2].map((i) => (
-                        <Skeleton key={i} className="h-24 w-full" />
-                      ))}
-                    </div>
-                  ) : project && project.sprints && project.sprints.length > 0 ? (
-                    <div className="space-y-4">
-                      {project.sprints.map((sprint) => (
-                        <Card key={sprint.id} className="overflow-hidden">
-                          <CardHeader className="p-4 pb-2">
-                            <div className="flex justify-between items-start">
-                              <CardTitle className="text-base">{sprint.name}</CardTitle>
-                              {getSprintStatusBadge(sprint.status)}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {formatDate(sprint.start_date)} - {formatDate(sprint.end_date)}
-                            </div>
-                          </CardHeader>
-                          <CardContent className="p-4 pt-2">
-                            <p className="text-sm text-gray-600 mb-2">
-                              {sprint.description || 'Sin descripción'}
-                            </p>
-                            <div className="flex justify-between items-center">
-                              <div className="text-xs text-gray-500">
-                                {sprint.tasks ? `${sprint.tasks.length} tareas` : '0 tareas'}
-                              </div>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="h-8"
-                                onClick={() => router.push(`/projects/${projectId}/sprints/${sprint.id}`)}
-                              >
-                                Ver detalles
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <CalendarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-500">No hay sprints definidos para este proyecto.</p>
-                      <Button variant="outline" className="mt-4">
-                        <Plus className="h-4 w-4 mr-2" /> Crear sprint
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
+<TabsContent value="sprints">
+  <Card>
+    <CardHeader className="flex flex-row items-center justify-between">
+      <div>
+        <CardTitle>Sprints</CardTitle>
+        <CardDescription>Ciclos de desarrollo del proyecto</CardDescription>
+      </div>
+      <Button variant="outline" size="sm">
+        <Plus className="h-4 w-4 mr-2" /> Nuevo sprint
+      </Button>
+    </CardHeader>
+    <CardContent>
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-80 w-full" />
+          ))}
+        </div>
+      ) : project && project.sprints && project.sprints.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {project.sprints.map((sprint) => {
+            // Calcular estadísticas de tareas para cada sprint
+            const taskCount = sprint.tasks ? sprint.tasks.length : 0;
+            const completedTaskCount = sprint.tasks ? 
+              sprint.tasks.filter(task => task.status === 3).length : 0; // 3 = COMPLETED
+            
+            return (
+              <SprintCard
+                key={sprint.id}
+                sprint={sprint}
+                taskCount={taskCount}
+                completedTaskCount={completedTaskCount}
+onViewDetails={() => router.push(`/sprints/${sprint.id}`)}
+              />
+            );
+          })}
+        </div>
+      ) : (
+        <div className="text-center py-8">
+          <CalendarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-500">No hay sprints definidos para este proyecto.</p>
+          <Button variant="outline" className="mt-4">
+            <Plus className="h-4 w-4 mr-2" /> Crear sprint
+          </Button>
+        </div>
+      )}
+    </CardContent>
+  </Card>
+</TabsContent>
           </Tabs>
         </div>
       </MainLayout>
