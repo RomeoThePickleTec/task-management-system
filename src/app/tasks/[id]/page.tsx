@@ -580,21 +580,21 @@ const handleAddAssignee = async () => {
                   <CardTitle className="text-lg">Información adicional</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground mb-1">Proyecto</h3>
-                    <p className="text-foreground">
-                      {task.sprint_id ? (
-                        <Link
-                          href={`/projects/${task.sprint_id}`}
-                          className="text-blue-500 hover:underline"
-                        >
-                          Proyecto #{task.sprint_id}
-                        </Link>
-                      ) : (
-                        'Sin proyecto asignado'
-                      )}
-                    </p>
-                  </div>
+{/* <div>
+  <h3 className="text-sm font-medium text-muted-foreground mb-1">Proyecto</h3>
+  <p className="text-foreground">
+    {task.sprint?.project_id ? (
+      <Link
+        href={`/projects/${task.sprint.project_id}`}
+        className="text-blue-500 hover:underline"
+      >
+        Proyecto #{task.sprint.project_id}
+      </Link>
+    ) : (
+      'Sin proyecto asignado'
+    )}
+  </p>
+</div> */}
 
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground mb-1">Sprint</h3>

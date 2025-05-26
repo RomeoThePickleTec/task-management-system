@@ -81,8 +81,26 @@ const SprintCard: React.FC<SprintCardProps> = ({
     return Math.round((completedTaskCount / taskCount) * 100);
   };
 
+  // Manejar click en la carta
+  const handleCardClick = () => {
+    if (onViewDetails) {
+      onViewDetails();
+    }
+  };
+
+  // Manejar click en el botón (evitar propagación)
+  const handleButtonClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onViewDetails) {
+      onViewDetails();
+    }
+  };
+
   return (
-    <Card className="w-full group cursor-pointer relative overflow-hidden transition-all duration-500 ease-out hover:shadow-2xl hover:shadow-orange-500/10 hover:-translate-y-2 hover:scale-[1.02] border-2 hover:border-orange-300/50 dark:hover:border-orange-600/50">
+    <Card 
+      className="w-full group cursor-pointer relative overflow-hidden transition-all duration-500 ease-out hover:shadow-2xl hover:shadow-orange-500/10 hover:-translate-y-2 hover:scale-[1.02] border-2 hover:border-orange-300/50 dark:hover:border-orange-600/50"
+      onClick={handleCardClick}
+    >
       {/* Animated background gradient on hover */}
       <div className="absolute inset-0 bg-gradient-to-br from-orange-50/0 via-yellow-50/0 to-red-50/0 group-hover:from-orange-50/30 group-hover:via-yellow-50/20 group-hover:to-red-50/30 dark:group-hover:from-orange-950/20 dark:group-hover:via-yellow-950/10 dark:group-hover:to-red-950/20 transition-all duration-700 ease-out"></div>
       
@@ -138,7 +156,7 @@ const SprintCard: React.FC<SprintCardProps> = ({
         <Button 
           variant="default" 
           size="sm" 
-          onClick={onViewDetails}
+          onClick={handleButtonClick}
           className="transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-orange-500/25 transform-gpu"
         >
           Ver sprint

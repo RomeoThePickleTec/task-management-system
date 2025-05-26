@@ -210,7 +210,7 @@ export default function SprintDetailPage() {
             status: SprintStatus.ACTIVE,
             icon: <ArrowRightCircle className="h-4 w-4 mr-2" />,
             description: "Cambiar a estado activo",
-            color: "text-green-600"
+            color: "text-green-600 dark:text-green-400"
           }
         ];
       case SprintStatus.ACTIVE:
@@ -220,14 +220,14 @@ export default function SprintDetailPage() {
             status: SprintStatus.COMPLETED,
             icon: <CheckCircle2 className="h-4 w-4 mr-2" />,
             description: "Marcar como completado",
-            color: "text-blue-600"
+            color: "text-blue-600 dark:text-blue-400"
           },
           {
             label: "Volver a planificación",
             status: SprintStatus.PLANNING,
             icon: <ArrowLeftCircle className="h-4 w-4 mr-2" />,
             description: "Retornar a fase de planificación",
-            color: "text-purple-600"
+            color: "text-purple-600 dark:text-purple-400"
           }
         ];
       case SprintStatus.COMPLETED:
@@ -237,7 +237,7 @@ export default function SprintDetailPage() {
             status: SprintStatus.ACTIVE,
             icon: <RefreshCcw className="h-4 w-4 mr-2" />,
             description: "Reabrir como activo",
-            color: "text-amber-600"
+            color: "text-amber-600 dark:text-amber-400"
           }
         ];
       default:
@@ -304,19 +304,19 @@ export default function SprintDetailPage() {
     switch (status) {
       case SprintStatus.PLANNING:
         return (
-          <Badge variant="outline" className="bg-purple-100 text-purple-800">
+          <Badge variant="outline" className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
             Planificación
           </Badge>
         );
       case SprintStatus.ACTIVE:
         return (
-          <Badge variant="default" className="bg-green-500">
+          <Badge variant="default" className="bg-green-500 dark:bg-green-600">
             Activo
           </Badge>
         );
       case SprintStatus.COMPLETED:
         return (
-          <Badge variant="default" className="bg-blue-500">
+          <Badge variant="default" className="bg-blue-500 dark:bg-blue-600">
             Completado
           </Badge>
         );
@@ -341,7 +341,7 @@ export default function SprintDetailPage() {
     return (
       <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
       </MainLayout>
     );
@@ -352,8 +352,8 @@ export default function SprintDetailPage() {
       <ProtectedRoute>
         <MainLayout username={demoUser.username} userRole={demoUser.userRole}>
           <div className="text-center p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Sprint no encontrado</h2>
-            <p className="text-gray-600 mb-6">
+            <h2 className="text-2xl font-bold text-foreground mb-2">Sprint no encontrado</h2>
+            <p className="text-muted-foreground mb-6">
               El sprint que estás buscando no existe o ha sido eliminado.
             </p>
             <Link href="/sprints" passHref>
@@ -381,7 +381,7 @@ export default function SprintDetailPage() {
                   <ChevronLeft className="h-4 w-4 mr-1" /> Volver
                 </Button>
               </Link>
-              <h1 className="text-2xl font-bold">{sprint.name}</h1>
+              <h1 className="text-2xl font-bold text-foreground">{sprint.name}</h1>
             </div>
             <div className="flex items-center space-x-2">
               <Link href={`/sprints/${sprint.id}/edit`} passHref>
@@ -402,7 +402,7 @@ export default function SprintDetailPage() {
 
           {/* Status Update Message */}
           {statusUpdateMessage && (
-            <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded">
+            <div className="bg-green-100 dark:bg-green-900 border-l-4 border-green-500 text-green-700 dark:text-green-200 p-4 rounded">
               <p>{statusUpdateMessage}</p>
             </div>
           )}
@@ -466,23 +466,23 @@ export default function SprintDetailPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Descripción</h3>
-                    <p className="text-gray-800">{sprint.description || 'Sin descripción'}</p>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-1">Descripción</h3>
+                    <p className="text-foreground">{sprint.description || 'Sin descripción'}</p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <h3 className="text-sm font-medium text-gray-500 mb-1">Estado</h3>
+                      <h3 className="text-sm font-medium text-muted-foreground mb-1">Estado</h3>
                       <div className="flex items-center space-x-2">
                         {getSprintStatusBadge(sprint.status)}
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-sm font-medium text-gray-500 mb-1">Proyecto</h3>
+                      <h3 className="text-sm font-medium text-muted-foreground mb-1">Proyecto</h3>
                       <div className="flex items-center space-x-2">
                         <Link
                           href={`/projects/${sprint.project_id}`}
-                          className="text-blue-500 hover:underline"
+                          className="text-blue-500 hover:text-blue-400 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
                         >
                           {projectName || `Proyecto #${sprint.project_id}`}
                         </Link>
@@ -492,34 +492,34 @@ export default function SprintDetailPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex items-start">
-                      <Calendar className="h-5 w-5 text-gray-500 mr-2 mt-0.5" />
+                      <Calendar className="h-5 w-5 text-muted-foreground mr-2 mt-0.5" />
                       <div>
-                        <h3 className="text-sm font-medium text-gray-500">Período</h3>
-                        <p className="text-gray-800">
+                        <h3 className="text-sm font-medium text-muted-foreground">Período</h3>
+                        <p className="text-foreground">
                           {formatDate(sprint.start_date)} - {formatDate(sprint.end_date)}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-start">
-                      <AlarmClock className="h-5 w-5 text-gray-500 mr-2 mt-0.5" />
+                      <AlarmClock className="h-5 w-5 text-muted-foreground mr-2 mt-0.5" />
                       <div>
-                        <h3 className="text-sm font-medium text-gray-500">Tiempo restante</h3>
-                        <p className="text-gray-800">{getRemainingDays(sprint.end_date)}</p>
+                        <h3 className="text-sm font-medium text-muted-foreground">Tiempo restante</h3>
+                        <p className="text-foreground">{getRemainingDays(sprint.end_date)}</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t">
-                    <h3 className="text-sm font-medium text-gray-500 mb-3">Progreso del Sprint</h3>
+                  <div className="pt-4 border-t border-border">
+                    <h3 className="text-sm font-medium text-muted-foreground mb-3">Progreso del Sprint</h3>
                     <div className="flex items-center justify-between text-sm mb-2">
-                      <span>
+                      <span className="text-foreground">
                         {taskProgress.completed} de {taskProgress.total} tareas completadas
                       </span>
-                      <span className="font-medium">{taskProgress.percentage}%</span>
+                      <span className="font-medium text-foreground">{taskProgress.percentage}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 h-2 rounded-full">
+                    <div className="w-full bg-muted h-2 rounded-full">
                       <div
-                        className="h-full bg-blue-500 rounded-full"
+                        className="h-full bg-primary rounded-full transition-all duration-300"
                         style={{ width: `${taskProgress.percentage}%` }}
                       ></div>
                     </div>
@@ -530,7 +530,7 @@ export default function SprintDetailPage() {
               {/* Tareas del Sprint */}
               <div>
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-semibold">Tareas del Sprint</h2>
+                  <h2 className="text-xl font-semibold text-foreground">Tareas del Sprint</h2>
                   <Link href={`/tasks/new?sprint_id=${sprint.id}`} passHref>
                     <Button variant="outline" size="sm">
                       <PlusCircle className="h-4 w-4 mr-1" /> Añadir tarea
@@ -556,21 +556,21 @@ export default function SprintDetailPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Fecha de creación</h3>
-                    <p className="text-gray-800">
+                    <h3 className="text-sm font-medium text-muted-foreground mb-1">Fecha de creación</h3>
+                    <p className="text-foreground">
                       {formatDate(sprint.created_at || sprint.start_date)}
                     </p>
                   </div>
 
                   <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Última actualización</h3>
-                    <p className="text-gray-800">
+                    <h3 className="text-sm font-medium text-muted-foreground mb-1">Última actualización</h3>
+                    <p className="text-foreground">
                       {formatDate(sprint.updated_at || sprint.start_date)}
                     </p>
                   </div>
 
                   <div className="pt-4">
-                    <h3 className="text-sm font-medium text-gray-500 mb-2">Cambiar estado</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Cambiar estado</h3>
                     <div className="space-y-2">
                       {statusOptions.map((option, index) => (
                         <Button
@@ -602,25 +602,25 @@ export default function SprintDetailPage() {
                 <CardContent>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm">Por hacer</span>
-                      <Badge variant="outline" className="bg-gray-100">
+                      <span className="text-sm text-foreground">Por hacer</span>
+                      <Badge variant="outline" className="bg-muted">
                         {tasks.filter((task) => task.status === TaskStatus.TODO).length}
                       </Badge>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm">En progreso</span>
-                      <Badge variant="default" className="bg-blue-500">
+                      <span className="text-sm text-foreground">En progreso</span>
+                      <Badge variant="default" className="bg-blue-500 dark:bg-blue-600">
                         {tasks.filter((task) => task.status === TaskStatus.IN_PROGRESS).length}
                       </Badge>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm">Completadas</span>
-                      <Badge variant="default" className="bg-green-500">
+                      <span className="text-sm text-foreground">Completadas</span>
+                      <Badge variant="default" className="bg-green-500 dark:bg-green-600">
                         {tasks.filter((task) => task.status === TaskStatus.COMPLETED).length}
                       </Badge>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm">Bloqueadas</span>
+                      <span className="text-sm text-foreground">Bloqueadas</span>
                       <Badge variant="destructive">
                         {tasks.filter((task) => task.status === TaskStatus.BLOCKED).length}
                       </Badge>

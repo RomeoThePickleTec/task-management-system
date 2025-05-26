@@ -100,27 +100,38 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, onStatusChange }) =>
     return 'text-red-600 dark:text-red-400'; // Ineficiente
   };
 
+  // Manejar click en la carta
+  const handleCardClick = () => {
+    if (onClick) {
+      onClick();
+    } else {
+      router.push(`/tasks/${task.id}`);
+    }
+  };
+
   // Manejar click en completar tarea
   const handleCompleteTask = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Evitar que el click se propague a la tarjeta
+    e.stopPropagation();
     if (onStatusChange) {
       onStatusChange(task.id, TaskStatus.COMPLETED);
     }
   };
 
   // Manejar click en ver detalles
-  const handleViewDetails = () => {
-    // Si hay un manejador onClick personalizado, usarlo
+  const handleViewDetails = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (onClick) {
       onClick();
     } else {
-      // De lo contrario, navegar a la página de detalles de la tarea
       router.push(`/tasks/${task.id}`);
     }
   };
 
   return (
-    <Card className="w-full h-full group cursor-pointer relative overflow-hidden transition-all duration-500 ease-out hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-2 hover:scale-[1.02] border-2 hover:border-blue-300/50 dark:hover:border-blue-600/50">
+    <Card 
+      className="w-full h-full group cursor-pointer relative overflow-hidden transition-all duration-500 ease-out hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-2 hover:scale-[1.02] border-2 hover:border-blue-300/50 dark:hover:border-blue-600/50"
+      onClick={handleCardClick}
+    >
       {/* Animated background gradient on hover */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50/0 via-purple-50/0 to-pink-50/0 group-hover:from-blue-50/30 group-hover:via-purple-50/20 group-hover:to-pink-50/30 dark:group-hover:from-blue-950/20 dark:group-hover:via-purple-950/10 dark:group-hover:to-pink-950/20 transition-all duration-700 ease-out"></div>
       
@@ -178,31 +189,30 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick, onStatusChange }) =>
               onClick={handleCompleteTask}
               className="transition-all duration-300 hover:scale-110 hover:shadow-lg hover:bg-green-50 hover:border-green-300 hover:text-green-700 dark:hover:bg-green-950 dark:hover:border-green-700 dark:hover:text-green-300 transform-gpu"
             >
-<CheckCircle2 className="h-4 w-4 mr-1 transition-all duration-300 hover:rotate-180" /> Completar
+              <CheckCircle2 className="h-4 w-4 mr-1 transition-all duration-300 hover:rotate-180" /> Completar
             </Button>
           )}
           <Button 
             variant="default" 
-            size="sm" 
-            onClick={handleViewDetails}
-            className="transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-blue-500/25 transform-gpu"
-          >
-            Ver detalles
-          </Button>
-        </div>
-      </CardFooter>
-      
-      <style jsx>{`
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        .animate-shimmer {
-          animation: shimmer 2s infinite;
-        }
-      `}</style>
-    </Card>
-  );
+onClick={handleViewDetails}
+           className="transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-blue-500/25 transform-gpu"
+         >
+           Ver detalles
+         </Button>
+       </div>
+     </CardFooter>
+     
+     <style jsx>{`
+       @keyframes shimmer {
+         0% { transform: translateX(-100%); }
+         100% { transform: translateX(100%); }
+       }
+       .animate-shimmer {
+         animation: shimmer 2s infinite;
+       }
+     `}</style>
+   </Card>
+ );
 };
 
 export default TaskCard;
