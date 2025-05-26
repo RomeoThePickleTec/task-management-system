@@ -20,6 +20,8 @@ import {
   Edit,
   Trash,
   PlusCircle,
+  Timer,
+  BarChart3,
 } from 'lucide-react';
 
 // Importamos los servicios reales de API
@@ -298,6 +300,34 @@ export default function TaskDetailPage() {
                       </div>
                     </div>
                   </div>
+
+                  {task.real_hours && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="flex items-start">
+                        <Timer className="h-5 w-5 text-blue-500 mr-2 mt-0.5" />
+                        <div>
+                          <h3 className="text-sm font-medium text-muted-foreground">Horas reales trabajadas</h3>
+                          <p className="text-foreground">{task.real_hours} horas</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <BarChart3 className="h-5 w-5 text-purple-500 mr-2 mt-0.5" />
+                        <div>
+                          <h3 className="text-sm font-medium text-muted-foreground">Eficiencia</h3>
+                          <p className={`font-medium ${
+                            task.real_hours <= task.estimated_hours 
+                              ? 'text-green-600' 
+                              : task.real_hours <= task.estimated_hours * 1.5 
+                              ? 'text-yellow-600' 
+                              : 'text-red-600'
+                          }`}>
+                            {((task.estimated_hours / task.real_hours) * 100).toFixed(0)}%
+                            {task.real_hours <= task.estimated_hours && ' ✓'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="pt-4 border-t border-border">
                     <h3 className="text-sm font-medium text-muted-foreground mb-3">Cambiar estado</h3>

@@ -45,6 +45,7 @@ export interface ITask {
   priority: number;
   status: TaskStatus;
   estimated_hours: number;
+  real_hours?: number | null; // ← Agregar esta línea
   sprint_id?: number;
   subtasks?: ISubtask[];
   comments?: IComment[];

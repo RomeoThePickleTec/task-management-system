@@ -49,6 +49,7 @@ export class TaskService {
         priority: Number(taskData.priority),
         status: Number(taskData.status),
         estimated_hours: Number(taskData.estimated_hours),
+        real_hours: taskData.real_hours ? Number(taskData.real_hours) : null,
         project_id: taskData.project_id ? Number(taskData.project_id) : null,
         sprint_id: taskData.sprint_id ? Number(taskData.sprint_id) : null,
         subtasks: taskData.subtasks || [],
@@ -96,6 +97,7 @@ export class TaskService {
         priority: taskData.priority !== undefined ? taskData.priority : currentTask.priority,
         status: taskData.status !== undefined ? taskData.status : currentTask.status,
         estimated_hours: taskData.estimated_hours || currentTask.estimated_hours,
+        real_hours: taskData.real_hours !== undefined ? taskData.real_hours : currentTask.real_hours,
       };
 
       const updatedTask = await apiClient.put<ITask>(`${this.BASE_PATH}/${id}`, updatePayload);
