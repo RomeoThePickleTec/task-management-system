@@ -8,3 +8,4 @@ export * from './userService';
 export * from './projectMemberService';
 export * from './commentService';
 export * from './sprintService';
+export { TaskAssigneeService } from './taskAssigneeService';

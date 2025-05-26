@@ -23,9 +23,37 @@ import {
   Timer,
   BarChart3,
 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 // Importamos los servicios reales de API
-import { TaskService, SubtaskService, CommentService } from '@/services/api';
+import { TaskService, SubtaskService, CommentService, TaskAssigneeService, UserService } from '@/services/api';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 export default function TaskDetailPage() {
@@ -40,46 +68,113 @@ export default function TaskDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
+  // Estados para gestión de asignados
+  const [isAddAssigneeDialogOpen, setIsAddAssigneeDialogOpen] = useState(false);
+  const [availableUsers, setAvailableUsers] = useState<any[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [isAddingAssignee, setIsAddingAssignee] = useState(false);
+  const [isDeletingAssignee, setIsDeletingAssignee] = useState<number | null>(null);
+
   // El usuario por defecto para esta demo
   const demoUser = {
     username: 'djeison',
     userRole: UserRole.MANAGER,
-    id: 12, // Este ID se usará para los comentarios
+    id: 12,
+  };
+
+  // Cargar usuarios disponibles para asignar
+  const fetchAvailableUsers = async () => {
+    setIsLoadingUsers(true);
+    try {
+      const users = await UserService.getUsers();
+      const existingAssigneeIds = task?.asignees?.map(assignee => assignee.id) || [];
+      const filteredUsers = users.filter(user => !existingAssigneeIds.includes(user.id));
+      setAvailableUsers(filteredUsers);
+    } catch (err) {
+      console.error('Error al cargar usuarios disponibles:', err);
+    } finally {
+      setIsLoadingUsers(false);
+    }
+  };
+
+  // Asignar usuario a la tarea
+// Simplify the handleAddAssignee function
+const handleAddAssignee = async () => {
+  if (!selectedUserId || !task) return;
+
+  setIsAddingAssignee(true);
+  try {
+    const newAssignee = {
+      task_id: task.id!,
+      user_id: parseInt(selectedUserId)
+    };
+
+    const added = await TaskAssigneeService.addTaskAssignee(newAssignee);
+    if (added) {
+      await fetchTaskDetails();
+      setIsAddAssigneeDialogOpen(false);
+      setSelectedUserId('');
+    }
+  } catch (error) {
+    console.error('Error al asignar usuario:', error);
+  } finally {
+    setIsAddingAssignee(false);
+  }
+};
+  // Desasignar usuario de la tarea
+  const handleRemoveAssignee = async (userId: number) => {
+    if (!task) return;
+
+    setIsDeletingAssignee(userId);
+    try {
+      const success = await TaskAssigneeService.removeTaskAssignee(task.id!, userId);
+      if (success) {
+        await fetchTaskDetails();
+      }
+    } catch (error) {
+      console.error('Error al desasignar usuario:', error);
+    } finally {
+      setIsDeletingAssignee(null);
+    }
+  };
+
+  const fetchTaskDetails = async () => {
+    setIsLoading(true);
+    try {
+      const taskData = await TaskService.getTaskById(taskId);
+      if (taskData) {
+        setTask(taskData);
+
+        if (taskData.subtasks) {
+          setSubtasks(taskData.subtasks);
+        }
+
+        if (taskData.comments) {
+          setComments(taskData.comments);
+        }
+      } else {
+        console.error(`Task with ID ${taskId} not found`);
+        router.push('/tasks');
+      }
+    } catch (error) {
+      console.error(`Error fetching task ${taskId}:`, error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
-    const fetchTaskDetails = async () => {
-      setIsLoading(true);
-      try {
-        // Obtener la tarea
-        const taskData = await TaskService.getTaskById(taskId);
-        if (taskData) {
-          setTask(taskData);
-
-          // Obtener subtareas
-          if (taskData.subtasks) {
-            setSubtasks(taskData.subtasks);
-          }
-
-          // Obtener comentarios
-          if (taskData.comments) {
-            setComments(taskData.comments);
-          }
-        } else {
-          console.error(`Task with ID ${taskId} not found`);
-          router.push('/tasks');
-        }
-      } catch (error) {
-        console.error(`Error fetching task ${taskId}:`, error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     if (taskId) {
       fetchTaskDetails();
     }
   }, [taskId, router]);
+
+  useEffect(() => {
+    if (isAddAssigneeDialogOpen) {
+      fetchAvailableUsers();
+    }
+  }, [isAddAssigneeDialogOpen, task]);
 
   // Helper para obtener badge según el estado
   const getStatusBadge = (status: TaskStatus) => {
@@ -157,7 +252,6 @@ export default function TaskDetailPage() {
     try {
       const updatedSubtask = await SubtaskService.updateSubtask(subtaskId, { status });
       if (updatedSubtask) {
-        // Actualizar la lista de subtareas
         setSubtasks((prev) =>
           prev.map((subtask) => (subtask.id === subtaskId ? updatedSubtask : subtask))
         );
@@ -181,9 +275,8 @@ export default function TaskDetailPage() {
 
       const createdComment = await CommentService.createComment(commentData);
       if (createdComment) {
-        // Añadir el nuevo comentario a la lista
         setComments((prev) => [...prev, createdComment]);
-        setNewComment(''); // Limpiar el input
+        setNewComment('');
       }
     } catch (error) {
       console.error(`Error adding comment:`, error);
@@ -531,31 +624,128 @@ export default function TaskDetailPage() {
                 </CardContent>
               </Card>
 
-              {/* Miembros asignados */}
+              {/* Usuarios asignados */}
               <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="text-lg">Asignados</CardTitle>
+                  <Dialog open={isAddAssigneeDialogOpen} onOpenChange={setIsAddAssigneeDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Users className="h-4 w-4 mr-1" /> Asignar usuario
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Asignar Usuario a la Tarea</DialogTitle>
+                        <DialogDescription>
+                          Selecciona un usuario para asignar a esta tarea.
+                        </DialogDescription>
+                      </DialogHeader>
+                      
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="user">Usuario</Label>
+                          <Select onValueChange={setSelectedUserId} value={selectedUserId}>
+                            <SelectTrigger id="user" className="w-full">
+                              <SelectValue placeholder="Selecciona un usuario" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {isLoadingUsers ? (
+                                <SelectItem value="loading" disabled>Cargando usuarios...</SelectItem>
+                              ) : availableUsers.length > 0 ? (
+                                availableUsers.map(user => (
+                                  <SelectItem key={user.id} value={String(user.id)}>
+                                    {user.username} ({user.email})
+                                  </SelectItem>
+                                ))
+                              ) : (
+                                <SelectItem value="none" disabled>No hay usuarios disponibles</SelectItem>
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+
+                      </div>
+                      
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsAddAssigneeDialogOpen(false)}>
+                          Cancelar
+                        </Button>
+                        <Button onClick={handleAddAssignee} disabled={isAddingAssignee || !selectedUserId}>
+                          {isAddingAssignee ? 'Asignando...' : 'Asignar Usuario'}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center space-x-2 mb-4">
-                    <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
-                      D
+                  {task.asignees && task.asignees.length > 0 ? (
+                    <div className="space-y-3">
+                      {task.asignees.map((assignee) => (
+                        <div key={assignee.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-md">
+                          <div className="flex items-center space-x-3">
+                            <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
+                              {assignee.username.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="font-medium text-foreground">{assignee.fullName || assignee.username}</p>
+                              <p className="text-xs text-muted-foreground">{assignee.email}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Badge variant="outline">Asignado</Badge>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="h-8 w-8 p-0"
+                                  disabled={isDeletingAssignee === assignee.id}
+                                >
+                                  <Trash className="h-4 w-4 text-red-500" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>¿Desasignar usuario?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    ¿Estás seguro de que deseas desasignar a {assignee.fullName || assignee.username} de esta tarea?
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction 
+                                    onClick={() => handleRemoveAssignee(assignee.id)}
+                                    className="bg-red-600 hover:bg-red-700"
+                                  >
+                                    Desasignar
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <div>
-                      <p className="font-medium text-foreground">Diego Villanueva</p>
-                      <p className="text-xs text-muted-foreground">Responsable principal</p>
-                    </div>
-                  </div>
-
-                  <Button variant="outline" size="sm" className="w-full">
-                    <Users className="h-4 w-4 mr-1" /> Asignar usuarios
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
-      </MainLayout>
-    </ProtectedRoute>
-  );
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p>No hay usuarios asignados a esta tarea</p>
+                      <Button 
+className="mt-4"
+                       onClick={() => setIsAddAssigneeDialogOpen(true)}
+                     >
+                       <Users className="h-4 w-4 mr-2" /> Asignar usuario
+                     </Button>
+                   </div>
+                 )}
+               </CardContent>
+             </Card>
+           </div>
+         </div>
+       </div>
+     </MainLayout>
+   </ProtectedRoute>
+ );
 }

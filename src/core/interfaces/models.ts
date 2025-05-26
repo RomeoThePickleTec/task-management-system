@@ -35,6 +35,8 @@ export enum SprintStatus {
 }
 
 // Interfaces de modelos
+// src/core/interfaces/models.ts - Actualización de ITask
+
 export interface ITask {
   id?: number;
   title: string;
@@ -45,13 +47,19 @@ export interface ITask {
   priority: number;
   status: TaskStatus;
   estimated_hours: number;
-  real_hours?: number | null; // ← Agregar esta línea
+  real_hours?: number | null;
   sprint_id?: number;
   subtasks?: ISubtask[];
   comments?: IComment[];
   project_id?: number;
+  asignees?: {
+    id: number;
+    username: string;
+    fullName: string;
+    email: string;
+    phone?: string | null;
+  }[]; // Array de usuarios asignados
 }
-
 export interface ISubtask {
   id?: number;
   title: string;
