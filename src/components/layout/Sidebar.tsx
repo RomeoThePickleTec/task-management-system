@@ -56,13 +56,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, userRole = UserRole.DEVELO
       icon: <BarChart2 className="h-5 w-5" />,
       href: '/reports',
       roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.DEVELOPER, UserRole.TESTER],
-    },
-    {
-      title: 'Configuración',
-      icon: <Settings className="h-5 w-5" />,
-      href: '/settings',
-      roles: [UserRole.ADMIN, UserRole.DEVELOPER, UserRole.TESTER, UserRole.MANAGER],
-    },
+    }
   ];
 
   // Filtrar elementos de navegación según el rol del usuario

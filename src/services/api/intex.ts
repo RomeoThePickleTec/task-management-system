@@ -6,3 +6,4 @@ export * from './taskService';
 export * from './projectService';
 export * from './sprintService';
 export * from './userService';
+export { TaskAssigneeService } from './taskAssigneeService';
