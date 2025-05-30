@@ -1,0 +1,76 @@
+version: 0.1
+component: build
+
+shell: bash
+
+env:
+  variables:
+    REGISTRY: "docker.io"
+    IMAGE_NAME: "task-management-system"
+
+steps:
+  - type: Command
+    name: Checkout Code
+    command: |
+      echo "OCI automatically checks out code from the specified repo."
+
+  - type: Command
+    name: Debug Secrets
+    command: |
+      echo "Checking secrets..."
+      if [ -z "${DOCKERHUB_USERNAME}" ]; then
+        echo "ERROR: DOCKERHUB_USERNAME is not set"; exit 1;
+      fi
+      if [ -z "${DOCKERHUB_TOKEN}" ]; then
+        echo "ERROR: DOCKERHUB_TOKEN is not set"; exit 1;
+      fi
+      echo "DOCKERHUB_USERNAME and DOCKERHUB_TOKEN are set."
+
+  - type: Command
+    name: Docker Login
+    command: |
+      echo "${DOCKERHUB_TOKEN}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
+
+  - type: Command
+    name: Verify Docker Login
+    command: |
+      echo "Checking Docker login status..."
+      docker info
+
+  - type: Command
+    name: Build Docker Image
+    timeoutInSeconds: 1800
+    command: |
+      COMMIT_SHA=$(git rev-parse --short HEAD || echo "manual")
+      echo "Building Docker image with commit SHA: $COMMIT_SHA"
+
+      docker build \
+        --build-arg NODE_ENV=production \
+        --build-arg PORT=3000 \
+        --build-arg HOSTNAME=0.0.0.0 \
+        -t "${REGISTRY}/${DOCKERHUB_USERNAME}/${IMAGE_NAME}:latest" \
+        -t "${REGISTRY}/${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${COMMIT_SHA}" \
+        .
+
+  - type: Command
+    name: List Docker Images
+    command: |
+      docker images
+
+  - type: Command
+    name: Push Docker Image
+    command: |
+      COMMIT_SHA=$(git rev-parse --short HEAD || echo "manual")
+      echo "Pushing Docker images..."
+      docker push "${REGISTRY}/${DOCKERHUB_USERNAME}/${IMAGE_NAME}:latest"
+      docker push "${REGISTRY}/${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${COMMIT_SHA}"
+
+  - type: Command
+    name: Debug Push
+    command: |
+      COMMIT_SHA=$(git rev-parse --short HEAD || echo "manual")
+      echo "Image name: ${REGISTRY}/${DOCKERHUB_USERNAME}/${IMAGE_NAME}"
+      echo "Tags:"
+      echo "- latest"
+      echo "- $COMMIT_SHA"
+      docker images
