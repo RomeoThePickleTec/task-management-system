@@ -39,6 +39,7 @@ steps:
 
   - type: Command
     name: Build Docker Image
+    timeoutInSeconds: 1800
     command: |
       COMMIT_SHA=$(git rev-parse --short HEAD || echo "manual")
       echo "Building Docker image with commit SHA: $COMMIT_SHA"
